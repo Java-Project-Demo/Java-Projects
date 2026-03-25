@@ -1,0 +1,23 @@
+networks:
+  base-net:
+    driver: bridge
+
+services:
+  # Server
+  server:
+    container_name: backend
+    image: backend:latest
+    environment:
+      ###   Spring DB Config
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_DRIVER: ${SPRING_DATASOURCE_DRIVER}
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    working_dir: /app
+    ports:
+      - '${SPRING_PORT}:8888'
+    networks:
+      - base-net
