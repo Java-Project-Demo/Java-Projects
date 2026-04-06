@@ -5,7 +5,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.entity.UserDetailsImpl;
+import org.dawn.backend.service.RefreshTokenService;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -17,9 +19,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SignOutHandler implements LogoutHandler {
 
+    @Value("${app.jwtRefreshCookieName}")
     private String jwtRefreshToken;
 
-//    private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, @Nullable Authentication authentication) {
@@ -27,6 +30,7 @@ public class SignOutHandler implements LogoutHandler {
 
         if (authentication != null && authentication.getPrincipal() instanceof UserDetailsImpl user) {
             Long userId = user.getId();
+            refreshTokenService.deleteByUserId(userId);
         }
 
         String cleanCookie = ResponseCookie
