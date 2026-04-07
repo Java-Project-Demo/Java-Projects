@@ -27,6 +27,8 @@ public class User extends AbstractMappedEntity {
     @Column(name = "full_name")
     private String fullName;
 
+    private String email;
+
     @Column(name = "password")
     private String password;
 
@@ -39,6 +41,16 @@ public class User extends AbstractMappedEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
+    private String status;
+
+    private Integer gender;
+
+    private Integer age;
+
+    private String phoneNumber;
+
+    private boolean isPasswordReset;
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default

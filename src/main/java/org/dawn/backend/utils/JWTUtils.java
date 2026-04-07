@@ -35,14 +35,19 @@ public class JWTUtils {
     @Value("${app.jwtRefreshCookieName}")
     private String jwtRefreshCookie;
 
+    private final String endpoint = "/api/v1/auth/refresh-token";
+
     public ResponseCookie generateJwtRefreshCookie(String refreshCookie) {
-        return generateCookie(jwtRefreshCookie, refreshCookie, "/api/v1/auth/refresh-token");
+        return generateCookie(
+                jwtRefreshCookie,
+                refreshCookie,
+                endpoint);
     }
 
     public void getCleanJwtRefreshCookie() {
         ResponseCookie
                 .from(jwtRefreshCookie)
-                .path("/api/v1/auth/refresh-token")
+                .path(endpoint)
                 .maxAge(0)
                 .build();
     }
@@ -66,11 +71,12 @@ public class JWTUtils {
         return claims.get("roles", List.class);
     }
 
-    public String generateToken(String username, List<String> roles) {
+    public String generateToken(String username, String email, List<String> roles) {
         return Jwts
                 .builder()
                 .subject(username)
                 .issuedAt(new Date())
+                .claim("email", email)
                 .claim("roles", roles)
                 .expiration(new Date(new Date().getTime() + jwtExpirations))
                 .signWith(key())
