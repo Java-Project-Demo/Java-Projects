@@ -1,8 +1,8 @@
 package org.dawn.backend.utils;
 
 import java.security.SecureRandom;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -11,18 +11,39 @@ public class UserUtils {
     private static final String CHAR_POOL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    public static String generateUsername(String fullName) {
+    public static String getBaseUsername(String fullName) {
         if (fullName == null || fullName.isBlank()) {
-            return "USER" + (new Random().nextInt(900) + 100);
+            return "user";
+        }
+        String cleanString = removeAccents(fullName).toLowerCase();
+
+        String[] words = cleanString.trim().split("\\s+");
+
+        if (words.length == 0) return "user";
+
+        if (words.length == 1) {
+            return words[0];
         }
 
-        String[] words = fullName.trim().split("\\s+");
-        StringBuilder initials = new StringBuilder();
-        for (String word : words) {
-            if (!word.isEmpty()) initials.append(Character.toUpperCase(word.charAt(0)));
+        StringBuilder result = new StringBuilder();
+        result.append(words[words.length - 1]);
+
+        for (int i = 0; i < words.length - 1; i++) {
+            if (!words[i].isEmpty()) {
+                result.append(words[i].charAt(0));
+            }
         }
-        int randomNum = ThreadLocalRandom.current().nextInt(100, 1000);
-        return initials.toString() + randomNum;
+        return result.toString();
+    }
+
+    public static String removeAccents(String str) {
+        String temp = Normalizer.normalize(str, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCOMBINING_DIACRITICAL_MARKS}+");
+        return pattern
+                .matcher(temp)
+                .replaceAll("")
+                .replace('đ', 'd')
+                .replace('Đ', 'D');
     }
 
     public static String generateTempPassword() {

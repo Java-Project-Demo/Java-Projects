@@ -2,6 +2,7 @@ package org.dawn.backend.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.response.ResponseObject;
 import org.dawn.backend.dto.request.ChangePasswordRequest;
 import org.dawn.backend.dto.request.LoginRequest;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @Tag(name = "Authentication", description = "Operations related to auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final AuthService authService;

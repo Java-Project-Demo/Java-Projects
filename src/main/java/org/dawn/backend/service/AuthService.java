@@ -3,7 +3,6 @@ package org.dawn.backend.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.dto.request.ChangePasswordRequest;
 import org.dawn.backend.dto.request.LoginRequest;

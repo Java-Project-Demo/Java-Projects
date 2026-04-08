@@ -51,12 +51,16 @@ public class UserService {
 
     @Transactional
     public UserResponse createUser(RegisterRequest request, String adminUsername) {
-        String username;
+        String baseUsername = UserUtils.getBaseUsername(request.getFullName());
 
-        do {
-            username = UserUtils.generateUsername(request.getFullName());
+        String finalUsername = baseUsername;
 
-        } while (userRepository.existsByUserName(username));
+        int counter = 1;
+
+        while (userRepository.existsByUserName(finalUsername)) {
+            finalUsername = baseUsername + counter;
+            counter++;
+        }
 
 
         String tempPass = UserUtils.generateTempPassword();
@@ -66,7 +70,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ROLE_NOT_FOUND));
 
         User user = User.builder()
-                .username(username)
+                .username(finalUsername)
                 .fullName(request.getFullName())
                 .password(passwordEncoder.encode(tempPass))
                 .gender(request.getGender())
@@ -77,7 +81,7 @@ public class UserService {
                 .role(role)
                 .isPasswordReset(true)
                 .build();
-
+        userRepository.save(user);
         return UserMappingHelper.map(user);
     }
 
