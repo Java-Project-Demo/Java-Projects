@@ -20,10 +20,15 @@ public class UserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String input) throws UsernameNotFoundException {
         User user;
-
-        user = userRepository
-                .findByUsername(input)
-                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
+        if (input.contains("@")) {
+            user = userRepository
+                    .findByEmail(input)
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.EMAIL_NOT_FOUND));
+        } else {
+            user = userRepository
+                    .findByUsername(input)
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
+        }
 
 
         return UserDetailsImpl.build(user);

@@ -4,21 +4,18 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.constant.Message;
-import org.dawn.backend.constant.URole;
+import org.dawn.backend.dto.request.ChangePasswordRequest;
 import org.dawn.backend.dto.request.LoginRequest;
-import org.dawn.backend.dto.request.RegisterRequest;
 import org.dawn.backend.dto.response.JwtResponse;
 import org.dawn.backend.dto.response.TokenRefreshResponse;
 import org.dawn.backend.entity.RefreshToken;
-import org.dawn.backend.entity.Role;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.entity.UserDetailsImpl;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
-import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
-import org.dawn.backend.repository.RoleRepository;
 import org.dawn.backend.repository.UserRepository;
 import org.dawn.backend.utils.JWTUtils;
+import org.dawn.backend.utils.UserUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,8 +33,6 @@ public class AuthService {
 
     private final UserRepository userRepository;
 
-    private final RoleRepository roleRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     private final AuthenticationManager authenticationManager;
@@ -46,25 +41,6 @@ public class AuthService {
 
     private final RefreshTokenService refreshTokenService;
 
-    public void register(RegisterRequest newUser) {
-        userRepository.findByUsername(newUser.getUsername()).ifPresent(u -> {
-            throw new ResourceAlreadyExistedException(Message.Exception.USERNAME_EXISTED);
-        });
-
-        User user = User
-                .builder()
-                .username(newUser.getUsername())
-                .password(passwordEncoder.encode(newUser.getPassword()))
-                .build();
-
-        Role userRole = roleRepository
-                .findByName(URole.valueOf(newUser.getRole()))
-                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ROLE_NOT_FOUND));
-
-        user.setRole(userRole);
-        userRepository.save(user);
-        log.info("User registered successfully: {}", newUser.getUsername());
-    }
 
     @Transactional
     public JwtResponse login(LoginRequest user) {
@@ -86,7 +62,7 @@ public class AuthService {
                 .map(GrantedAuthority::getAuthority)
                 .toList();
         log.info("Get role {}", role);
-        String jwt = jwtUtils.generateToken(userDetails.getUsername(), role);
+        String jwt = jwtUtils.generateToken(userDetails.getUsername(), userDetails.getEmail(), role);
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
@@ -99,16 +75,39 @@ public class AuthService {
                 .build();
     }
 
-    public void changePassword(String username, String oldPassword, String newPassword) {
+
+    @Transactional
+    public String resetPassword(Long id, String username) {
+        User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
+        String tempPwd = UserUtils.generateTempPassword();
+
+        user.setPassword(passwordEncoder.encode(tempPwd));
+        user.setIsPasswordReset(true);
+        userRepository.save(user);
+
+        refreshTokenService.deleteByUserId(id);
+
+        return tempPwd;
+    }
+
+    public String changePassword(String username, ChangePasswordRequest request) {
         User user = userRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new PermissionDeniedException(Message.Exception.PASSWORD_NOT_MATCH);
         }
 
-        user.setPassword(passwordEncoder.encode(newPassword));
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException(Message.Exception.PASSWORD_NOT_MATCH);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        user.setIsPasswordReset(false);
         userRepository.save(user);
+
+        return "Change password success";
     }
 
 

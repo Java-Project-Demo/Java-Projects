@@ -81,7 +81,9 @@ public class SecurityConfig {
 
     private void configAuth(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry config) {
         config
-                .requestMatchers("/**")
+                .requestMatchers("/api/v1/auth/**")
+                .permitAll()
+                .requestMatchers("/api/v1/user/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated();

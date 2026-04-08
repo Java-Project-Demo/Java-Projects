@@ -9,12 +9,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class RegisterRequest {
-    private String fullName;
-    private Integer gender;
-    private String roleName;
-    private Integer age;
-    private String phoneNumber;
-    private String email;
-    private String status;
+public class ChangePasswordRequest {
+    private String oldPassword;
+
+    private String newPassword;
+
+    private String confirmPassword;
 }
