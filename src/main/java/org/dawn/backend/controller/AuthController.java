@@ -3,6 +3,7 @@ package org.dawn.backend.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dawn.backend.config.response.ResponseObject;
+import org.dawn.backend.dto.request.ChangePasswordRequest;
 import org.dawn.backend.dto.request.LoginRequest;
 import org.dawn.backend.dto.response.JwtResponse;
 import org.dawn.backend.dto.response.TokenRefreshResponse;
@@ -66,5 +67,16 @@ public class AuthController {
     @PreAuthorize("@roleSecurity.canUpdate(#id, authentication)")
     public ResponseObject<String> resetPassword(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl admin) {
         return ResponseObject.success(authService.resetPassword(id, admin.getUsername()));
+    }
+
+    @PutMapping("/change-password")
+    public ResponseObject<String> changePassword(@RequestBody ChangePasswordRequest req, @AuthenticationPrincipal UserDetailsImpl currentUser) {
+        if (currentUser == null) {
+            return ResponseObject.error(HttpStatus.BAD_REQUEST, "You need to login");
+        }
+
+        String message = authService.changePassword(currentUser.getUsername(), req);
+
+        return ResponseObject.success(message);
     }
 }

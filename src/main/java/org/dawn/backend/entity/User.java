@@ -50,7 +50,8 @@ public class User extends AbstractMappedEntity {
 
     private String phoneNumber;
 
-    private boolean isPasswordReset;
+    @Builder.Default
+    private Boolean isPasswordReset = false;
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default

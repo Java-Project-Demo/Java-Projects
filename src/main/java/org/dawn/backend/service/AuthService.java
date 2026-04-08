@@ -3,7 +3,9 @@ package org.dawn.backend.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.dawn.backend.constant.Message;
+import org.dawn.backend.dto.request.ChangePasswordRequest;
 import org.dawn.backend.dto.request.LoginRequest;
 import org.dawn.backend.dto.response.JwtResponse;
 import org.dawn.backend.dto.response.TokenRefreshResponse;
@@ -81,7 +83,7 @@ public class AuthService {
         String tempPwd = UserUtils.generateTempPassword();
 
         user.setPassword(passwordEncoder.encode(tempPwd));
-        user.setPasswordReset(true);
+        user.setIsPasswordReset(true);
         userRepository.save(user);
 
         refreshTokenService.deleteByUserId(id);
@@ -89,16 +91,24 @@ public class AuthService {
         return tempPwd;
     }
 
-    public void changePassword(String username, String oldPassword, String newPassword) {
+    public String changePassword(String username, ChangePasswordRequest request) {
         User user = userRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             throw new PermissionDeniedException(Message.Exception.PASSWORD_NOT_MATCH);
         }
 
-        user.setPassword(passwordEncoder.encode(newPassword));
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new RuntimeException(Message.Exception.PASSWORD_NOT_MATCH);
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+
+        user.setIsPasswordReset(false);
         userRepository.save(user);
+
+        return "Change password success";
     }
 
 
