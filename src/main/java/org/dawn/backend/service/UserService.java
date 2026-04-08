@@ -2,6 +2,7 @@ package org.dawn.backend.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.response.ResponsePage;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.constant.URole;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -59,7 +61,9 @@ public class UserService {
 
         String tempPass = UserUtils.generateTempPassword();
 
-        Role role = roleRepository.findByName(URole.valueOf(request.getRoleName())).orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ROLE_NOT_FOUND));
+        Role role = roleRepository
+                .findByName(URole.valueOf(request.getRoleName()))
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ROLE_NOT_FOUND));
 
         User user = User.builder()
                 .username(username)
