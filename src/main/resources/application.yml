@@ -19,7 +19,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     show-sql: true
+    properties:
+      hibernate:
+        globally_quoted_identifiers: false
+        dialect: org.hibernate.dialect.OracleDialect
   sql:
     init:
       mode: never
@@ -31,3 +37,14 @@ spring:
     locations: classpath:db/migration
     validate-on-migrate: false
     baseline-on-migrate: true
+    #Config JWT
+app:
+  jwtCookieName: ${JWT_COOKIE_NAME}
+  jwtRefreshCookieName: ${JWT_COOKIE_REFRESH_NAME}
+  jwtSecret: ${JWT_SECRET}
+  jwtExpirationsMs: ${JWT_EXPIRATION}
+  jwtRefreshExpirationsMs: ${JWT_REFRESH_EXPIRATION}
+  setup:
+    admin:
+      username: ${ADMIN_USERNAME}
+      password: ${ADMIN_PASSWORD}
