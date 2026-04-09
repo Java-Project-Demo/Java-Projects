@@ -9,4 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Loggable {
     String action();
+
+    String entity() default "GENERAL";
 }

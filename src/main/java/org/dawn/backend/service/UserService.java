@@ -3,6 +3,7 @@ package org.dawn.backend.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.config.Loggable;
 import org.dawn.backend.config.response.ResponsePage;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.constant.URole;
@@ -29,12 +30,14 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Loggable(action = "GET_ALL", entity = "USER")
     public ResponsePage<UserResponse> findAll(Pageable pageable) {
         return ResponsePage.of(userRepository
                 .findAll(pageable)
                 .map(UserMappingHelper::map));
     }
 
+    @Loggable(action = "GET_ONE", entity = "USER")
     public UserResponse findOne(Long id) {
         return userRepository
                 .findById(id)
@@ -50,6 +53,7 @@ public class UserService {
     }
 
     @Transactional
+    @Loggable(action = "CREATE_USER", entity = "USER")
     public UserResponse createUser(RegisterRequest request, String adminUsername) {
         String baseUsername = UserUtils.getBaseUsername(request.getFullName());
 
@@ -86,6 +90,7 @@ public class UserService {
     }
 
     @Transactional
+    @Loggable(action = "UPDATE_STATUS", entity = "USER")
     public UserResponse updateStatus(Long id, Boolean status) {
         User user = userRepository
                 .findById(id)
@@ -95,6 +100,7 @@ public class UserService {
     }
 
     @Transactional
+    @Loggable(action = "UPDATE_INFO", entity = "USER")
     public UserResponse updateInfo(Long id, RegisterRequest request, String username) {
         User user = userRepository
                 .findById(id)

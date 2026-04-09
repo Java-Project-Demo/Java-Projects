@@ -3,6 +3,7 @@ package org.dawn.backend.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.config.Loggable;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.dto.request.ChangePasswordRequest;
 import org.dawn.backend.dto.request.LoginRequest;
@@ -41,7 +42,6 @@ public class AuthService {
 
     private final RefreshTokenService refreshTokenService;
 
-
     @Transactional
     public JwtResponse login(LoginRequest user) {
 
@@ -77,6 +77,7 @@ public class AuthService {
 
 
     @Transactional
+    @Loggable(action = "RESET_PASSWORD", entity = "USER")
     public String resetPassword(Long id, String username) {
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
         String tempPwd = UserUtils.generateTempPassword();
@@ -90,6 +91,7 @@ public class AuthService {
         return tempPwd;
     }
 
+    @Loggable(action = "CHANGE_PASSWORD", entity = "USER")
     public String changePassword(String username, ChangePasswordRequest request) {
         User user = userRepository
                 .findByUsername(username)
@@ -112,6 +114,7 @@ public class AuthService {
 
 
     @Transactional
+    @Loggable(action = "REFRESH_TOKEN", entity = "USER")
     public TokenRefreshResponse refreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {
             throw new ResourceNotFoundException(Message.Exception.REFRESH_TOKEN_EXPIRED);

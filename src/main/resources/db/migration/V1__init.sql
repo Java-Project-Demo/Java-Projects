@@ -52,6 +52,7 @@ CREATE TABLE audit_logs
     action      VARCHAR2(100),
     entity_name VARCHAR2(100),
     entity_id   VARCHAR2(100),
+    status      VARCHAR2(50),
     details     CLOB,
     created_at  TIMESTAMP(6) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at  TIMESTAMP(6) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
