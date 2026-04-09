@@ -61,7 +61,7 @@ server:
   # Database config
   datasource:
     url: jdbc:oracle:thin:@localhost:1521/ORCL
-    username: admin
+    username: backend
     password: 123456
     driver-class-name: oracle.jdbc.OracleDriver
 app:
