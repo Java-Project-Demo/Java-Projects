@@ -28,6 +28,8 @@ public class AuditLog extends AbstractMappedEntity {
 
     private String entityId;
 
+    private String status;
+
     @Lob
     @Column(name = "details", columnDefinition = "CLOB")
     private String details;
