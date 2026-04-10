@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.dawn.backend.config.Loggable;
 import org.dawn.backend.entity.AuditLog;
+import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.repository.AuditLogRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
@@ -110,10 +111,16 @@ public class AuditLogAspect {
     private String extractId(Object result) {
         if (result == null) return null;
         try {
+
+            if (result instanceof ProductItem) {
+                return ((ProductItem) result).getImei();
+            }
+
             for (Field field : result.getClass().getDeclaredFields()) {
-                if (field.getName().equalsIgnoreCase("id") || field.getName().equalsIgnoreCase("username")) {
+                if (field.getName().equalsIgnoreCase("id") || field.getName().equalsIgnoreCase("sku")) {
                     field.setAccessible(true);
-                    return field.get(result).toString();
+                    Object val = field.get(result);
+                    return val != null ? val.toString() : null;
                 }
             }
         } catch (Exception ignored) {
