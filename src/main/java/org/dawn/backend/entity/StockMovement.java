@@ -20,16 +20,21 @@ public class StockMovement extends AbstractMappedEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "product_id")
     private Long productId;
+
     @Enumerated(EnumType.STRING)
     private MovementType type;
 
+    @Column(name = "action_type")
     private String actionType;
 
     private Integer quantity;
 
+    @Column(name = "reference_id")
     private Long referenceId;
 
+    @Column(name = "created_by")
     private Long createdBy;
 
     private String note;

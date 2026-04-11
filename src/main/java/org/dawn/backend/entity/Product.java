@@ -25,14 +25,18 @@ public class Product extends AbstractMappedEntity {
 
     private String name;
 
+    @Column(name = "price_import")
     private BigDecimal priceImport;
 
+    @Column(name = "price_export")
     private BigDecimal priceExport;
 
     @Builder.Default
+    @Column(name = "current_stock")
     private Integer currentStock = 0;
 
     @Builder.Default
+    @Column(name = "min_threshold")
     private Integer minThreshold = 5;
 
     @Enumerated(EnumType.STRING)

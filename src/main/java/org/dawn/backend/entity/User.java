@@ -48,9 +48,11 @@ public class User extends AbstractMappedEntity {
 
     private Integer age;
 
+    @Column(name = "phone_number")
     private String phoneNumber;
 
     @Builder.Default
+    @Column(name = "is_password_reset")
     private Boolean isPasswordReset = false;
 
     @Column(name = "is_deleted", nullable = false)

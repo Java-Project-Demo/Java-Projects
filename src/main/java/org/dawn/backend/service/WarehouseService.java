@@ -12,6 +12,7 @@ import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.entity.StockMovement;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.helper.ProductMappingHelper;
+import org.dawn.backend.helper.UserHelper;
 import org.dawn.backend.repository.ProductItemRepository;
 import org.dawn.backend.repository.ProductRepository;
 import org.dawn.backend.repository.StockMovementRepository;
@@ -33,7 +34,7 @@ public class WarehouseService {
 
     private final StockMovementRepository movementRepository;
 
-    private final UserRepository userRepository;
+    private final UserHelper userHelper;
 
     @Transactional
     @Loggable(action = "CREATE_PRODUCT", entity = "PRODUCT")
@@ -68,7 +69,7 @@ public class WarehouseService {
 
 
         productRepository.addStock(productId, imeiList.size());
-        Long currentId = getCurrentUserId();
+        Long currentId = userHelper.getCurrentUserId();
         saveMovement(productId, MovementType.IMPORT, "NEW_IMPORT", imeiList.size(), null, currentId, "Import IMEI");
         return product;
     }
@@ -89,7 +90,7 @@ public class WarehouseService {
         ProductItem savedItem = itemRepository.save(item);
 
         productRepository.subtractStock(item.getProductId(), 1);
-        Long currentId = getCurrentUserId();
+        Long currentId = userHelper.getCurrentUserId();
         saveMovement(item.getProductId(), MovementType.EXPORT, "SALE_EXPORT", 1, orderId, currentId, "Export IMEI");
 
         return savedItem;
@@ -103,7 +104,7 @@ public class WarehouseService {
         item.setStatus(ItemStatus.DAMAGED);
 
         productRepository.subtractStock(item.getProductId(), 1);
-        Long currentId = getCurrentUserId();
+        Long currentId = userHelper.getCurrentUserId();
         saveMovement(item.getProductId(), MovementType.ADJUST, "DAMAGE_ADJUST", 1, null, currentId, reason);
         return itemRepository.save(item);
     }
@@ -120,16 +121,5 @@ public class WarehouseService {
                 .createdBy(uId)
                 .note(note)
                 .build());
-    }
-
-    private Long getCurrentUserId() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated()) {
-            return userRepository
-                    .findByUsername(auth.getName())
-                    .map(User::getId)
-                    .orElse(null);
-        }
-        return null;
     }
 }

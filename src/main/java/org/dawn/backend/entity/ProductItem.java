@@ -20,17 +20,22 @@ public class ProductItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "product_id")
     private Long productId;
 
+    @Column(name = "imei")
     private String imei;
 
     @Enumerated(EnumType.STRING)
     private ItemStatus status = ItemStatus.AVAILABLE;
 
+    @Column(name = "order_id")
     private Long orderId;
 
+    @Column(name = "import_date")
     @Builder.Default
     private Instant importDate = Instant.now();
 
+    @Column(name = "sold_date")
     private Instant soldDate;
 }
