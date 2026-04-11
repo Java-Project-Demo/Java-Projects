@@ -1,13 +1,24 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { Provider } from 'react-redux'
+import { App as AntApp, ConfigProvider } from 'antd'
+import viVN from 'antd/locale/vi_VN'
+import { store } from '@/app/store'
+import { antdTheme } from '@/config/theme'
+import AppRoutes from '@/routes'
 import './index.css'
-import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <Provider store={store}>
+      <ConfigProvider theme={antdTheme} locale={viVN}>
+        <AntApp>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AntApp>
+      </ConfigProvider>
+    </Provider>
   </StrictMode>
 )
