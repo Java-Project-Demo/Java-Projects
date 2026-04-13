@@ -2,10 +2,12 @@ package org.dawn.backend.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.dawn.backend.config.response.ResponseObject;
+import org.dawn.backend.config.response.ResponsePage;
 import org.dawn.backend.dto.request.ImportImeiRequest;
 import org.dawn.backend.dto.request.ProductRequest;
 import org.dawn.backend.dto.response.ProductResponse;
 import org.dawn.backend.service.WarehouseService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,16 @@ import org.springframework.web.bind.annotation.*;
 public class WarehouseController {
 
     private final WarehouseService warehouseService;
+
+    @GetMapping("/products")
+    public ResponseObject<ResponsePage<ProductResponse>> getProducts(Pageable pageable) {
+        return ResponseObject.success(warehouseService.getAll(pageable));
+    }
+
+    @GetMapping("/products/{id}")
+    public ResponseObject<ProductResponse> getProduct(@PathVariable Long id) {
+        return ResponseObject.success(warehouseService.getOne(id));
+    }
 
     @PostMapping("/products")
     @PreAuthorize("hasRole('ADMIN')")

@@ -15,5 +15,11 @@ public class Message {
         //    Role
         public static final String ROLE_NOT_FOUND = "Role not found";
         public static final String PERMISSION_DENIED = "You don't have permission";
+
+        //     Product
+        public static final String PRODUCT_NOT_FOUND = "Product not found";
+
+        //     Product Item
+        public static final String PRODUCT_ITEM_NOT_FOUND = "Product item not found";
     }
 }
