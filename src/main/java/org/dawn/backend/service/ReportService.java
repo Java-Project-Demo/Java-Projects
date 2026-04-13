@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class AdminReportService {
+public class ReportService {
     private final ProductRepository productRepository;
 
     private final ProductItemRepository itemRepository;
