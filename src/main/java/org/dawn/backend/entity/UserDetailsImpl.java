@@ -5,18 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.dawn.backend.constant.URole;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serial;
-import java.util.Collection;
-import java.util.List;
+import java.io.Serializable;
 
 @Getter
 @AllArgsConstructor
 @Builder
-public class UserDetailsImpl implements UserDetails {
+public class UserDetailsImpl implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -32,13 +28,8 @@ public class UserDetailsImpl implements UserDetails {
 
     private URole role;
 
-    private Collection<? extends GrantedAuthority> authorities;
 
     public static UserDetailsImpl build(User user) {
-        List<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole().getName().name())
-        );
-
         return UserDetailsImpl
                 .builder()
                 .id(user.getId())
@@ -46,26 +37,9 @@ public class UserDetailsImpl implements UserDetails {
                 .email(user.getEmail())
                 .password(user.getPassword())
                 .role(user.getRole().getName())
-                .authorities(authorities)
                 .build();
     }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
     public boolean isEnabled() {
         return true;
     }
