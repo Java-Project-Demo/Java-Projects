@@ -1,10 +1,7 @@
 package org.dawn.backend.repository;
 
 import org.dawn.backend.entity.AuditLog;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.stereotype.Repository;
+import org.dawn.backend.repository.base.BaseRepository;
 
-@Repository
-public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSpecificationExecutor<AuditLog> {
+public interface AuditLogRepository extends BaseRepository<AuditLog, Long> {
 }

@@ -2,12 +2,10 @@ package org.dawn.backend.repository;
 
 import org.dawn.backend.constant.URole;
 import org.dawn.backend.entity.Role;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.dawn.backend.repository.base.BaseRepository;
 
 import java.util.Optional;
 
-@Repository
-public interface RoleRepository extends JpaRepository<Role, Long> {
+public interface RoleRepository extends BaseRepository<Role, Long> {
     Optional<Role> findByName(URole name);
 }

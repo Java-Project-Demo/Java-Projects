@@ -1,6 +1,5 @@
 package org.dawn.backend.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.Loggable;
@@ -14,11 +13,10 @@ import org.dawn.backend.helper.UserHelper;
 import org.dawn.backend.repository.OrderItemRepository;
 import org.dawn.backend.repository.OrderRepository;
 import org.dawn.backend.repository.ProductRepository;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
-@Service
+
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
@@ -30,7 +28,7 @@ public class OrderService {
 
     private final UserHelper userHelper;
 
-    @Transactional
+
     @Loggable(action = "CREATE_ORDER", entity = "ORDER")
     public Order create(OrderRequest req) {
         Long saleId = userHelper.getCurrentUserId();
@@ -71,7 +69,6 @@ public class OrderService {
     }
 
 
-    @Transactional
     @Loggable(action = "CANCEL_ORDER", entity = "ORDER")
     public Order cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();

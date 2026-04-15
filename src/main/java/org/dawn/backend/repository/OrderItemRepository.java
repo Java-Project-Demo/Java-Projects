@@ -1,12 +1,10 @@
 package org.dawn.backend.repository;
 
 import org.dawn.backend.entity.OrderItem;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.dawn.backend.repository.base.BaseRepository;
 
 import java.util.List;
 
-@Repository
-public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
+public interface OrderItemRepository extends BaseRepository<OrderItem, Long> {
     List<OrderItem> findByOrderId(Long orderId);
 }
