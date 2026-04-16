@@ -21,11 +21,11 @@ public class ApiExceptionHandler implements Filter {
     private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         try {
-            chain.doFilter(request, response);
+            chain.doFilter(req, res);
         } catch (Exception e) {
-
+            handleApiRequestException((HttpServletResponse) res, e);
         }
 
     }
@@ -42,8 +42,7 @@ public class ApiExceptionHandler implements Filter {
             cause = e.getCause();
         }
 
-        if (cause instanceof ApiException) {
-            ApiException apiEx = (ApiException) cause;
+        if (cause instanceof ApiException apiEx) {
             status = apiEx.getStatus();
             message = apiEx.getMessage();
             log.warn("API Exception handled: {} - {}", status, message);
