@@ -1,9 +1,9 @@
 package org.dawn.backend.service;
 
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.config.Loggable;
-import org.dawn.backend.config.response.ResponsePage;
+import org.dawn.backend.config.UserPrincipal;
+import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.constant.ItemStatus;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.constant.MovementType;
@@ -16,17 +16,13 @@ import org.dawn.backend.entity.StockMovement;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.helper.ProductMappingHelper;
-import org.dawn.backend.helper.UserHelper;
 import org.dawn.backend.repository.ProductItemRepository;
 import org.dawn.backend.repository.ProductRepository;
 import org.dawn.backend.repository.StockMovementRepository;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 
-@Service
 @RequiredArgsConstructor
 public class WarehouseService {
 
@@ -36,13 +32,20 @@ public class WarehouseService {
 
     private final StockMovementRepository movementRepository;
 
-    private final UserHelper userHelper;
+    public List<ProductResponse> getAll(int page, int size) {
+        return productRepository
+                .findAll()
+                .stream()
+                .map(ProductMappingHelper::map)
+                .toList();
+    }
 
-    @Loggable(action = "GET_ALL_PRODUCT", entity = "PRODUCT")
-    public ResponsePage<ProductResponse> getAll(Pageable pageable) {
-        return ResponsePage.of(productRepository
-                .findAll(pageable)
-                .map(ProductMappingHelper::map));
+    public List<ProductResponse> getAll() {
+        return productRepository
+                .findAll()
+                .stream()
+                .map(ProductMappingHelper::map)
+                .toList();
     }
 
     public ProductResponse getOne(Long id) {
@@ -53,8 +56,6 @@ public class WarehouseService {
     }
 
 
-    @Transactional
-    @Loggable(action = "CREATE_PRODUCT", entity = "PRODUCT")
     public ProductResponse create(ProductRequest req) {
         Product product = productRepository.save(ProductMappingHelper.map(req));
         product.setStatus(ProductStatus.INACTIVE);
@@ -62,8 +63,6 @@ public class WarehouseService {
     }
 
 
-    @Transactional
-    @Loggable(action = "UPDATE_PRODUCT", entity = "PRODUCT")
     public ProductResponse updateProduct(Long id, ProductRequest product) {
         Product existing = productRepository
                 .findById(id)
@@ -72,8 +71,7 @@ public class WarehouseService {
         return ProductMappingHelper.map(existing);
     }
 
-    @Transactional
-    @Loggable(action = "IMPORT_STOCK", entity = "WAREHOUSE")
+
     public Product importImeis(Long productId, List<String> imeiList) {
         Product product = productRepository
                 .findById(productId)
@@ -93,7 +91,9 @@ public class WarehouseService {
 
 
         productRepository.addStock(productId, imeiList.size());
-        Long currentId = userHelper.getCurrentUserId();
+
+        UserPrincipal currentUser = SecurityContext.get();
+        Long currentId = (currentUser != null) ? currentUser.id() : null;
         saveMovement(
                 productId,
                 MovementType.IMPORT,
@@ -106,8 +106,6 @@ public class WarehouseService {
         return product;
     }
 
-    @Transactional
-    @Loggable(action = "EXPORT_STOCK", entity = "WAREHOUSE")
     public ProductItem exportByImei(Long orderId, String imei) {
         ProductItem item = itemRepository
                 .findByImei(imei)
@@ -124,7 +122,8 @@ public class WarehouseService {
         ProductItem savedItem = itemRepository.save(item);
 
         productRepository.subtractStock(item.getProductId(), 1);
-        Long currentId = userHelper.getCurrentUserId();
+        UserPrincipal currentUser = SecurityContext.get();
+        Long currentId = (currentUser != null) ? currentUser.id() : null;
         saveMovement(
                 item.getProductId(),
                 MovementType.EXPORT,
@@ -139,8 +138,6 @@ public class WarehouseService {
     }
 
 
-    @Transactional
-    @Loggable(action = "ADJUST_STOCK", entity = "WAREHOUSE")
     public ProductItem markAsDamaged(String imei, String reason) {
         ProductItem item = itemRepository
                 .findByImei(imei)
@@ -148,7 +145,9 @@ public class WarehouseService {
         item.setStatus(ItemStatus.DAMAGED);
 
         productRepository.subtractStock(item.getProductId(), 1);
-        Long currentId = userHelper.getCurrentUserId();
+
+        UserPrincipal currentUser = SecurityContext.get();
+        Long currentId = (currentUser != null) ? currentUser.id() : null;
         saveMovement(
                 item.getProductId(),
                 MovementType.ADJUST,
@@ -161,8 +160,6 @@ public class WarehouseService {
         return itemRepository.save(item);
     }
 
-    @Transactional
-    @Loggable(action = "RETURN_PRODUCT", entity = "WAREHOUSE")
     public ProductItem returnProduct(String imei, String reason) {
         ProductItem item = itemRepository
                 .findByImei(imei)
@@ -178,14 +175,15 @@ public class WarehouseService {
 
         productRepository.addStock(item.getProductId(), 1);
 
-
+        UserPrincipal currentUser = SecurityContext.get();
+        Long currentId = (currentUser != null) ? currentUser.id() : null;
         saveMovement(
                 item.getProductId(),
                 MovementType.IMPORT,
                 "RETURN_IMPORT",
                 1,
                 null,
-                userHelper.getCurrentUserId(),
+                currentId,
                 "Client return :" + reason
         );
 

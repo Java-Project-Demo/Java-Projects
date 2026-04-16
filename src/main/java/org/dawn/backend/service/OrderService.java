@@ -1,21 +1,21 @@
 package org.dawn.backend.service;
 
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.Loggable;
+import org.dawn.backend.config.UserPrincipal;
+import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.constant.OrderStatus;
 import org.dawn.backend.dto.request.CartItemRequest;
 import org.dawn.backend.dto.request.OrderRequest;
 import org.dawn.backend.entity.Order;
 import org.dawn.backend.entity.OrderItem;
 import org.dawn.backend.entity.Product;
-import org.dawn.backend.helper.UserHelper;
 import org.dawn.backend.repository.OrderItemRepository;
 import org.dawn.backend.repository.OrderRepository;
 import org.dawn.backend.repository.ProductRepository;
 
 import java.math.BigDecimal;
-
 
 @RequiredArgsConstructor
 @Slf4j
@@ -26,12 +26,12 @@ public class OrderService {
 
     private final ProductRepository productRepository;
 
-    private final UserHelper userHelper;
 
 
-    @Loggable(action = "CREATE_ORDER", entity = "ORDER")
     public Order create(OrderRequest req) {
-        Long saleId = userHelper.getCurrentUserId();
+
+        UserPrincipal currentUser = SecurityContext.get();
+        Long saleId = (currentUser != null) ? currentUser.id() : null;
 
 
         Order order = Order.builder()
@@ -69,7 +69,6 @@ public class OrderService {
     }
 
 
-    @Loggable(action = "CANCEL_ORDER", entity = "ORDER")
     public Order cancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();
 

@@ -1,6 +1,7 @@
 package org.dawn.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.dawn.backend.AppConfig;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
@@ -8,23 +9,21 @@ import org.dawn.backend.exception.wrapper.ResourceExpiredException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.RefreshTokenRepository;
 import org.dawn.backend.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
 public class RefreshTokenService {
 
-    @Value("${app.jwtRefreshExpirationsMs}")
-    private Long refreshTokenDurations;
+
+    private final Long refreshTokenDurations = Long.valueOf(AppConfig.get("app.jwtRefreshExpirationsMs"));
 
     private final RefreshTokenRepository refreshTokenRepository;
 
     private final UserRepository userRepository;
+
 
 
     public RefreshToken createRefreshToken(Long userId) {

@@ -1,9 +1,9 @@
 package org.dawn.backend.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.Loggable;
+import org.dawn.backend.PasswordEncoder;
+import org.dawn.backend.config.response.PageResponse;
 import org.dawn.backend.config.response.ResponsePage;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.constant.URole;
@@ -16,12 +16,10 @@ import org.dawn.backend.helper.UserMappingHelper;
 import org.dawn.backend.repository.RoleRepository;
 import org.dawn.backend.repository.UserRepository;
 import org.dawn.backend.utils.UserUtils;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+
+import javax.sql.DataSource;
 
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
@@ -29,15 +27,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DataSource dataSource;
 
-    @Loggable(action = "GET_ALL", entity = "USER")
-    public ResponsePage<UserResponse> findAll(Pageable pageable) {
-        return ResponsePage.of(userRepository
-                .findAll(pageable)
-                .map(UserMappingHelper::map));
+    public ResponsePage<UserResponse> findAll(int page, int size) {
+        PageResponse<User> users = userRepository.findAll(page, size);
+        return ResponsePage.of(users, UserMappingHelper::map);
     }
 
-    @Loggable(action = "GET_ONE", entity = "USER")
     public UserResponse findOne(Long id) {
         return userRepository
                 .findById(id)
@@ -52,8 +48,6 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
     }
 
-    @Transactional
-    @Loggable(action = "CREATE_USER", entity = "USER")
     public UserResponse createUser(RegisterRequest request, String adminUsername) {
         String baseUsername = UserUtils.getBaseUsername(request.getFullName());
 
@@ -89,8 +83,6 @@ public class UserService {
         return UserMappingHelper.map(user);
     }
 
-    @Transactional
-    @Loggable(action = "UPDATE_STATUS", entity = "USER")
     public UserResponse updateStatus(Long id, Boolean status) {
         User user = userRepository
                 .findById(id)
@@ -99,8 +91,6 @@ public class UserService {
         return UserMappingHelper.map(userRepository.save(user));
     }
 
-    @Transactional
-    @Loggable(action = "UPDATE_INFO", entity = "USER")
     public UserResponse updateInfo(Long id, RegisterRequest request, String username) {
         User user = userRepository
                 .findById(id)
@@ -124,7 +114,7 @@ public class UserService {
                 .findByName(URole.valueOf(roleName))
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ROLE_NOT_FOUND));
 
-        return userRepository.existsByRoleName(role.getName());
+        return userRepository.existsByRoleName(role.getName().toString());
     }
 
     public Role findByRoleName(String roleName) {

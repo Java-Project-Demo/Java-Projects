@@ -1,9 +1,9 @@
 package org.dawn.backend.service;
 
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.Loggable;
+import org.dawn.backend.PasswordEncoder;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.dto.request.ChangePasswordRequest;
 import org.dawn.backend.dto.request.LoginRequest;
@@ -11,23 +11,12 @@ import org.dawn.backend.dto.response.JwtResponse;
 import org.dawn.backend.dto.response.TokenRefreshResponse;
 import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
-import org.dawn.backend.entity.UserDetailsImpl;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.UserRepository;
 import org.dawn.backend.utils.JWTUtils;
 import org.dawn.backend.utils.UserUtils;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
-
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthService {
@@ -36,48 +25,41 @@ public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final AuthenticationManager authenticationManager;
-
     private final JWTUtils jwtUtils;
 
     private final RefreshTokenService refreshTokenService;
 
-    @Transactional
-    public JwtResponse login(LoginRequest user) {
 
-        String identifier = user.getUsername();
+    public JwtResponse login(LoginRequest req) {
+
+        String identifier = req.getUsername();
+
+        User user = userRepository
+                .findByUsername(req.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
         log.info("Get username :{}", identifier);
-        Authentication authentication = authenticationManager
-                .authenticate(
-                        new UsernamePasswordAuthenticationToken(identifier,
-                                user.getPassword()));
-        log.info("Get authenticated {}", authentication);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        log.info("Get user detail: {}", userDetails);
-        List<String> role = userDetails
-                .getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-        log.info("Get role {}", role);
-        String jwt = jwtUtils.generateToken(userDetails.getUsername(), userDetails.getEmail(), role);
+        if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+            throw new PermissionDeniedException("Invalid password");
+        }
+        String jwt = jwtUtils.generateToken(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().getName().name());
 
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         return JwtResponse
                 .builder()
-                .userId(userDetails.getId())
-                .username(userDetails.getUsername())
+                .userId(user.getId())
+                .username(user.getUsername())
                 .accessToken(jwt)
                 .refreshToken(refreshToken.getToken())
                 .build();
     }
 
 
-    @Transactional
-    @Loggable(action = "RESET_PASSWORD", entity = "USER")
     public String resetPassword(Long id, String username) {
         User user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
         String tempPwd = UserUtils.generateTempPassword();
@@ -91,7 +73,6 @@ public class AuthService {
         return tempPwd;
     }
 
-    @Loggable(action = "CHANGE_PASSWORD", entity = "USER")
     public String changePassword(String username, ChangePasswordRequest request) {
         User user = userRepository
                 .findByUsername(username)
@@ -113,8 +94,6 @@ public class AuthService {
     }
 
 
-    @Transactional
-    @Loggable(action = "REFRESH_TOKEN", entity = "USER")
     public TokenRefreshResponse refreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {
             throw new ResourceNotFoundException(Message.Exception.REFRESH_TOKEN_EXPIRED);
