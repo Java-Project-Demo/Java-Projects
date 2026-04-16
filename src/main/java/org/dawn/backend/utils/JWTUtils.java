@@ -8,76 +8,71 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseCookie;
-import org.springframework.stereotype.Component;
-import org.springframework.web.util.WebUtils;
+import org.dawn.backend.AppConfig;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
 
-@Component
+
 @Slf4j
 public class JWTUtils {
-    @Value("${app.jwtSecret}")
-    private String jwtSecret;
 
-    @Value("${app.jwtExpirationsMs}")
-    private int jwtExpirations;
+    private final String jwtSecret = AppConfig.get("app.jwtSecret");
 
-    @Value("${app.jwtRefreshExpirationsMs}")
-    private int refreshTokenExpirations;
+    private final int jwtExpirations = Integer.parseInt(AppConfig.get("app.jwtExpirationsMs"));
 
-    @Value("${app.jwtCookieName}")
-    private String jwtCookie;
+    private final int refreshTokenExpirations = Integer.parseInt(AppConfig.get("app.jwtRefreshExpirationsMs"));
 
-    @Value("${app.jwtRefreshCookieName}")
-    private String jwtRefreshCookie;
+    private final String jwtCookie = AppConfig.get("app.jwtCookieName");
+
+    private final String jwtRefreshCookie = AppConfig.get("app.jwtRefreshCookieName");
 
     private final String endpoint = "/api/v1/auth/refresh-token";
 
-    public ResponseCookie generateJwtRefreshCookie(String refreshCookie) {
+    public Cookie generateJwtRefreshCookie(String refreshCookie) {
         return generateCookie(
                 jwtRefreshCookie,
                 refreshCookie,
                 endpoint);
     }
 
-    public void getCleanJwtRefreshCookie() {
-        ResponseCookie
-                .from(jwtRefreshCookie)
-                .path(endpoint)
-                .maxAge(0)
-                .build();
+    public Cookie getCleanJwtRefreshCookie() {
+        return generateCookie(
+                jwtRefreshCookie,
+                "",
+                endpoint);
     }
 
-    public String getUserNameFromCookie(String token) {
+    public Long getUserIdFromToken(String token) {
+        return getClaims(token).get("username", Long.class);
+    }
+
+    public String getUserNameFromToken(String token) {
+        return getClaims(token).get("username", String.class);
+    }
+
+    public String getRoleFromToken(String token) {
+        return getClaims(token).get("role", String.class);
+    }
+
+    private Claims getClaims(String token) {
         return Jwts
                 .parser()
                 .verifyWith(key())
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
-    }
-
-    public List<String> getRolesFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(key())
-                .build()
-                .parseSignedClaims(token)
                 .getPayload();
-        return claims.get("roles", List.class);
     }
 
-    public String generateToken(String username, String email, List<String> roles) {
+    public String generateToken(Long id, String username, String email, String role) {
         return Jwts
                 .builder()
                 .subject(username)
                 .issuedAt(new Date())
+                .claim("id", id)
                 .claim("email", email)
-                .claim("roles", roles)
+                .claim("role", role)
                 .expiration(new Date(new Date().getTime() + jwtExpirations))
                 .signWith(key())
                 .compact();
@@ -110,21 +105,25 @@ public class JWTUtils {
         }
     }
 
-    private ResponseCookie generateCookie(String name, String value, String path) {
-        return ResponseCookie
-                .from(name, value)
-                .path(path)
-                .maxAge(refreshTokenExpirations)
-                .httpOnly(true)
-                .build();
+    private Cookie generateCookie(String name, String value, String path) {
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath(path);
+        cookie.setMaxAge(refreshTokenExpirations / 1000);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        return cookie;
     }
 
     private String getCookieByName(HttpServletRequest req, String name) {
-        Cookie cookie = WebUtils.getCookie(req, name);
-        if (cookie != null) {
-            return cookie.getValue();
-        } else {
-            return null;
+        Cookie[] cookies = req.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(name)) {
+                    return cookie.getValue();
+
+                }
+            }
         }
+        return null;
     }
 }
