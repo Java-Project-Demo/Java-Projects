@@ -1,48 +1,20 @@
 package org.dawn.backend.config.security;
 
-import lombok.RequiredArgsConstructor;
-import org.dawn.backend.constant.Message;
-import org.dawn.backend.entity.Role;
-import org.dawn.backend.entity.User;
+
+import org.dawn.backend.config.UserPrincipal;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
-import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
-import org.dawn.backend.repository.UserRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
 
-@Component("roleSecurity")
-@RequiredArgsConstructor
 public class UserRoleSecurity {
+    public static void authorize(Long targetUserId) {
+        UserPrincipal user = SecurityContext.get();
 
-    private final UserRepository userRepository;
 
-    public boolean canUpdate(Long userId, Authentication auth) {
-        String currentUsername = auth.getName();
+        boolean isAdmin = "ROLE_ADMIN".equals(user.role());
+        boolean isOwner = user.id().equals(targetUserId);
 
-        User currentUser = userRepository
-                .findByUsername(currentUsername)
-                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
-
-        //  Can not update youself
-        if (currentUser.getId().equals(userId)) {
-            throw new PermissionDeniedException(Message.Exception.PERMISSION_DENIED);
+        if (!isAdmin && !isOwner) {
+            throw new PermissionDeniedException("You don't have permission");
         }
-
-        User targetUser = userRepository
-                .findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
-
-        int currentUserRole = getMaxRole(currentUser.getRole());
-        int targetUserRole = getMaxRole(targetUser.getRole());
-
-        if (currentUserRole >= targetUserRole) {
-            throw new PermissionDeniedException(Message.Exception.PERMISSION_DENIED);
-        }
-        ;
-        return true;
     }
 
-    private int getMaxRole(Role role) {
-        return role.getName().getLevel();
-    }
 }
