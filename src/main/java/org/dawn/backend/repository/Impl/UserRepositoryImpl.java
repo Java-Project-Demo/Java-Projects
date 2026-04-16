@@ -26,7 +26,7 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
     @Override
     public PageResponse<User> findAll(int page, int size) {
         String sqlQuery = """
-                SELECT u.*, r.id AS r_id, r.name AS r_name, r.level AS r_level, r.description AS r_description
+                SELECT u.*, r.id AS r_id, r.name AS r_name, r.description AS r_description
                 FROM users u JOIN roles r ON u.role_id = r.id
                 WHERE u.is_deleted = 0
                 ORDER BY u.created_at DESC
@@ -79,11 +79,13 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
         if (entity.getId() == null) {
             String sql = """
                     INSERT INTO users
-                    (username, full_name, email, password, role_id, status, gender, age, phone_number, is_password_reset, is_deleted, created_at, updated_at)
+                    (username, password, full_name, email, role_id, status, gender, age, phone_number, is_password_reset, is_deleted, created_at, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
                     """;
             Timestamp now = Timestamp.from(Instant.now());
             Long id = insert(sql,
+                    entity.getUsername(),
+                    entity.getPassword(),
                     entity.getFullName(),
                     entity.getEmail(),
                     entity.getRole().getId(),
@@ -159,7 +161,7 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
 
     @Override
     public void delete(Long id) {
-        String sql = "DELETE * FROM users WHERE id = ?";
+        String sql = "DELETE FROM users WHERE id = ?";
         executeQuery(sql, id);
     }
 
@@ -183,8 +185,6 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                 .id(rs.getLong("r_id"))
                 .name(URole.valueOf(rs.getString("r_name")))
                 .description(rs.getString("r_description"))
-                .createdAt(rs.getTimestamp("created_at").toInstant())
-                .updatedAt(rs.getTimestamp("updated_at").toInstant())
                 .build();
 
         return User.builder()

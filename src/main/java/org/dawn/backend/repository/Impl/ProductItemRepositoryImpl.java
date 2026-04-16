@@ -13,10 +13,10 @@ import java.util.Optional;
 
 
 @Slf4j
-public class ProductItemRepository extends AbstractRepository<ProductItem, Long> implements org.dawn.backend.repository.ProductItemRepository {
+public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, Long> implements org.dawn.backend.repository.ProductItemRepository {
 
 
-    public ProductItemRepository(DataSource dataSource) {
+    public ProductItemRepositoryImpl(DataSource dataSource) {
         super(dataSource);
     }
 
