@@ -1,7 +1,9 @@
 package org.dawn.backend;
 
+import jakarta.servlet.MultipartConfigElement;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
+import org.apache.catalina.Wrapper;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
@@ -53,7 +55,8 @@ public class BackendApplication {
 
         // API Dispatcher
         ApiDispatcher apiDispatcher = new ApiDispatcher();
-        Tomcat.addServlet(ctx, "apiDispatcher", apiDispatcher);
+        Wrapper servletWrapper = Tomcat.addServlet(ctx, "apiDispatcher", apiDispatcher);
+        servletWrapper.setMultipartConfigElement(new MultipartConfigElement(System.getProperty("java.io.tmpdir")));
         ctx.addServletMappingDecoded("/api/v1/*", "apiDispatcher");
 
         log.info("Starting Tomcat on port: {}", port);

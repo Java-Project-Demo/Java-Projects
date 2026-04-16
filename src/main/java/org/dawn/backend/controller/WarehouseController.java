@@ -20,7 +20,7 @@ public class WarehouseController extends AbstractController {
 
     private final WarehouseService warehouseService;
 
-    @Get("/products")
+    @Get("/warehouse/products")
     public ResponseObject<List<ProductResponse>> getProducts(HttpServletRequest req) {
         int page = Integer.parseInt(req.getParameter("page") != null ? req.getParameter("page") : "0");
         int size = Integer.parseInt(req.getParameter("size") != null ? req.getParameter("size") : "10");
@@ -49,7 +49,6 @@ public class WarehouseController extends AbstractController {
         ImportImeiRequest dto = body(req, ImportImeiRequest.class);
         return ResponseObject.success(warehouseService.importImeis(dto.getProductId(), dto.getImeis()));
     }
-
 
     @Post("/stock/export")
 

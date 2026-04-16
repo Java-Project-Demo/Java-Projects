@@ -3,31 +3,31 @@ package org.dawn.backend.service;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.AppConfig;
 
 import java.io.IOException;
 import java.util.Map;
 
-@Service
+
 @RequiredArgsConstructor
+@Slf4j
 public class CloudinaryService {
 
-    @Value("${app.cloudinary.folderName}")
-    private String folderName;
+    private String folderName = AppConfig.get("cloudinary.folderName");
 
     private final Cloudinary cloudinary;
 
-    public Map upload(MultipartFile file) {
+    public Map upload(byte[] fileBytes) {
         try {
             Map params = ObjectUtils.asMap(
                     "folder", folderName,
                     "resource_type", "auto"
             );
 
-            return this.cloudinary.uploader().upload(file.getBytes(), params);
+            return this.cloudinary.uploader().upload(fileBytes, params);
         } catch (IOException e) {
+            log.error("Cloudinary update failed ", e);
             throw new RuntimeException("Image upload failed");
         }
     }

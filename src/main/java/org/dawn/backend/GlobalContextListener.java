@@ -1,11 +1,13 @@
 package org.dawn.backend;
 
+import com.cloudinary.Cloudinary;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.config.cloudinary.CloudinaryConfig;
 import org.dawn.backend.config.security.AuthTokenFilter;
 import org.dawn.backend.config.security.CorsConfig;
 import org.dawn.backend.config.security.handler.SecurityHandler;
@@ -29,6 +31,7 @@ public class GlobalContextListener implements ServletContextListener {
 
         log.info("Backend Application is starting up...");
         try {
+            Cloudinary cloudinary = CloudinaryConfig.getConfig();
 
             // Database & Migration
             DataSource datasource = DatabaseConfig.getDataSource();
@@ -58,6 +61,7 @@ public class GlobalContextListener implements ServletContextListener {
 
             // Service
             PasswordEncoder passwordEncoder = new BCryptPasswordEncoderImpl();
+            CloudinaryService cloudinaryService = new CloudinaryService(cloudinary);
             AuditLogService auditLogService = new AuditLogService(auditLogRepository);
             RefreshTokenService refreshTokenService = new RefreshTokenService(refreshTokenRepository, userRepository);
             AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService);
@@ -74,6 +78,7 @@ public class GlobalContextListener implements ServletContextListener {
             OrderController orderController = new OrderController(orderService);
             WarehouseController warehouseController = new WarehouseController(warehouseService);
             AuthController authController = new AuthController(authService);
+            CloudinaryController cloudinaryController = new CloudinaryController(cloudinaryService);
             // Initializer
             DataInitializer initializer = new DataInitializer(userRepository, roleRepository, passwordEncoder);
             initializer.run();
@@ -92,6 +97,7 @@ public class GlobalContextListener implements ServletContextListener {
             ctx.setAttribute("orderController", orderController);
             ctx.setAttribute("warehouseController", warehouseController);
             ctx.setAttribute("authController", authController);
+            ctx.setAttribute("cloudinaryController", cloudinaryController);
         } catch (Exception e) {
             log.error("Error during startup: {}", e.getMessage(), e);
             throw new RuntimeException("Application failed to start", e);
