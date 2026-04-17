@@ -2,7 +2,7 @@ package org.dawn.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.PasswordEncoder;
+import org.dawn.backend.config.security.hashing.PasswordEncoder;
 import org.dawn.backend.config.response.PageResponse;
 import org.dawn.backend.config.response.ResponsePage;
 import org.dawn.backend.constant.Message;

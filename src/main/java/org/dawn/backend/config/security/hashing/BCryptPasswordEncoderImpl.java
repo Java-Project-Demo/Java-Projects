@@ -1,4 +1,4 @@
-package org.dawn.backend;
+package org.dawn.backend.config.security.hashing;
 
 import org.mindrot.jbcrypt.BCrypt;
 

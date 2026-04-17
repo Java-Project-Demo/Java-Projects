@@ -8,7 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.AppConfig;
+import org.dawn.backend.config.sys.AppConfig;
 
 import javax.crypto.SecretKey;
 import java.util.Date;

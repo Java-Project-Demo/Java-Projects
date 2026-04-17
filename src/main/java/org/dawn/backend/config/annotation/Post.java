@@ -1,4 +1,4 @@
-package org.dawn.backend.config;
+package org.dawn.backend.config.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Put {
+public @interface Post {
     String value();
 }
 

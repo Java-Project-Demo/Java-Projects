@@ -1,7 +1,5 @@
 package org.dawn.backend.config.security;
 
-import org.dawn.backend.config.UserPrincipal;
-
 public class SecurityContext {
 
     private static final ThreadLocal<UserPrincipal> context = new ThreadLocal<>();

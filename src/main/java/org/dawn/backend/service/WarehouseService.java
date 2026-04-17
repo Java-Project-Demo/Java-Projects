@@ -3,7 +3,7 @@ package org.dawn.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.UserPrincipal;
+import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.constant.*;
 import org.dawn.backend.dto.request.ProductRequest;

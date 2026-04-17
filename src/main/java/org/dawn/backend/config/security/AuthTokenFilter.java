@@ -4,10 +4,7 @@ package org.dawn.backend.config.security;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.UserPrincipal;
 import org.dawn.backend.utils.JWTUtils;
-
-import java.security.Principal;
 
 @RequiredArgsConstructor
 @Slf4j

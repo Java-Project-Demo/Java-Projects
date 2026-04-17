@@ -2,9 +2,9 @@ package org.dawn.backend.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.config.Get;
-import org.dawn.backend.config.Post;
-import org.dawn.backend.config.Put;
+import org.dawn.backend.config.annotation.Get;
+import org.dawn.backend.config.annotation.Post;
+import org.dawn.backend.config.annotation.Put;
 import org.dawn.backend.config.response.ResponseObject;
 import org.dawn.backend.config.response.ResponsePage;
 import org.dawn.backend.controller.config.AbstractController;

@@ -1,4 +1,4 @@
-package org.dawn.backend;
+package org.dawn.backend.config.sys;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.slf4j.Slf4j;

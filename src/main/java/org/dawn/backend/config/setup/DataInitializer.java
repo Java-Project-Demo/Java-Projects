@@ -3,8 +3,8 @@ package org.dawn.backend.config.setup;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.AppConfig;
-import org.dawn.backend.PasswordEncoder;
+import org.dawn.backend.config.sys.AppConfig;
+import org.dawn.backend.config.security.hashing.PasswordEncoder;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.constant.URole;
 import org.dawn.backend.entity.Role;

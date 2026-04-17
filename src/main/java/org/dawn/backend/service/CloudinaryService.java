@@ -4,7 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.AppConfig;
+import org.dawn.backend.config.sys.AppConfig;
 
 import java.io.IOException;
 import java.util.Map;

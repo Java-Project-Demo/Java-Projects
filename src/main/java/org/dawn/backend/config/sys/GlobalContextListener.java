@@ -1,4 +1,4 @@
-package org.dawn.backend;
+package org.dawn.backend.config.sys;
 
 import com.cloudinary.Cloudinary;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,12 +11,14 @@ import org.dawn.backend.config.cloudinary.CloudinaryConfig;
 import org.dawn.backend.config.security.AuthTokenFilter;
 import org.dawn.backend.config.security.CorsConfig;
 import org.dawn.backend.config.security.handler.SecurityHandler;
+import org.dawn.backend.config.security.hashing.PasswordEncoder;
 import org.dawn.backend.config.setup.DataInitializer;
 import org.dawn.backend.controller.*;
 import org.dawn.backend.repository.*;
 import org.dawn.backend.repository.Impl.*;
 import org.dawn.backend.repository.ProductItemRepository;
 import org.dawn.backend.service.*;
+import org.dawn.backend.config.security.hashing.BCryptPasswordEncoderImpl;
 import org.dawn.backend.utils.JWTUtils;
 
 import javax.sql.DataSource;
@@ -47,6 +49,7 @@ public class GlobalContextListener implements ServletContextListener {
             UserRepository userRepository = new UserRepositoryImpl(datasource);
             RoleRepository roleRepository = new RoleRepositoryImpl(datasource);
             RefreshTokenRepository refreshTokenRepository = new RefreshTokenRepositoryImpl(datasource);
+
             // Thread Pool
             ExecutorService executorService = Executors.newFixedThreadPool(10);
 
@@ -79,6 +82,7 @@ public class GlobalContextListener implements ServletContextListener {
             WarehouseController warehouseController = new WarehouseController(warehouseService);
             AuthController authController = new AuthController(authService);
             CloudinaryController cloudinaryController = new CloudinaryController(cloudinaryService);
+
             // Initializer
             DataInitializer initializer = new DataInitializer(userRepository, roleRepository, passwordEncoder);
             initializer.run();

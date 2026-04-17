@@ -5,7 +5,6 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.UserPrincipal;
 import org.dawn.backend.config.security.handler.SecurityHandler;
 import org.dawn.backend.service.RefreshTokenService;
 
@@ -23,7 +22,8 @@ public class SecurityConfig implements Filter {
 
     private static final String[] PUBLIC_URL = {
             "/api/v1/auth/**",
-            "/api/v1/user/**"
+            "/api/v1/user/**",
+            "/api/v1/cloudinary/upload"
     };
 
     @Override

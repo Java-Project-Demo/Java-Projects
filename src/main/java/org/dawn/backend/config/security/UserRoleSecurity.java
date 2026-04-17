@@ -1,7 +1,6 @@
 package org.dawn.backend.config.security;
 
 
-import org.dawn.backend.config.UserPrincipal;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 
 public class UserRoleSecurity {

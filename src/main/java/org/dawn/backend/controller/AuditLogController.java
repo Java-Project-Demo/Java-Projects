@@ -3,7 +3,7 @@ package org.dawn.backend.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.config.Get;
+import org.dawn.backend.config.annotation.Get;
 import org.dawn.backend.config.response.ResponseObject;
 import org.dawn.backend.controller.config.AbstractController;
 import org.dawn.backend.dto.response.AuditLogResponse;

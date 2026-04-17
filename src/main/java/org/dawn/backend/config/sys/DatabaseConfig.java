@@ -1,4 +1,4 @@
-package org.dawn.backend;
+package org.dawn.backend.config.sys;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

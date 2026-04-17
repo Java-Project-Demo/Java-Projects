@@ -1,4 +1,4 @@
-package org.dawn.backend;
+package org.dawn.backend.config.security.hashing;
 
 public interface PasswordEncoder {
     String encode(CharSequence rawPassword);

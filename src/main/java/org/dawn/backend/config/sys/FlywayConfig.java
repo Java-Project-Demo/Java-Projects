@@ -1,4 +1,4 @@
-package org.dawn.backend;
+package org.dawn.backend.config.sys;
 
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;

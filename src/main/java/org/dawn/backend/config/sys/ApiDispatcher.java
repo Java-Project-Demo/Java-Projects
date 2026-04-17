@@ -1,4 +1,4 @@
-package org.dawn.backend;
+package org.dawn.backend.config.sys;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.controller.UserController;
 import org.dawn.backend.controller.config.AbstractController;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 

@@ -1,7 +1,7 @@
 package org.dawn.backend.service;
 
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.AppConfig;
+import org.dawn.backend.config.sys.AppConfig;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;

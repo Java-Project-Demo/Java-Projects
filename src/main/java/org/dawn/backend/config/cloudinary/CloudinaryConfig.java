@@ -1,7 +1,7 @@
 package org.dawn.backend.config.cloudinary;
 
 import com.cloudinary.Cloudinary;
-import org.dawn.backend.AppConfig;
+import org.dawn.backend.config.sys.AppConfig;
 
 import java.util.HashMap;
 import java.util.Map;
