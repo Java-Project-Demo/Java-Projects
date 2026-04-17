@@ -12,7 +12,6 @@ import org.dawn.backend.AppConfig;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.List;
 
 
 @Slf4j
@@ -45,7 +44,7 @@ public class JWTUtils {
     }
 
     public Long getUserIdFromToken(String token) {
-        return getClaims(token).get("username", Long.class);
+        return getClaims(token).get("id", Long.class);
     }
 
     public String getUserNameFromToken(String token) {
@@ -71,6 +70,7 @@ public class JWTUtils {
                 .subject(username)
                 .issuedAt(new Date())
                 .claim("id", id)
+                .claim("username", username)
                 .claim("email", email)
                 .claim("role", role)
                 .expiration(new Date(new Date().getTime() + jwtExpirations))

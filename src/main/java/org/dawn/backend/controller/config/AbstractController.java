@@ -65,7 +65,8 @@ public abstract class AbstractController extends HttpServlet {
             }
         } catch (Exception e) {
             log.error("API Error", e);
-            renderError(res, e);
+            if (e instanceof RuntimeException) throw (RuntimeException) e;
+            throw new ServletException(e);
         }
     }
 

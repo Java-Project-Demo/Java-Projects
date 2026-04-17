@@ -81,7 +81,7 @@ public abstract class AbstractRepository<T, ID> implements BaseRepository<T, ID>
     //  For CREATE
     protected Long insert(String sql, Object... params) {
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = conn.prepareStatement(sql, new String[]{"ID"})) {
             for (int i = 0; i < params.length; i++) {
                 ps.setObject(i + 1, params[i]);
             }

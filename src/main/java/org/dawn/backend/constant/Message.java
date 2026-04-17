@@ -18,7 +18,7 @@ public class Message {
 
         //     Product
         public static final String PRODUCT_NOT_FOUND = "Product not found";
-
+        public static final String PRODUCT_EXISTED = "Product existed";
         //     Product Item
         public static final String PRODUCT_ITEM_NOT_FOUND = "Product item not found";
     }

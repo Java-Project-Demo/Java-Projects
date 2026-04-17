@@ -9,6 +9,6 @@ public class ResourceNotFoundException extends ApiException {
     private static final long serialVersionUID = 1L;
 
     public ResourceNotFoundException(String message) {
-        super(400, message);
+        super(404, message);
     }
 }
