@@ -2,9 +2,10 @@ package org.dawn.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.hashing.PasswordEncoder;
 import org.dawn.backend.config.response.PageResponse;
 import org.dawn.backend.config.response.ResponsePage;
+import org.dawn.backend.config.security.hashing.PasswordEncoder;
+import org.dawn.backend.constant.LogConstant;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.constant.URole;
 import org.dawn.backend.dto.request.RegisterRequest;
@@ -27,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
     private final DataSource dataSource;
 
     public ResponsePage<UserResponse> findAll(int page, int size) {
@@ -79,8 +81,15 @@ public class UserService {
                 .role(role)
                 .isPasswordReset(true)
                 .build();
-        userRepository.save(user);
-        return UserMappingHelper.map(user);
+        User savedUser = userRepository.save(user);
+
+        auditLogService.saveLog(
+                LogConstant.Action.CREATE_USER,
+                LogConstant.Entity.USER,
+                savedUser.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "Create new user");
+        return UserMappingHelper.map(savedUser);
     }
 
     public UserResponse updateStatus(Long id, Boolean status) {
@@ -88,7 +97,14 @@ public class UserService {
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
         user.setIsDeleted(status);
-        return UserMappingHelper.map(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+        auditLogService.saveLog(
+                LogConstant.Action.UPDATE_USER,
+                LogConstant.Entity.USER,
+                savedUser.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "Update user status");
+        return UserMappingHelper.map(savedUser);
     }
 
     public UserResponse updateInfo(Long id, RegisterRequest request, String username) {
@@ -105,7 +121,14 @@ public class UserService {
         Role role = roleRepository.findByName(URole.valueOf(request.getRoleName())).orElse(user.getRole());
         user.setRole(role);
 
-        return UserMappingHelper.map(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+        auditLogService.saveLog(
+                LogConstant.Action.UPDATE_USER,
+                LogConstant.Entity.USER,
+                savedUser.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "Update user info");
+        return UserMappingHelper.map(savedUser);
     }
 
 

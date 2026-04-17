@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.constant.ItemStatus;
-import org.dawn.backend.constant.Message;
-import org.dawn.backend.constant.MovementType;
-import org.dawn.backend.constant.OrderStatus;
+import org.dawn.backend.constant.*;
 import org.dawn.backend.dto.request.CartItemRequest;
 import org.dawn.backend.dto.request.OrderRequest;
 import org.dawn.backend.entity.Order;
@@ -35,6 +32,8 @@ public class OrderService {
     private final ProductItemRepository itemRepository;
 
     private final WarehouseService warehouseService;
+
+    private final AuditLogService auditLogService;
 
     public Order create(OrderRequest req) {
 
@@ -72,6 +71,12 @@ public class OrderService {
             total = total.add(product.getPriceExport().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
         saveOrder.setTotalAmount(total);
+        auditLogService.saveLog(
+                LogConstant.Action.CREATE_ORDER,
+                LogConstant.Entity.ORDER,
+                saveOrder.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "Sale created order");
         return orderRepository.save(saveOrder);
     }
 
@@ -84,6 +89,12 @@ public class OrderService {
         }
 
         order.setStatus(OrderStatus.CANCELED);
+        auditLogService.saveLog(
+                LogConstant.Action.CANCEL_ORDER,
+                LogConstant.Entity.ORDER,
+                order.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "User cancel order");
         return orderRepository.save(order);
     }
 
@@ -103,7 +114,12 @@ public class OrderService {
         itemRepository.save(item);
 
         productRepository.addStock(item.getProductId(), 1);
-
+        auditLogService.saveLog(
+                LogConstant.Action.RETURN_ORDER,
+                LogConstant.Entity.ORDER,
+                order.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "User return order");
         warehouseService.saveMovement(
                 item.getProductId(),
                 MovementType.IMPORT,

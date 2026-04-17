@@ -67,12 +67,12 @@ public class GlobalContextListener implements ServletContextListener {
             CloudinaryService cloudinaryService = new CloudinaryService(cloudinary);
             AuditLogService auditLogService = new AuditLogService(auditLogRepository);
             RefreshTokenService refreshTokenService = new RefreshTokenService(refreshTokenRepository, userRepository);
-            AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService);
             DashboardService dashboardService = new DashboardService(productRepository, orderRepository);
             ReportService reportService = new ReportService(productRepository, productItemRepository, stockMovementRepository);
-            UserService userService = new UserService(userRepository, roleRepository, passwordEncoder, datasource);
-            WarehouseService warehouseService = new WarehouseService(productRepository, productItemRepository, stockMovementRepository, orderRepository, orderItemRepository);
-            OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository, productItemRepository, warehouseService);
+            UserService userService = new UserService(userRepository, roleRepository, passwordEncoder, auditLogService, datasource);
+            AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService, auditLogService);
+            WarehouseService warehouseService = new WarehouseService(productRepository, productItemRepository, stockMovementRepository, orderRepository, orderItemRepository, auditLogService);
+            OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository, productItemRepository, warehouseService, auditLogService);
 
             // Controller
             UserController userController = new UserController(userService);
@@ -96,7 +96,7 @@ public class GlobalContextListener implements ServletContextListener {
             ctx.setAttribute("jwtUtils", jwtUtils);
             // Controller Context
             ctx.setAttribute("userController", userController);
-            ctx.setAttribute("auditLogController", auditLogController);
+            ctx.setAttribute("logsController", auditLogController);
             ctx.setAttribute("dashboardController", dashboardController);
             ctx.setAttribute("orderController", orderController);
             ctx.setAttribute("warehouseController", warehouseController);

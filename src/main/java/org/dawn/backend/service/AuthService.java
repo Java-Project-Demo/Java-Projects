@@ -4,6 +4,7 @@ package org.dawn.backend.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
+import org.dawn.backend.constant.LogConstant;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.dto.request.ChangePasswordRequest;
 import org.dawn.backend.dto.request.LoginRequest;
@@ -29,6 +30,7 @@ public class AuthService {
 
     private final RefreshTokenService refreshTokenService;
 
+    private final AuditLogService auditLogService;
 
     public JwtResponse login(LoginRequest req) {
 
@@ -49,6 +51,13 @@ public class AuthService {
                 user.getRole().getName().name());
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+        auditLogService.saveLog(
+                LogConstant.Action.LOGIN,
+                LogConstant.Entity.AUTH,
+                user.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "User login to system");
 
         return JwtResponse
                 .builder()
@@ -71,7 +80,12 @@ public class AuthService {
         userRepository.save(user);
 
         refreshTokenService.deleteByUserId(id);
-
+        auditLogService.saveLog(
+                LogConstant.Action.RESET_PASSWORD,
+                LogConstant.Entity.AUTH,
+                user.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "User reset password");
         return tempPwd;
     }
 
@@ -92,7 +106,12 @@ public class AuthService {
 
         user.setIsPasswordReset(false);
         userRepository.save(user);
-
+        auditLogService.saveLog(
+                LogConstant.Action.CHANGE_PASSWORD,
+                LogConstant.Entity.AUTH,
+                user.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "User change password");
         return "Change password success";
     }
 

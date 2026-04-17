@@ -3,7 +3,10 @@ package org.dawn.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.config.security.SecurityContext;
+import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.dto.response.AuditLogResponse;
+import org.dawn.backend.entity.AuditLog;
 import org.dawn.backend.helper.AuditLogMappingHelper;
 import org.dawn.backend.repository.AuditLogRepository;
 
@@ -25,7 +28,32 @@ public class AuditLogService {
             int page,
             int size) {
 
-        return auditLogRepository.search(userId, action, status, startDate, endDate, page, size).stream().map(AuditLogMappingHelper::map).toList();
+        return auditLogRepository.search(
+                        userId,
+                        action,
+                        status,
+                        startDate,
+                        endDate,
+                        page,
+                        size)
+                .stream()
+                .map(AuditLogMappingHelper::map)
+                .toList();
+    }
+
+    public void saveLog(String action, String entityName, String entityId, String status, String details) {
+        UserPrincipal currentUser = SecurityContext.get();
+        String userId = (currentUser != null) ? currentUser.username() : "SYSTEM";
+
+        AuditLog log = AuditLog.builder()
+                .userId(userId)
+                .action(action)
+                .entityName(entityName)
+                .entityId(entityId)
+                .status(status)
+                .details(details)
+                .build();
+        auditLogRepository.save(log);
     }
 
 

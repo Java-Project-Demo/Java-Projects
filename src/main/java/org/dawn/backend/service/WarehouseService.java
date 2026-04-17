@@ -34,6 +34,8 @@ public class WarehouseService {
 
     private final OrderItemRepository orderItemRepository;
 
+    private final AuditLogService auditLogService;
+
     public List<ProductResponse> getAll(int page, int size) {
         return productRepository
                 .findAll()
@@ -63,7 +65,12 @@ public class WarehouseService {
             throw new ResourceAlreadyExistedException(Message.Exception.PRODUCT_EXISTED);
         });
         Product product = productRepository.save(ProductMappingHelper.map(req));
-        product.setStatus(ProductStatus.INACTIVE);
+        auditLogService.saveLog(
+                LogConstant.Action.CREATE_PRODUCT,
+                LogConstant.Entity.PRODUCT,
+                product.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "Admin create product");
         return ProductMappingHelper.map(product);
     }
 
@@ -73,6 +80,12 @@ public class WarehouseService {
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
         existing.setName(product.getName());
+        auditLogService.saveLog(
+                LogConstant.Action.CREATE_PRODUCT,
+                LogConstant.Entity.PRODUCT,
+                existing.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "Admin update product");
         return ProductMappingHelper.map(existing);
     }
 
@@ -108,6 +121,13 @@ public class WarehouseService {
                 currentId,
                 "Import IMEI"
         );
+
+        auditLogService.saveLog(
+                LogConstant.Action.IMPORT_STOCK,
+                LogConstant.Entity.PRODUCT_ITEM,
+                product.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "Stock import IMEI");
         return product;
     }
 
@@ -146,7 +166,12 @@ public class WarehouseService {
                 currentId,
                 "Export IMEI"
         );
-
+        auditLogService.saveLog(
+                LogConstant.Action.ADJUST_STOCK,
+                LogConstant.Entity.PRODUCT_ITEM,
+                imei,
+                LogConstant.Status.SUCCESS,
+                "Stock export IMEI");
         checkAndCompleteOrder(order);
         return savedItem;
     }

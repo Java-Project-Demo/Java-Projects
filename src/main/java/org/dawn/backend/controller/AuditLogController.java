@@ -16,10 +16,10 @@ public class AuditLogController extends AbstractController {
 
     private final AuditLogService auditLogService;
 
-    @Get("")
+    @Get("/")
     public ResponseObject<List<AuditLogResponse>> getLogs(
             HttpServletRequest req) {
-        checkRole("ROLE_ADMIN");
+        checkRole("ADMIN");
 
         String userId = query(req, "userId");
         String action = query(req, "action");
