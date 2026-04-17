@@ -29,12 +29,12 @@ public class StockMovementRepositoryImpl extends AbstractRepository<StockMovemen
 
     @Override
     public StockMovement save(StockMovement entity) {
+        Timestamp now = Timestamp.from(Instant.now());
         String sql = """
                 INSERT INTO stock_movements
                 (product_id, type, action_type, quantity, reference_id, created_by, note, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
-        Timestamp now = Timestamp.from(Instant.now());
 
         Long id = insert(sql,
                 entity.getProductId(),
@@ -74,8 +74,13 @@ public class StockMovementRepositoryImpl extends AbstractRepository<StockMovemen
                 .referenceId(rs.getLong("reference_id"))
                 .createdBy(rs.getLong("created_by"))
                 .note(rs.getString("note"))
-                .createdAt(rs.getTimestamp("created_at").toInstant())
-                .updatedAt(rs.getTimestamp("updated_at").toInstant())
+                .createdAt(getInstant(rs, "created_at"))
+                .updatedAt(getInstant(rs, "updated_at"))
                 .build();
+    }
+
+    private Instant getInstant(ResultSet rs, String col) throws SQLException {
+        Timestamp ts = rs.getTimestamp(col);
+        return ts != null ? ts.toInstant() : null;
     }
 }

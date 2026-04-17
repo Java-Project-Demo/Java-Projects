@@ -120,8 +120,13 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
                 .imei(rs.getString("imei"))
                 .status(ItemStatus.valueOf(rs.getString("status")))
                 .orderId(rs.getLong("order_id"))
-                .importDate(rs.getTimestamp("import_date").toInstant())
-                .soldDate(rs.getTimestamp("sold_date").toInstant())
+                .importDate(getInstant(rs, "import_date"))
+                .soldDate(getInstant(rs, "sold_date"))
                 .build();
+    }
+
+    private Instant getInstant(ResultSet rs, String col) throws SQLException {
+        Timestamp ts = rs.getTimestamp(col);
+        return ts != null ? ts.toInstant() : null;
     }
 }

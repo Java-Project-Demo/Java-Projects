@@ -57,6 +57,9 @@ public class WarehouseService {
 
 
     public ProductResponse create(ProductRequest req) {
+        productRepository.findBySku(req.getSku()).ifPresent(p -> {
+            throw new ResourceAlreadyExistedException(Message.Exception.PRODUCT_EXISTED);
+        });
         Product product = productRepository.save(ProductMappingHelper.map(req));
         product.setStatus(ProductStatus.INACTIVE);
         return ProductMappingHelper.map(product);

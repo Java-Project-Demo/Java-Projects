@@ -31,9 +31,9 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
     }
 
     @Override
-    public Optional<Product> findById(Long aLong) {
+    public Optional<Product> findById(Long id) {
         String sql = "SELECT * FROM products WHERE id = ?";
-        return queryOne(sql, this::mapResultSet);
+        return queryOne(sql, this::mapResultSet, id);
     }
 
     @Override
@@ -48,13 +48,15 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                     sql,
                     entity.getSku(),
                     entity.getName(),
-                    entity.getPriceExport(),
+                    entity.getPriceImport(),
                     entity.getPriceExport(),
                     entity.getCurrentStock(),
                     entity.getMinThreshold(),
-                    entity.getStatus().name(),
+                    ProductStatus.INACTIVE.name(),
                     now,
                     now);
+            entity.setCreatedAt(now.toInstant());
+            entity.setUpdatedAt(now.toInstant());
             entity.setId(id);
         } else {
             String sql = """
@@ -65,7 +67,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
             executeQuery(sql,
                     entity.getSku(),
                     entity.getName(),
-                    entity.getPriceExport(),
+                    entity.getPriceImport(),
                     entity.getPriceExport(),
                     entity.getCurrentStock(),
                     entity.getMinThreshold(),
@@ -152,8 +154,8 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                 .currentStock(rs.getInt("current_stock"))
                 .minThreshold(rs.getInt("min_threshold"))
                 .status(ProductStatus.valueOf(rs.getString("status")))
-                .createdAt(rs.getTimestamp("created_at").toInstant())
-                .updatedAt(rs.getTimestamp("updated_at").toInstant())
+                .createdAt(getInstant(rs, "created_at"))
+                .updatedAt(getInstant(rs, "updated_at"))
                 .build();
     }
 
