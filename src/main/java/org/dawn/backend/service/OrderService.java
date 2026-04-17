@@ -61,7 +61,6 @@ public class OrderService {
                     .quantity(item.getQuantity())
                     .unitPrice(product.getPriceExport())
                     .build());
-
             total = total.add(product.getPriceExport().multiply(BigDecimal.valueOf(item.getQuantity())));
         }
         saveOrder.setTotalAmount(total);

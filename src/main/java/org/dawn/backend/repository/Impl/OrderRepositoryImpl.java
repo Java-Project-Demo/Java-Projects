@@ -49,6 +49,8 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
                     entity.getStatus(),
                     now,
                     now);
+            entity.setCreatedAt(now.toInstant());
+            entity.setUpdatedAt(now.toInstant());
             entity.setId(id);
         } else {
             String sql = """
@@ -71,7 +73,6 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
     @Override
     public void delete(Long id) {
         String sql = "DELETE FROM orders WHERE id = ?";
-
         executeQuery(sql, id);
     }
 
@@ -135,8 +136,13 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
                 .customerPhone(rs.getString("customer_phone"))
                 .totalAmount(rs.getBigDecimal("total_amount"))
                 .status(OrderStatus.valueOf(rs.getString("status")))
-                .createdAt(rs.getTimestamp("created_at").toInstant())
-                .updatedAt(rs.getTimestamp("updated_at").toInstant())
+                .createdAt(getInstant(rs, "created_at"))
+                .updatedAt(getInstant(rs, "updated_at"))
                 .build();
+    }
+
+    private Instant getInstant(ResultSet rs, String col) throws SQLException {
+        Timestamp ts = rs.getTimestamp(col);
+        return ts != null ? ts.toInstant() : null;
     }
 }

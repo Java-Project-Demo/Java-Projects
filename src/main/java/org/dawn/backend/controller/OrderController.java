@@ -15,13 +15,13 @@ public class OrderController extends AbstractController {
 
     private final OrderService orderService;
 
-    @Post("")
+    @Post("/create")
     public ResponseObject<?> create(HttpServletRequest req) {
         OrderRequest dto = body(req, OrderRequest.class);
         return ResponseObject.created(orderService.create(dto));
     }
 
-    @Put("/{id}")
+    @Put("/cancel/{id}")
     public ResponseObject<?> cancel(HttpServletRequest req) {
         Long id = getPathId(req);
         return ResponseObject.created(orderService.cancelOrder(id));
