@@ -29,7 +29,7 @@ public class CorsConfig {
         }
 
         res.setHeader("Access-Control-Allow-Methods", ALLOWED_METHODS);
-        res.setHeader("Access-Control-Request-Headers", ALLOWED_HEADERS);
+        res.setHeader("Access-Control-Allow-Headers", ALLOWED_HEADERS);
         res.setHeader("Access-Control-Allow-Credentials", "true");
         res.setHeader("Access-Control-Max-Age", "3600");
 
