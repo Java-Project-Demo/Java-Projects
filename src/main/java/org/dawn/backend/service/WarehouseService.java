@@ -2,28 +2,26 @@ package org.dawn.backend.service;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.UserPrincipal;
 import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.constant.ItemStatus;
-import org.dawn.backend.constant.Message;
-import org.dawn.backend.constant.MovementType;
-import org.dawn.backend.constant.ProductStatus;
+import org.dawn.backend.constant.*;
 import org.dawn.backend.dto.request.ProductRequest;
 import org.dawn.backend.dto.response.ProductResponse;
+import org.dawn.backend.entity.Order;
 import org.dawn.backend.entity.Product;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.entity.StockMovement;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.helper.ProductMappingHelper;
-import org.dawn.backend.repository.ProductItemRepository;
-import org.dawn.backend.repository.ProductRepository;
-import org.dawn.backend.repository.StockMovementRepository;
+import org.dawn.backend.repository.*;
 
 import java.time.Instant;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Slf4j
 public class WarehouseService {
 
     private final ProductRepository productRepository;
@@ -31,6 +29,10 @@ public class WarehouseService {
     private final ProductItemRepository itemRepository;
 
     private final StockMovementRepository movementRepository;
+
+    private final OrderRepository orderRepository;
+
+    private final OrderItemRepository orderItemRepository;
 
     public List<ProductResponse> getAll(int page, int size) {
         return productRepository
@@ -110,6 +112,14 @@ public class WarehouseService {
     }
 
     public ProductItem exportByImei(Long orderId, String imei) {
+        Order order = orderRepository
+                .findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new RuntimeException("Only order have PENDING can be export");
+        }
+
         ProductItem item = itemRepository
                 .findByImei(imei)
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_ITEM_NOT_FOUND));
@@ -137,6 +147,7 @@ public class WarehouseService {
                 "Export IMEI"
         );
 
+        checkAndCompleteOrder(order);
         return savedItem;
     }
 
@@ -193,7 +204,7 @@ public class WarehouseService {
         return itemRepository.save(item);
     }
 
-    private void saveMovement(Long pId, MovementType type, String action, Integer qty, Long ref, Long uId, String note) {
+    public void saveMovement(Long pId, MovementType type, String action, Integer qty, Long ref, Long uId, String note) {
         movementRepository.save(StockMovement
                 .builder()
                 .productId(pId)
@@ -204,5 +215,16 @@ public class WarehouseService {
                 .createdBy(uId)
                 .note(note)
                 .build());
+    }
+
+    private void checkAndCompleteOrder(Order order) {
+        long shippedCount = itemRepository.countByOrderId(order.getId());
+        long requiredCount = orderItemRepository.getTotalQuantityByOrderId(order.getId());
+
+        if (shippedCount >= requiredCount) {
+            order.setStatus(OrderStatus.COMPLETED);
+            orderRepository.save(order);
+            log.info("Order {} export completely, auto transform to COMPLETE", order.getId());
+        }
     }
 }

@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface OrderItemRepository extends BaseRepository<OrderItem, Long> {
     List<OrderItem> findByOrderId(Long orderId);
+
+    long getTotalQuantityByOrderId(Long orderId);
 }

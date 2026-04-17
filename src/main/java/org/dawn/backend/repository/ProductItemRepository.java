@@ -9,6 +9,10 @@ import java.util.Optional;
 public interface ProductItemRepository extends BaseRepository<ProductItem, Long> {
     Optional<ProductItem> findByImei(String imei);
 
+    List<ProductItem> findByOrderId(Long orderId);
+
+    long countByOrderId(Long orderId);
+
     boolean existsByImei(String imei);
 
     List<ProductItem> findByProductIdAndStatus(Long productId, String status);

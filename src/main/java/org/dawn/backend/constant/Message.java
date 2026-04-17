@@ -21,5 +21,9 @@ public class Message {
         public static final String PRODUCT_EXISTED = "Product existed";
         //     Product Item
         public static final String PRODUCT_ITEM_NOT_FOUND = "Product item not found";
+
+        //     Order
+        public static final String ORDER_NOT_FOUND = "Order not found";
+        public static final String ORDER_EXISTED = "Order existed";
     }
 }

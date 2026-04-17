@@ -87,6 +87,18 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
     }
 
     @Override
+    public List<ProductItem> findByOrderId(Long orderId) {
+        String sql = "SELECT * FROM product_items WHERE order_id = ? ORDER BY id ASC";
+        return queryList(sql, this::mapResultSet, orderId);
+    }
+
+    @Override
+    public long countByOrderId(Long orderId) {
+        String sql = "SELECT COUNT(*) FROM product_items WHERE order_id = ?";
+        return count(sql, orderId);
+    }
+
+    @Override
     public boolean existsByImei(String imei) {
         String sql = """
                 SELECT COUNT(*) FROM product_items WHERE imei = ?

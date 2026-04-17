@@ -6,8 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.dawn.backend.config.Post;
 import org.dawn.backend.config.Put;
 import org.dawn.backend.config.response.ResponseObject;
+import org.dawn.backend.constant.Message;
 import org.dawn.backend.controller.config.AbstractController;
 import org.dawn.backend.dto.request.OrderRequest;
+import org.dawn.backend.dto.request.RefundRequest;
+import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.service.OrderService;
 
 @RequiredArgsConstructor
@@ -21,9 +24,20 @@ public class OrderController extends AbstractController {
         return ResponseObject.created(orderService.create(dto));
     }
 
-    @Put("/cancel/{id}")
+    @Post("/cancel/{id}")
     public ResponseObject<?> cancel(HttpServletRequest req) {
         Long id = getPathId(req);
         return ResponseObject.created(orderService.cancelOrder(id));
+    }
+
+    @Post("/return/{id}")
+    public ResponseObject<?> refund(HttpServletRequest req) {
+        Long orderId = getPathId(req);
+        if (orderId == null) {
+            throw new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND);
+        }
+        RefundRequest dto = body(req, RefundRequest.class);
+        orderService.returnOrder(orderId, dto.getImei(), dto.getReason());
+        return ResponseObject.success("Order refund success");
     }
 }

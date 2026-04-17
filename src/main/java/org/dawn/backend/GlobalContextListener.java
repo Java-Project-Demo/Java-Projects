@@ -66,10 +66,10 @@ public class GlobalContextListener implements ServletContextListener {
             RefreshTokenService refreshTokenService = new RefreshTokenService(refreshTokenRepository, userRepository);
             AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService);
             DashboardService dashboardService = new DashboardService(productRepository, orderRepository);
-            OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository);
             ReportService reportService = new ReportService(productRepository, productItemRepository, stockMovementRepository);
-            WarehouseService warehouseService = new WarehouseService(productRepository, productItemRepository, stockMovementRepository);
             UserService userService = new UserService(userRepository, roleRepository, passwordEncoder, datasource);
+            WarehouseService warehouseService = new WarehouseService(productRepository, productItemRepository, stockMovementRepository, orderRepository, orderItemRepository);
+            OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository, productItemRepository, warehouseService);
 
             // Controller
             UserController userController = new UserController(userService);
