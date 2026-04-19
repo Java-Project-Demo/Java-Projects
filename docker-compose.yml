@@ -9,8 +9,8 @@ services:
     image: gvenzl/oracle-xe:21-slim
     environment:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
-      APP_USER: ${SPRING_DATASOURCE_USERNAME}
-      APP_USER_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      APP_USER: ${DB_USER}
+      APP_USER_PASSWORD: ${DB_PASS}
     ports:
       - '1521:1521'
     networks:
@@ -18,10 +18,11 @@ services:
     volumes:
       - oracle-data:/opt/oracle/oradata
     healthcheck:
-      test: ['CMD', 'lsnrctl', 'status']
+      test: ['CMD-SHELL', 'healthcheck.sh']
       interval: 15s
       timeout: 5s
       retries: 15
+      start_period: 60s
     deploy:
       resources:
         limits:
@@ -31,10 +32,10 @@ services:
     image: backend:latest
     environment:
       ###   Spring DB Config
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      SPRING_DATASOURCE_DRIVER: ${SPRING_DATASOURCE_DRIVER}
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_DRIVER: ${DB_DRIVER}
       ###   Default account
       # Admin
       ADMIN_USERNAME: ${ADMIN_USERNAME}
@@ -56,6 +57,10 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+      ###   Open Router Config
+      OPEN_ROUTER_URL: ${OPEN_ROUTER_URL}
+      OPEN_ROUTER_API: ${OPEN_ROUTER_API}
+      OPEN_ROUTER_MODEL: ${OPEN_ROUTER_MODEL}
     build:
       context: ../backend
       dockerfile: Dockerfile
