@@ -46,7 +46,7 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
                     entity.getCustomerName(),
                     entity.getCustomerPhone(),
                     entity.getTotalAmount(),
-                    entity.getStatus(),
+                    OrderStatus.PENDING.name(),
                     now,
                     now);
             entity.setCreatedAt(now.toInstant());
@@ -63,7 +63,7 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
                     entity.getCustomerName(),
                     entity.getCustomerPhone(),
                     entity.getTotalAmount(),
-                    entity.getStatus(),
+                    entity.getStatus().name(),
                     now,
                     entity.getId());
         }

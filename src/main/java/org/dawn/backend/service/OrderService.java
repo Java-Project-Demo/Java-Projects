@@ -40,21 +40,21 @@ public class OrderService {
         UserPrincipal currentUser = SecurityContext.get();
         Long saleId = (currentUser != null) ? currentUser.id() : null;
 
-
         Order order = Order.builder()
                 .saleId(saleId)
                 .customerName(req.getCustomerName())
                 .customerPhone(req.getCustomerPhone())
-                .status(OrderStatus.PENDING)
                 .totalAmount(BigDecimal.ZERO)
                 .build();
 
         Order saveOrder = orderRepository.save(order);
 
         BigDecimal total = BigDecimal.ZERO;
-
         for (CartItemRequest item : req.getItems()) {
-            Product product = productRepository.findById(item.getProductId()).orElseThrow();
+            Product product = productRepository
+                    .findById(item.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
+            log.info("Product find: {}", product.getId());
 
             Integer available = orderRepository.getAvailableStock(item.getProductId());
             if (available < item.getQuantity()) {
@@ -68,7 +68,9 @@ public class OrderService {
                     .quantity(item.getQuantity())
                     .unitPrice(product.getPriceExport())
                     .build());
-            total = total.add(product.getPriceExport().multiply(BigDecimal.valueOf(item.getQuantity())));
+            total = total
+                    .add(product.getPriceExport()
+                            .multiply(BigDecimal.valueOf(item.getQuantity())));
         }
         saveOrder.setTotalAmount(total);
         auditLogService.saveLog(
@@ -82,7 +84,9 @@ public class OrderService {
 
 
     public Order cancelOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository
+                .findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
 
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new RuntimeException();
