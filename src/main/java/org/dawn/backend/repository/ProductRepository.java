@@ -11,8 +11,6 @@ import java.util.Optional;
 public interface ProductRepository extends BaseRepository<Product, Long> {
     Optional<Product> findBySku(String sku);
 
-    List<Product> findList();
-
     Long countLowStock();
 
     BigDecimal getTotalInventoryValue();

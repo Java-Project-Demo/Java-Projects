@@ -3,6 +3,7 @@ package org.dawn.backend.repository.Impl;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.constant.ItemStatus;
 import org.dawn.backend.constant.ProductStatus;
+import org.dawn.backend.entity.Category;
 import org.dawn.backend.entity.Product;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.repository.ProductRepository;
@@ -21,10 +22,12 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
     }
 
     @Override
-    public List<Product> findList() {
+    public List<Product> findAll() {
         String sql = """
-                SELECT p.id, p.sku, p.name, p.price_import, p.price_export,
-                p.current_stock, p.min_threshold, p.status,
+                SELECT c.name AS cat_name, c.description AS cat_des,
+                p.id AS pro_id, p.sku, p.name, p.specifications,
+                p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
+                p.current_stock, p.min_threshold, p.status AS pro_status,
                 p.created_at, p.updated_at,
                 pi.id AS item_id,
                 pi.imei AS item_imei,
@@ -32,6 +35,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                 pi.import_date AS item_import_date,
                 pi.sold_date AS item_sold_date
                 FROM products p
+                JOIN categories c ON p.category_id = c.id
                 LEFT JOIN product_items pi ON p.id = pi.product_id
                 ORDER BY p.created_at DESC
                 """;
@@ -53,7 +57,8 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
 //
                 long itemId = rs.getLong("item_id");
                 if (!rs.wasNull() && itemId > 0) {
-                    ProductItem item = ProductItem.builder()
+                    ProductItem item = ProductItem
+                            .builder()
                             .id(itemId)
                             .imei(rs.getString("item_imei"))
                             .status(ItemStatus.valueOf(rs.getString("item_status")))
@@ -71,8 +76,10 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
     @Override
     public Optional<Product> findById(Long id) {
         String sql = """
-                SELECT p.id, p.sku, p.name, p.price_import, p.price_export,
-                p.current_stock, p.min_threshold, p.status,
+                SELECT c.name AS cat_name, c.description AS cat_des,
+                p.id AS pro_id, p.sku, p.name, p.specifications,
+                p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
+                p.current_stock, p.min_threshold, p.status AS pro_status,
                 p.created_at, p.updated_at,
                 pi.id AS item_id,
                 pi.imei AS item_imei,
@@ -80,6 +87,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                 pi.import_date AS item_import_date,
                 pi.sold_date AS item_sold_date
                 FROM products p
+                JOIN categories c ON p.category_id = c.id
                 LEFT JOIN product_items pi ON p.id = pi.product_id
                 WHERE p.id = ?
                 """;
@@ -88,7 +96,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
 
         super.query(sql, rs -> {
             while (rs.next()) {
-                Long productId = rs.getLong("id");
+                Long productId = rs.getLong("pro_id");
 
                 Product product = map.computeIfAbsent(id, k -> {
                     try {
@@ -121,13 +129,16 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
         Timestamp now = Timestamp.from(Instant.now());
         if (entity.getId() == null) {
             String sql = """
-                    INSERT INTO products (sku, name, price_import, price_export, current_stock, min_threshold, status, created_at, updated_at)
+                    INSERT INTO products (sku, name, specification, warranty_period, has_imei, price_import_std, price_export_std, current_stock, min_threshold, status, created_at, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
             Long id = insert(
                     sql,
                     entity.getSku(),
                     entity.getName(),
+                    entity.getSpecifications(),
+                    entity.getWarrantyPeriod(),
+                    entity.getHasImei() ? 1 : 0,
                     entity.getPriceImport(),
                     entity.getPriceExport(),
                     entity.getCurrentStock(),
@@ -142,12 +153,15 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
         } else {
             String sql = """
                     UPDATE products
-                    SET sku = ?, name = ?, price_import = ?, price_export = ?, current_stock = ?, min_threshold = ?, status = ?, updated_at = ?
+                    SET sku = ?, name = ?, specification = ?, warranty_period = ?, has_imei= ?, price_import_std = ?, price_export_std = ?, current_stock = ?, min_threshold = ?, status = ?, updated_at = ?
                     WHERE id = ?
                     """;
             executeQuery(sql,
                     entity.getSku(),
                     entity.getName(),
+                    entity.getSpecifications(),
+                    entity.getWarrantyPeriod(),
+                    entity.getHasImei(),
                     entity.getPriceImport(),
                     entity.getPriceExport(),
                     entity.getCurrentStock(),
@@ -224,24 +238,30 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
         return count(sql);
     }
 
-    public Product mapResultSet(ResultSet rs) throws SQLException {
+    private Product mapResultSet(ResultSet rs) throws SQLException {
+        Category category = Category.builder()
+                .id(rs.getLong("cat_id"))
+                .name(rs.getString("cat_name"))
+                .description(rs.getString("cat_desc"))
+                .build();
+
+
         return Product
                 .builder()
-                .id(rs.getLong("id"))
+                .id(rs.getLong("pro_id"))
+                .category(category)
                 .sku(rs.getString("sku"))
                 .name(rs.getString("name"))
-                .priceImport(rs.getBigDecimal("price_import"))
-                .priceExport(rs.getBigDecimal("price_export"))
+                .specifications(rs.getString("specifications"))
+                .warrantyPeriod(rs.getLong("warranty_period"))
+                .hasImei(rs.getBoolean("has_imei"))
+                .priceImport(rs.getBigDecimal("price_import_std"))
+                .priceExport(rs.getBigDecimal("price_export_std"))
                 .currentStock(rs.getInt("current_stock"))
                 .minThreshold(rs.getInt("min_threshold"))
-                .status(ProductStatus.valueOf(rs.getString("status")))
+                .status(ProductStatus.valueOf(rs.getString("pro_status")))
                 .createdAt(getInstant(rs, "created_at"))
                 .updatedAt(getInstant(rs, "updated_at"))
                 .build();
-    }
-
-    private Instant getInstant(ResultSet rs, String col) throws SQLException {
-        Timestamp ts = rs.getTimestamp(col);
-        return ts != null ? ts.toInstant() : null;
     }
 }

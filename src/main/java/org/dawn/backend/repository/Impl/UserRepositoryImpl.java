@@ -77,10 +77,11 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
     @Override
     public User save(User entity) {
         Timestamp now = Timestamp.from(Instant.now());
+        Date dob = entity.getDob() != null ? new Date(entity.getDob().toEpochMilli()) : null;
         if (entity.getId() == null) {
             String sql = """
                     INSERT INTO users
-                    (username, password, full_name, email, role_id, status, gender, age, phone_number, is_password_reset, is_deleted, created_at, updated_at)
+                    (username, password, full_name, email, role_id, status, gender, date_of_birth, phone_number, is_password_reset, is_deleted, created_at, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
                     """;
             Long id = insert(sql,
@@ -91,7 +92,7 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                     entity.getRole().getId(),
                     entity.getStatus(),
                     entity.getGender(),
-                    entity.getAge(),
+                    dob,
                     entity.getPhoneNumber(),
                     entity.getIsPasswordReset() ? 1 : 0,
                     now,
@@ -102,17 +103,9 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
         } else {
             String sql = """
                     UPDATE users
-                    SET username = ?,
-                    password = ?,
-                    full_name = ?,
-                    email = ?,
-                    role_id = ?,
-                    status = ?,
-                    gender = ?,
-                    age = ?,
-                    phone_number = ?,
-                    is_password_reset = ?,
-                    updated_at = ?
+                    SET username = ?, password = ?, full_name = ?, email = ?, role_id = ?,
+                        status = ?, gender = ?, date_of_birth = ?, phone_number = ?,
+                        is_password_reset = ?, updated_at = ?
                     WHERE id = ?
                     """;
             executeQuery(sql,
@@ -123,7 +116,7 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                     entity.getRole().getId(),
                     entity.getStatus(),
                     entity.getGender(),
-                    entity.getAge(),
+                    dob,
                     entity.getPhoneNumber(),
                     entity.getIsPasswordReset() ? 1 : 0,
                     now,
@@ -173,9 +166,11 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
         return checkExists(sql, username);
     }
 
+
+
     @Override
     public void delete(Long id) {
-        String sql = "DELETE FROM users WHERE id = ?";
+        String sql = "UPDATE FROM users WHERE id = ?";
         executeQuery(sql, id);
     }
 
@@ -211,7 +206,7 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                 .role(role)
                 .status(rs.getString("status"))
                 .gender(rs.getInt("gender"))
-                .age(rs.getInt("age"))
+                .dob(getInstant(rs, "date_of_birth"))
                 .phoneNumber(rs.getString("phone_number"))
                 .isPasswordReset(rs.getBoolean("is_password_reset"))
                 .isDeleted(rs.getBoolean("is_deleted"))
@@ -220,8 +215,4 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                 .build();
     }
 
-    private Instant getInstant(ResultSet rs, String col) throws SQLException {
-        Timestamp ts = rs.getTimestamp(col);
-        return ts != null ? ts.toInstant() : null;
-    }
 }

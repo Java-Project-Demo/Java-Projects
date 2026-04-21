@@ -2,6 +2,7 @@ package org.dawn.backend.repository.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.constant.OrderStatus;
+import org.dawn.backend.constant.PaymentMethod;
 import org.dawn.backend.entity.Order;
 import org.dawn.backend.repository.OrderRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
@@ -22,13 +23,23 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
 
     @Override
     public List<Order> findAll() {
-        String sql = "SELECT * FROM orders ORDER BY created_at DESC";
+        String sql = """
+                SELECT o.*, c.full_name AS cus_name, c.phone_number AS cus_phone
+                FROM orders o
+                JOIN customers c ON o.customer_id = c.id
+                ORDER BY o.created_at DESC
+                """;
         return queryList(sql, this::mapResultSet);
     }
 
     @Override
     public Optional<Order> findById(Long id) {
-        String sql = "SELECT * FROM orders WHERE id = ?";
+        String sql = """
+                SELECT o.*, c.full_name AS cus_name, c.phone_number AS cus_phone
+                FROM orders o
+                JOIN customers c ON o.customer_id = c.id
+                WHERE o.id = ?
+                """;
         return queryOne(sql, this::mapResultSet, id);
     }
 
@@ -38,14 +49,14 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
         if (entity.getId() == null) {
             String sql = """
                     INSERT INTO orders
-                    (sale_id, customer_name, customer_phone, total_amount, status, created_at, updated_at)
+                    (sale_id, customer_id, total_amount, payment_method, status, created_at, updated_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                     """;
             Long id = insert(sql,
                     entity.getSaleId(),
-                    entity.getCustomerName(),
-                    entity.getCustomerPhone(),
+                    entity.getCustomerId(),
                     entity.getTotalAmount(),
+                    entity.getPaymentMethod().name(),
                     OrderStatus.PENDING.name(),
                     now,
                     now);
@@ -55,14 +66,14 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
         } else {
             String sql = """
                     UPDATE orders
-                    SET sale_id = ?, customer_name = ?, customer_phone = ?, total_amount = ?, status = ?, updated_at = ?
+                    SET sale_id = ?, customer_id = ?, total_amount = ?, payment_method = ?, status = ?, updated_at = ?
                     WHERE id = ?
                     """;
             executeQuery(sql,
                     entity.getSaleId(),
-                    entity.getCustomerName(),
-                    entity.getCustomerPhone(),
+                    entity.getCustomerId(),
                     entity.getTotalAmount(),
+                    entity.getPaymentMethod().name(),
                     entity.getStatus().name(),
                     now,
                     entity.getId());
@@ -132,17 +143,12 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
                 .builder()
                 .id(rs.getLong("id"))
                 .saleId(rs.getLong("sale_id"))
-                .customerName(rs.getString("customer_name"))
-                .customerPhone(rs.getString("customer_phone"))
+                .customerId(rs.getLong("customer_id"))
                 .totalAmount(rs.getBigDecimal("total_amount"))
+                .paymentMethod(PaymentMethod.valueOf(rs.getString("payment_method")))
                 .status(OrderStatus.valueOf(rs.getString("status")))
                 .createdAt(getInstant(rs, "created_at"))
                 .updatedAt(getInstant(rs, "updated_at"))
                 .build();
-    }
-
-    private Instant getInstant(ResultSet rs, String col) throws SQLException {
-        Timestamp ts = rs.getTimestamp(col);
-        return ts != null ? ts.toInstant() : null;
     }
 }

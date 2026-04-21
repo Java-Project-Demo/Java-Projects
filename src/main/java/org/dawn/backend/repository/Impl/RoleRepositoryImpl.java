@@ -77,8 +77,4 @@ public class RoleRepositoryImpl extends AbstractRepository<Role, Long> implement
                 .build();
     }
 
-    private Instant getInstant(ResultSet rs, String col) throws SQLException {
-        Timestamp ts = rs.getTimestamp(col);
-        return ts != null ? ts.toInstant() : null;
-    }
 }

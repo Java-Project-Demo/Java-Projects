@@ -40,32 +40,37 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
         if (entity.getId() == null) {
             String sql = """
                     INSERT INTO product_items
-                    (product_id, imei, status, order_id, import_date, sold_date)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    (product_id, imei, cost_price, supplier_name, condition, status, order_id, warranty_expiry_date, import_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
 
             Long id = insert(sql,
                     entity.getProductId(),
                     entity.getImei(),
+                    entity.getCostPrice(),
+                    entity.getSupplierName(),
+                    entity.getCondition(),
                     ItemStatus.AVAILABLE,
                     null,
+                    entity.getWarrantyExpiryDate(),
                     now,
                     null
             );
             entity.setId(id);
         } else {
             String sql = """
-                    UPDATE product_items
-                    SET product_id = ?, imei = ?, status = ?, order_id = ?, import_date = ?, sold_date = ?\s
-                    WHERE id = ?
+                     UPDATE product_items
+                     SET cost_price = ?, supplier_name = ?, condition = ?, status = ?, order_id = ?, warranty_expiry_date = ?, sold_date = ? 
+                     WHERE id = ?
                     """;
 
             executeQuery(sql,
-                    entity.getProductId(),
-                    entity.getImei(),
-                    entity.getStatus(),
+                    entity.getCostPrice(),
+                    entity.getSupplierName(),
+                    entity.getCondition(),
+                    entity.getStatus().name(),
                     entity.getOrderId(),
-                    entity.getImportDate() != null ? Timestamp.from(entity.getImportDate()) : now,
+                    entity.getWarrantyExpiryDate(),
                     entity.getSoldDate() != null ? Timestamp.from(entity.getSoldDate()) : now,
                     entity.getId());
 
@@ -130,15 +135,15 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
                 .id(rs.getLong("id"))
                 .productId(rs.getLong("product_id"))
                 .imei(rs.getString("imei"))
+                .costPrice(rs.getBigDecimal("cost_price"))
+                .supplierName(rs.getString("supplier_name"))
+                .condition(rs.getString("conditions"))
                 .status(ItemStatus.valueOf(rs.getString("status")))
                 .orderId(rs.getLong("order_id"))
+                .warrantyExpiryDate(getInstant(rs, "warranty_expiry_date"))
                 .importDate(getInstant(rs, "import_date"))
                 .soldDate(getInstant(rs, "sold_date"))
                 .build();
     }
 
-    private Instant getInstant(ResultSet rs, String col) throws SQLException {
-        Timestamp ts = rs.getTimestamp(col);
-        return ts != null ? ts.toInstant() : null;
-    }
 }

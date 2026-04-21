@@ -21,7 +21,13 @@ public class OrderItemRepositoryImpl extends AbstractRepository<OrderItem, Long>
 
     @Override
     public List<OrderItem> findAll() {
-        String sql = "SELECT * FROM order_items";
+        String sql = """
+                SELECT oi.*, p.name AS product_name, p.sku AS product_sku
+                FROM order_items oi
+                JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = ?
+                ORDER BY oi.id ASC
+                """;
         return queryList(sql, this::mapResultSet);
     }
 
@@ -79,7 +85,6 @@ public class OrderItemRepositoryImpl extends AbstractRepository<OrderItem, Long>
                     entity.getUnitPrice(),
                     entity.getId());
         }
-        ;
         return entity;
     }
 
@@ -87,7 +92,6 @@ public class OrderItemRepositoryImpl extends AbstractRepository<OrderItem, Long>
     public void delete(Long id) {
         String sql = "DELETE FROM order_items WHERE id = ?";
         executeQuery(sql, id);
-        ;
     }
 
     private OrderItem mapResultSet(ResultSet rs) throws SQLException {
@@ -99,7 +103,5 @@ public class OrderItemRepositoryImpl extends AbstractRepository<OrderItem, Long>
                 .quantity(rs.getInt("quantity"))
                 .unitPrice(rs.getBigDecimal("unit_price"))
                 .build();
-    }
-
-    ;
+    };
 }

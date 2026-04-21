@@ -82,8 +82,4 @@ public class RefreshTokenRepositoryImpl extends AbstractRepository<RefreshToken,
                 .build();
     }
 
-    private Instant getInstant(ResultSet rs, String col) throws SQLException {
-        Timestamp ts = rs.getTimestamp(col);
-        return ts != null ? ts.toInstant() : null;
-    }
 }
