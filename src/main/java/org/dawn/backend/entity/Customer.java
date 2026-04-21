@@ -6,26 +6,23 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true)
-public class AuditLog extends AbstractMappedEntity {
+@EqualsAndHashCode(callSuper = true, exclude = "items")
+public class Customer extends AbstractMappedEntity {
     private Long id;
 
-    private Long userId;
+    private String phoneNumber;
 
-    private String action;
+    private String fullName;
 
-    private String entityName;
+    private String email;
 
-    private String entityId;
+    private String address;
 
-    private String status;
-
-    private String details;
-
-    private User user;
+    private List<Order> items;
 }

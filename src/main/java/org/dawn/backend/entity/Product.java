@@ -17,9 +17,17 @@ public class Product extends AbstractMappedEntity {
 
     private Long id;
 
+    private Long categoryId;
+
     private String sku;
 
     private String name;
+
+    private String specifications;
+
+    private Long warrantyPeriod;
+
+    private Boolean hasImei;
 
     private BigDecimal priceImport;
 
@@ -34,4 +42,6 @@ public class Product extends AbstractMappedEntity {
     private ProductStatus status = ProductStatus.ACTIVE;
 
     private List<ProductItem> items;
+
+    private Category category;
 }

@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.dawn.backend.constant.ItemStatus;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
@@ -20,9 +21,17 @@ public class ProductItem {
 
     private String imei;
 
+    private BigDecimal costPrice;
+
+    private String supplierName;
+
+    private String condition;
+
     private ItemStatus status = ItemStatus.AVAILABLE;
 
     private Long orderId;
+
+    private Instant warrantyExpiryDate;
 
     @Builder.Default
     private Instant importDate = Instant.now();

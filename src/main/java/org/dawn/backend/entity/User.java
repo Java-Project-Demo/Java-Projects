@@ -34,7 +34,7 @@ public class User extends AbstractMappedEntity {
 
     private Integer gender;
 
-    private Integer age;
+    private Instant dob;
 
     private String phoneNumber;
 
