@@ -7,8 +7,10 @@ import org.dawn.backend.config.annotation.Post;
 import org.dawn.backend.config.annotation.Put;
 import org.dawn.backend.config.response.ResponseObject;
 import org.dawn.backend.config.response.ResponsePage;
+import org.dawn.backend.constant.URole;
 import org.dawn.backend.controller.config.AbstractController;
 import org.dawn.backend.dto.request.RegisterRequest;
+import org.dawn.backend.dto.request.UpdateInfoRequest;
 import org.dawn.backend.dto.response.UserResponse;
 import org.dawn.backend.service.UserService;
 
@@ -38,10 +40,24 @@ public class UserController extends AbstractController {
         return ResponseObject.created(userService.createUser(dto));
     }
 
+    @Put("/{id}/info")
+    public ResponseObject<UserResponse> updateInfo(HttpServletRequest req) throws Exception {
+        Long id = getPathId(req);
+        UpdateInfoRequest info = body(req, UpdateInfoRequest.class);
+        return ResponseObject.success(userService.updateInfo(id, info));
+    }
+
     @Put("/{id}/status")
     public ResponseObject<UserResponse> updateStatus(HttpServletRequest req) throws Exception {
         Long id = getPathId(req);
         Boolean status = body(req, Boolean.class);
         return ResponseObject.success(userService.updateStatus(id, status));
+    }
+
+    @Put("/{id}/status")
+    public ResponseObject<UserResponse> updateRole(HttpServletRequest req) throws Exception {
+        Long id = getPathId(req);
+        URole role = body(req, URole.class);
+        return ResponseObject.success(userService.updateRole(id, role));
     }
 }

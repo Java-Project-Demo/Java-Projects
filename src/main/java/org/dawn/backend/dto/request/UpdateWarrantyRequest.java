@@ -11,7 +11,7 @@ import org.dawn.backend.constant.WarrantyStatus;
 @AllArgsConstructor
 @SuperBuilder
 public class UpdateWarrantyRequest {
-    Long claimId;
-    WarrantyStatus status;
-    String technicalNote;
+    private Long claimId;
+    private WarrantyStatus status;
+    private String technicalNote;
 }
