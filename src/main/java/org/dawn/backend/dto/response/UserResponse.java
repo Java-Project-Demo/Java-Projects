@@ -26,19 +26,15 @@ public class UserResponse extends BaseResponse {
 
     private String role;
 
-    private String password;
-
     private String status;
 
     private Integer gender;
 
-    private Integer age;
+    private Instant dob;
 
     private String phoneNumber;
 
     private Boolean isPasswordReset;
-
-    private Instant createdAt;
 
     private Boolean isDeleted;
 }

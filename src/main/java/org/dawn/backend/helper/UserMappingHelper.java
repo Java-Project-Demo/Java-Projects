@@ -15,7 +15,7 @@ public interface UserMappingHelper {
                 .role(u.getRole().getName().toString())
                 .status(u.getStatus())
                 .gender(u.getGender())
-                .age(u.getAge())
+                .dob(u.getDob())
                 .phoneNumber(u.getPhoneNumber())
                 .isPasswordReset(u.getIsPasswordReset())
                 .isDeleted(u.getIsDeleted())

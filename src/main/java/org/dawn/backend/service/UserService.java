@@ -20,7 +20,6 @@ import org.dawn.backend.repository.UserRepository;
 import org.dawn.backend.utils.UserUtils;
 
 import javax.sql.DataSource;
-import java.time.Instant;
 
 
 @RequiredArgsConstructor
@@ -109,6 +108,7 @@ public class UserService {
         User user = userRepository
                 .findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
+
         user.setFullName(request.getFullName());
         user.setGender(request.getGender());
         user.setDob(request.getDob());
