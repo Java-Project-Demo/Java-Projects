@@ -47,7 +47,7 @@ public class WarehouseController extends AbstractController {
     @Post("/stock/import")
     public ResponseObject<?> importImeis(HttpServletRequest req) {
         ImportImeiRequest dto = body(req, ImportImeiRequest.class);
-        return ResponseObject.success(warehouseService.importImeis(dto.getProductId(), dto.getImeis()));
+        return ResponseObject.success(warehouseService.importImeis(dto));
     }
 
     @Post("/stock/export")

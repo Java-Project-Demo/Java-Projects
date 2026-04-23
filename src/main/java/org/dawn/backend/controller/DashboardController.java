@@ -6,18 +6,16 @@ import lombok.RequiredArgsConstructor;
 import org.dawn.backend.config.annotation.Get;
 import org.dawn.backend.config.response.ResponseObject;
 import org.dawn.backend.service.DashboardService;
-import org.dawn.backend.service.ReportService;
 
 @RequiredArgsConstructor
 public class DashboardController {
 
-    private final ReportService reportService;
 
     private final DashboardService dashboardService;
 
     @Get("/low-stock")
     public ResponseObject<?> lowStock(HttpServletRequest req) {
-        return ResponseObject.success(reportService.getLowStockAlerts());
+        return ResponseObject.success(dashboardService.getLowStockAlerts());
     }
 
 
@@ -25,7 +23,7 @@ public class DashboardController {
 
     public ResponseObject<?> trace(HttpServletRequest req) {
         String imei = req.getParameter("imei");
-        return ResponseObject.success(reportService.traceImei(imei));
+        return ResponseObject.success(dashboardService.traceImei(imei));
     }
 
     @Get("/summary")
