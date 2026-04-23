@@ -8,6 +8,7 @@ import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.constant.*;
 import org.dawn.backend.dto.request.ImportImeiRequest;
 import org.dawn.backend.dto.request.ProductRequest;
+import org.dawn.backend.dto.response.ProductItemResponse;
 import org.dawn.backend.dto.response.ProductResponse;
 import org.dawn.backend.entity.*;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
@@ -100,7 +101,7 @@ public class WarehouseService {
     }
 
 
-    public ProductResponse importImeis(ImportImeiRequest req) {
+    public ProductResponse importImei(ImportImeiRequest req) {
         Product product = productRepository
                 .findById(req.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
@@ -156,7 +157,7 @@ public class WarehouseService {
         return ProductMappingHelper.map(savedProduct);
     }
 
-    public ProductItem exportByImei(Long orderId, String imei) {
+    public ProductItemResponse exportByImei(Long orderId, String imei) {
         Order order = orderRepository
                 .findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
@@ -230,7 +231,7 @@ public class WarehouseService {
                 LogConstant.Status.SUCCESS,
                 "Stock export IMEI");
         checkAndCompleteOrder(order);
-        return savedItem;
+        return ProductMappingHelper.mapItem(savedItem);
     }
 
 
