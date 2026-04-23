@@ -9,6 +9,7 @@ import org.dawn.backend.constant.Message;
 import org.dawn.backend.controller.config.AbstractController;
 import org.dawn.backend.dto.request.OrderRequest;
 import org.dawn.backend.dto.request.RefundRequest;
+import org.dawn.backend.dto.response.OrderResponse;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.service.OrderService;
 
@@ -18,13 +19,13 @@ public class OrderController extends AbstractController {
     private final OrderService orderService;
 
     @Post("/create")
-    public ResponseObject<?> create(HttpServletRequest req) {
+    public ResponseObject<OrderResponse> create(HttpServletRequest req) {
         OrderRequest dto = body(req, OrderRequest.class);
         return ResponseObject.created(orderService.create(dto));
     }
 
     @Post("/cancel/{id}")
-    public ResponseObject<?> cancel(HttpServletRequest req) {
+    public ResponseObject<OrderResponse> cancel(HttpServletRequest req) {
         Long id = getPathId(req);
         return ResponseObject.created(orderService.cancelOrder(id));
     }

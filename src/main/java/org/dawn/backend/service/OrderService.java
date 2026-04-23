@@ -9,8 +9,10 @@ import org.dawn.backend.constant.*;
 import org.dawn.backend.dto.request.CartItemRequest;
 import org.dawn.backend.dto.request.OrderRequest;
 import org.dawn.backend.dto.request.RefundRequest;
+import org.dawn.backend.dto.response.OrderResponse;
 import org.dawn.backend.entity.*;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
+import org.dawn.backend.helper.OrderMappingHelper;
 import org.dawn.backend.repository.*;
 
 import java.math.BigDecimal;
@@ -33,7 +35,7 @@ public class OrderService {
 
     private final AuditLogService auditLogService;
 
-    public Order create(OrderRequest req) {
+    public OrderResponse create(OrderRequest req) {
 
         UserPrincipal currentUser = SecurityContext.get();
         Long currentUserId = (currentUser != null) ? currentUser.id() : null;
@@ -109,11 +111,11 @@ public class OrderService {
                 saveOrder.getId().toString(),
                 LogConstant.Status.SUCCESS,
                 "Sale created order");
-        return orderRepository.save(saveOrder);
+        return OrderMappingHelper.map(orderRepository.save(saveOrder));
     }
 
 
-    public Order cancelOrder(Long orderId) {
+    public OrderResponse cancelOrder(Long orderId) {
         Order order = orderRepository
                 .findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
@@ -148,7 +150,7 @@ public class OrderService {
                 order.getId().toString(),
                 LogConstant.Status.SUCCESS,
                 "User cancel order");
-        return orderRepository.save(order);
+        return OrderMappingHelper.map(orderRepository.save(order));
     }
 
 
