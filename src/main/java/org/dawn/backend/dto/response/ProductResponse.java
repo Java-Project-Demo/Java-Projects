@@ -18,6 +18,8 @@ import java.util.List;
 public class ProductResponse extends BaseResponse {
     private Long id;
 
+    private Long categoryId;
+
     private String sku;
 
     private String name;
@@ -31,6 +33,10 @@ public class ProductResponse extends BaseResponse {
     private Integer minThreshold;
 
     private ProductStatus status;
+
+    private String specifications;
+
+    private Boolean isDeleted;
 
     private List<ProductItemResponse> items;
 }

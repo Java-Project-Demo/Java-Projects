@@ -1,6 +1,7 @@
 package org.dawn.backend.repository;
 
 import org.dawn.backend.entity.Product;
+import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.repository.base.BaseRepository;
 
 import java.math.BigDecimal;
@@ -14,6 +15,8 @@ public interface ProductRepository extends BaseRepository<Product, Long> {
     Long countLowStock();
 
     BigDecimal getTotalInventoryValue();
+
+    List<Product> findLowStockProducts();
 
     void addStock(Long id, Integer qty);
 

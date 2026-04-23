@@ -1,5 +1,6 @@
 package org.dawn.backend.repository;
 
+import org.dawn.backend.entity.Product;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.repository.base.BaseRepository;
 
@@ -11,7 +12,11 @@ public interface ProductItemRepository extends BaseRepository<ProductItem, Long>
 
     List<ProductItem> findByOrderId(Long orderId);
 
+    void saveAll(List<ProductItem> entities);
+
     long countByOrderId(Long orderId);
+
+    long countByProductIdAndOrderId(Long productId, Long orderId);
 
     boolean existsByImei(String imei);
 

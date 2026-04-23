@@ -10,11 +10,16 @@ public interface ProductMappingHelper {
     static Product map(ProductRequest req) {
         return Product.builder()
                 .sku(req.getSku())
+                .categoryId(req.getCategoryId())
                 .name(req.getName())
                 .priceImport(req.getPriceImport())
                 .priceExport(req.getPriceExport())
+                .hasImei(req.getHasImei())
                 .currentStock(req.getCurrentStock())
                 .minThreshold(req.getMinThreshold())
+                .specifications(req.getSpecifications())
+                .status(req.getStatus())
+                .isDeleted(req.getIsDeleted())
                 .build();
     }
 
@@ -22,12 +27,15 @@ public interface ProductMappingHelper {
         return ProductResponse
                 .builder()
                 .id(req.getId())
+                .categoryId(req.getCategoryId())
                 .sku(req.getSku())
                 .name(req.getName())
                 .priceImport(req.getPriceImport())
                 .priceExport(req.getPriceExport())
                 .currentStock(req.getCurrentStock())
                 .minThreshold(req.getMinThreshold())
+                .specifications(req.getSpecifications())
+                .isDeleted(req.getIsDeleted())
                 .status(req.getStatus())
                 .items(req
                         .getItems()

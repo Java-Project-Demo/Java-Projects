@@ -2,6 +2,7 @@ package org.dawn.backend.repository.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.constant.ItemStatus;
+import org.dawn.backend.entity.Product;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.repository.base.AbstractRepository;
 
@@ -50,17 +51,16 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
                     entity.getCostPrice(),
                     entity.getSupplierName(),
                     entity.getCondition(),
-                    ItemStatus.AVAILABLE,
+                    ItemStatus.AVAILABLE.name(),
                     null,
                     entity.getWarrantyExpiryDate(),
-                    now,
-                    null
+                    now
             );
             entity.setId(id);
         } else {
             String sql = """
                      UPDATE product_items
-                     SET cost_price = ?, supplier_name = ?, condition = ?, status = ?, order_id = ?, warranty_expiry_date = ?, sold_date = ? 
+                     SET cost_price = ?, supplier_name = ?, condition = ?, status = ?, order_id = ?, warranty_expiry_date = ?, sold_date = ?
                      WHERE id = ?
                     """;
 
@@ -77,6 +77,29 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
         }
 
         return entity;
+    }
+
+
+    @Override
+    public void saveAll(List<ProductItem> entities) {
+        String sql = """
+                INSERT INTO product_items
+                (product_id, imei, cost_price, supplier_name, condition, status, order_id, warranty_expiry_date, import_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+        Timestamp now = Timestamp.from(Instant.now());
+        List<Object[]> paramsList = entities.stream().map(entity -> new Object[]{
+                entity.getProductId(),
+                entity.getImei(),
+                entity.getCostPrice(),
+                entity.getSupplierName(),
+                entity.getCondition(),
+                entity.getStatus() != null ? entity.getStatus().name() : ItemStatus.AVAILABLE.name(),
+                entity.getOrderId() != null ? entity.getOrderId() : null,
+                entity.getWarrantyExpiryDate() != null ? Timestamp.from(entity.getWarrantyExpiryDate()) : null,
+                now
+        }).toList();
+        executeBatch(sql, paramsList);
     }
 
     @Override
@@ -97,10 +120,17 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
         return queryList(sql, this::mapResultSet, orderId);
     }
 
+
     @Override
     public long countByOrderId(Long orderId) {
         String sql = "SELECT COUNT(*) FROM product_items WHERE order_id = ?";
         return count(sql, orderId);
+    }
+
+    @Override
+    public long countByProductIdAndOrderId(Long productId, Long orderId) {
+        String sql = "SELECT COUNT(*) FROM product_items WHERE product_id = ? AND order_id = ?";
+        return count(sql, productId, orderId);
     }
 
     @Override
@@ -137,7 +167,7 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
                 .imei(rs.getString("imei"))
                 .costPrice(rs.getBigDecimal("cost_price"))
                 .supplierName(rs.getString("supplier_name"))
-                .condition(rs.getString("conditions"))
+                .condition(rs.getString("condition"))
                 .status(ItemStatus.valueOf(rs.getString("status")))
                 .orderId(rs.getLong("order_id"))
                 .warrantyExpiryDate(getInstant(rs, "warranty_expiry_date"))

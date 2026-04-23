@@ -24,10 +24,10 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
     @Override
     public List<Product> findAll() {
         String sql = """
-                SELECT c.name AS cat_name, c.description AS cat_des,
+                SELECT c.id AS cat_id, c.name AS cat_name, c.description AS cat_desc,
                 p.id AS pro_id, p.sku, p.name, p.specifications,
                 p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
-                p.current_stock, p.min_threshold, p.status AS pro_status,
+                p.current_stock, p.min_threshold, p.status AS pro_status, p.is_deleted AS pro_is_deleted,
                 p.created_at, p.updated_at,
                 pi.id AS item_id,
                 pi.imei AS item_imei,
@@ -43,7 +43,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
 
         super.query(sql, rs -> {
             while (rs.next()) {
-                Long id = rs.getLong("id");
+                Long id = rs.getLong("pro_id");
 
                 Product product = map.computeIfAbsent(id, k -> {
                     try {
@@ -76,10 +76,10 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
     @Override
     public Optional<Product> findById(Long id) {
         String sql = """
-                SELECT c.name AS cat_name, c.description AS cat_des,
+                SELECT c.id AS cat_id, c.name AS cat_name, c.description AS cat_desc,
                 p.id AS pro_id, p.sku, p.name, p.specifications,
                 p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
-                p.current_stock, p.min_threshold, p.status AS pro_status,
+                p.current_stock, p.min_threshold, p.status AS pro_status, p.is_deleted AS pro_is_deleted,
                 p.created_at, p.updated_at,
                 pi.id AS item_id,
                 pi.imei AS item_imei,
@@ -129,11 +129,13 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
         Timestamp now = Timestamp.from(Instant.now());
         if (entity.getId() == null) {
             String sql = """
-                    INSERT INTO products (sku, name, specification, warranty_period, has_imei, price_import_std, price_export_std, current_stock, min_threshold, status, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO products (category_id, sku, name, specifications, warranty_period, has_imei,
+                    price_import_std, price_export_std, current_stock, min_threshold, status, is_deleted, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
             Long id = insert(
                     sql,
+                    entity.getCategoryId(),
                     entity.getSku(),
                     entity.getName(),
                     entity.getSpecifications(),
@@ -144,6 +146,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                     entity.getCurrentStock(),
                     entity.getMinThreshold(),
                     ProductStatus.INACTIVE.name(),
+                    entity.getIsDeleted() ? 1 : 0,
                     now,
                     now);
             entity.setStatus(ProductStatus.INACTIVE);
@@ -153,20 +156,24 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
         } else {
             String sql = """
                     UPDATE products
-                    SET sku = ?, name = ?, specification = ?, warranty_period = ?, has_imei= ?, price_import_std = ?, price_export_std = ?, current_stock = ?, min_threshold = ?, status = ?, updated_at = ?
+                    SET category_id = ?, sku = ?, name = ?, specifications = ?, warranty_period = ?,
+                    has_imei = ?, price_import_std = ?, price_export_std = ?,
+                    current_stock = ?, min_threshold = ?, status = ?, is_deleted = ?, updated_at = ?
                     WHERE id = ?
                     """;
             executeQuery(sql,
+                    entity.getCategoryId(),
                     entity.getSku(),
                     entity.getName(),
                     entity.getSpecifications(),
                     entity.getWarrantyPeriod(),
-                    entity.getHasImei(),
+                    entity.getHasImei() ? 1 : 0,
                     entity.getPriceImport(),
                     entity.getPriceExport(),
                     entity.getCurrentStock(),
                     entity.getMinThreshold(),
                     entity.getStatus().name(),
+                    entity.getIsDeleted() ? 1 : 0,
                     now,
                     entity.getId());
         }
@@ -201,7 +208,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
 
     @Override
     public BigDecimal getTotalInventoryValue() {
-        String sql = "SELECT SUM(price_import * current_stock) FROM products";
+        String sql = "SELECT SUM(price_import_std * current_stock) FROM products";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -213,6 +220,12 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
             log.error("Error get total inventory value", e);
         }
         return BigDecimal.ZERO;
+    }
+
+    @Override
+    public List<Product> findLowStockProducts() {
+        String sql = "SELECT * FROM products WHERE current_stock <= min_threshold";
+        return queryList(sql, this::mapResultSet);
     }
 
     @Override
@@ -250,6 +263,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                 .builder()
                 .id(rs.getLong("pro_id"))
                 .category(category)
+                .categoryId(category.getId())
                 .sku(rs.getString("sku"))
                 .name(rs.getString("name"))
                 .specifications(rs.getString("specifications"))
@@ -260,6 +274,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                 .currentStock(rs.getInt("current_stock"))
                 .minThreshold(rs.getInt("min_threshold"))
                 .status(ProductStatus.valueOf(rs.getString("pro_status")))
+                .isDeleted(rs.getBoolean("pro_is_deleted"))
                 .createdAt(getInstant(rs, "created_at"))
                 .updatedAt(getInstant(rs, "updated_at"))
                 .build();

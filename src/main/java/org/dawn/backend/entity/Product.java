@@ -6,6 +6,7 @@ import lombok.experimental.SuperBuilder;
 import org.dawn.backend.constant.ProductStatus;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -41,7 +42,13 @@ public class Product extends AbstractMappedEntity {
 
     private ProductStatus status = ProductStatus.ACTIVE;
 
-    private List<ProductItem> items;
+    @Builder.Default
+    private Boolean isDeleted = false;
+
+
+    @Builder.Default
+    private List<ProductItem> items = new ArrayList<>();
 
     private Category category;
+
 }
