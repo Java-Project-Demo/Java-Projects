@@ -4,6 +4,7 @@ import org.dawn.backend.constant.OrderStatus;
 import org.dawn.backend.entity.Order;
 import org.dawn.backend.repository.base.BaseRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface OrderRepository extends BaseRepository<Order, Long> {
@@ -13,5 +14,9 @@ public interface OrderRepository extends BaseRepository<Order, Long> {
 
     Long countByStatus(OrderStatus status);
 
-    Integer getAvailableStock( Long productId);
+    Integer getAvailableStock(Long productId);
+
+    BigDecimal getTodayRevenue();
+
+    BigDecimal getTodayGrossProfit();
 }

@@ -36,7 +36,7 @@ public class OrderController extends AbstractController {
             throw new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND);
         }
         RefundRequest dto = body(req, RefundRequest.class);
-        orderService.returnOrder(orderId, dto.getImei(), dto.getReason());
+        orderService.returnOrder(orderId, dto);
         return ResponseObject.success("Order refund success");
     }
 }

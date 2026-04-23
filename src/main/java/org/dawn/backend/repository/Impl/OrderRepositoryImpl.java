@@ -8,6 +8,7 @@ import org.dawn.backend.repository.OrderRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.Instant;
 import java.util.List;
@@ -136,6 +137,49 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
             log.error("Error getAvailableStock for product: {}", productId, e);
         }
         return 0;
+    }
+
+    @Override
+    public BigDecimal getTodayRevenue() {
+        String sql = """
+                SELECT SUM(total_amount)
+                FROM orders
+                WHERE status = 'COMPLETE' AND TRUNC(created_at) = TRUNC(SYSDATE)
+                """;
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                BigDecimal value = rs.getBigDecimal(1);
+                return value != null ? value : BigDecimal.ZERO;
+            }
+        } catch (SQLException e) {
+            log.error("Error get total revenue", e);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    @Override
+    public BigDecimal getTodayGrossProfit() {
+        String sql = """
+                SELECT SUM(oi.unit_price * oi.quantity) - SUM(pi.cost_price)
+                FROM order_items oi
+                JOIN product_items pi ON oi.order_id = pi.order_id
+                AND oi.product_id = pi.product_id
+                JOIN orders o ON o.id = oi.order_id
+                WHERE o.status = 'COMPLETED' AND TRUNC(o.created_at) = TRUNC(SYSDATE)
+                """;
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                BigDecimal value = rs.getBigDecimal(1);
+                return value != null ? value : BigDecimal.ZERO;
+            }
+        } catch (SQLException e) {
+            log.error("Error get total gross profit", e);
+        }
+        return BigDecimal.ZERO;
     }
 
     private Order mapResultSet(ResultSet rs) throws SQLException {
