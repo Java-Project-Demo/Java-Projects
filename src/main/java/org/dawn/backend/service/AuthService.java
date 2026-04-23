@@ -53,6 +53,7 @@ public class AuthService {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         auditLogService.saveLog(
+                user.getId(),
                 LogConstant.Action.LOGIN,
                 LogConstant.Entity.AUTH,
                 user.getId().toString(),
