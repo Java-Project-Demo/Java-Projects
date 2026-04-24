@@ -88,6 +88,7 @@ public class GlobalContextListener implements ServletContextListener {
             AuthController authController = new AuthController(authService);
             CloudinaryController cloudinaryController = new CloudinaryController(cloudinaryService);
             AiAgentController aiAgentController = new AiAgentController(aiAgentService);
+            ProductController productController = new ProductController(warehouseService);
             WarrantyController warrantyController = new WarrantyController(warrantyService);
             // Initializer
             DataInitializer initializer = new DataInitializer(userRepository, roleRepository, passwordEncoder);
@@ -102,12 +103,13 @@ public class GlobalContextListener implements ServletContextListener {
             ctx.setAttribute("jwtUtils", jwtUtils);
             // Controller Context
             ctx.setAttribute("agentController", aiAgentController);
+            ctx.setAttribute("logsController", auditLogController);
             ctx.setAttribute("authController", authController);
             ctx.setAttribute("categoryController", categoryController);
             ctx.setAttribute("cloudinaryController", cloudinaryController);
             ctx.setAttribute("dashboardController", dashboardController);
-            ctx.setAttribute("logsController", auditLogController);
             ctx.setAttribute("orderController", orderController);
+            ctx.setAttribute("productController", productController);
             ctx.setAttribute("userController", userController);
             ctx.setAttribute("warehouseController", warehouseController);
             ctx.setAttribute("warrantyController", warrantyController);

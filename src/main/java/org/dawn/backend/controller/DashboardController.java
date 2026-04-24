@@ -5,10 +5,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.dawn.backend.config.annotation.Get;
 import org.dawn.backend.config.response.ResponseObject;
+import org.dawn.backend.controller.config.AbstractController;
 import org.dawn.backend.service.DashboardService;
 
 @RequiredArgsConstructor
-public class DashboardController {
+public class DashboardController extends AbstractController {
 
 
     private final DashboardService dashboardService;

@@ -104,7 +104,7 @@ public class OrderService {
         }
         saveOrder.setTotalAmount(total);
         warehouseService.checkAndCompleteOrder(saveOrder);
-
+        saveOrder.setCustomer(customer);
         auditLogService.saveLog(
                 LogConstant.Action.CREATE_ORDER,
                 LogConstant.Entity.ORDER,
@@ -142,7 +142,9 @@ public class OrderService {
                 }
             });
         }
-
+        Customer customer = customerRepository
+                .findById(order.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.CUSTOMER_NOT_FOUND));
         order.setStatus(OrderStatus.CANCELED);
         auditLogService.saveLog(
                 LogConstant.Action.CANCEL_ORDER,
@@ -150,7 +152,9 @@ public class OrderService {
                 order.getId().toString(),
                 LogConstant.Status.SUCCESS,
                 "User cancel order");
-        return OrderMappingHelper.map(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        savedOrder.setCustomer(customer);
+        return OrderMappingHelper.map(savedOrder);
     }
 
 

@@ -29,5 +29,9 @@ public class Message {
         //     Order
         public static final String ORDER_NOT_FOUND = "Order not found";
         public static final String ORDER_EXISTED = "Order existed";
+
+        //      Customer
+        public static final String CUSTOMER_NOT_FOUND = "Customer not found";
+        public static final String CUSTOMER_EXISTED = "Customer existed";
     }
 }

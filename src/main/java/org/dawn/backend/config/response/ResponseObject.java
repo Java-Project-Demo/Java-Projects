@@ -1,5 +1,6 @@
 package org.dawn.backend.config.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import java.time.ZonedDateTime;
 @Builder
 public class ResponseObject<T> {
 
+    @JsonIgnore
     private int code;
 
     private String message;
