@@ -1,184 +1,280 @@
-import { useState } from 'react'
-import { Breadcrumb, Button, DatePicker, Descriptions, Drawer, Form, Input, InputNumber, message, Modal, Select, Space, Table, Tag, Typography } from 'antd'
-import { HomeOutlined, PlusOutlined, ExportOutlined } from '@ant-design/icons'
+import { useState, useMemo } from 'react'
+import {
+  App, Breadcrumb, Button, Card, Col, Divider, Form, Input,
+  InputNumber, Row, Select, Space, Table, Tag, Typography,
+} from 'antd'
+import { HomeOutlined, PlusOutlined, DeleteOutlined, ExportOutlined, MinusCircleOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import { useGetProductsQuery } from '@/features/product/productApi'
+import { useCreateOrderMutation } from '@/features/order/orderApi'
+import type { OrderResponse, PaymentMethod, Product } from '@/types/api'
 
-const { Text, Title } = Typography
+const { Title, Text } = Typography
+const PRIMARY = '#E8603C'
 
-type TrangThai = 'cho_xuat' | 'da_xuat' | 'da_huy'
+const fmtCurrency = (v: number) =>
+  (v ?? 0).toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
 
-interface XuatKhoRecord {
-  id: string; maXuatHang: string; tenVatTu: string; khachHang: string
-  trangThai: TrangThai; thoiGianXuat: string; soLuong: number; tongTien: number
+interface CartRow {
+  productId: number
+  name: string
+  priceExport: number
+  quantity: number
+  selectImeis: string[]
+  hasImei: boolean
+  imeiInput: string
 }
 
-interface FormValues {
-  tenVatTu: string; khachHang: string; soLuong: number; donGia: number; ghiChu?: string
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  PENDING: { label: 'Chờ xuất', color: 'gold' },
+  COMPLETED: { label: 'Hoàn thành', color: 'green' },
+  CANCELED: { label: 'Đã huỷ', color: 'red' },
 }
-
-const TRANG_THAI: Record<TrangThai, { label: string; color: string }> = {
-  cho_xuat: { label: 'Chờ xuất', color: 'gold' },
-  da_xuat:  { label: 'Đã xuất',  color: 'blue' },
-  da_huy:   { label: 'Đã huỷ',   color: 'red' }
-}
-
-const VAT_TU_OPTIONS = ['Máy khoan Bosch GSB 550', 'Laptop Dell XPS 15', 'Bút bi Thiên Long', 'Giấy A4 Double A', 'Máy hàn Riland ARC-200', 'Thước kẹp Mitutoyo']
-
-const INIT: XuatKhoRecord[] = [
-  { id: '1',  maXuatHang: 'XK-00001', tenVatTu: 'Máy khoan điện Bosch',    khachHang: 'Công ty TNHH ABC',       trangThai: 'da_xuat',  thoiGianXuat: '2024-03-20 09:00', soLuong: 5,  tongTien: 9000000  },
-  { id: '2',  maXuatHang: 'XK-00002', tenVatTu: 'Bút bi Thiên Long',        khachHang: 'Trường THPT Nguyễn Trãi', trangThai: 'da_xuat', thoiGianXuat: '2024-03-19 14:30', soLuong: 50, tongTien: 1250000  },
-  { id: '3',  maXuatHang: 'XK-00003', tenVatTu: 'Giấy A4 Double A',         khachHang: 'Văn phòng Quận 1',       trangThai: 'cho_xuat', thoiGianXuat: '2024-03-19 08:00', soLuong: 10, tongTien: 1200000  },
-  { id: '4',  maXuatHang: 'XK-00004', tenVatTu: 'Thước kẹp Mitutoyo',       khachHang: 'Xưởng cơ khí Đông Nam',  trangThai: 'da_xuat', thoiGianXuat: '2024-03-18 11:00', soLuong: 3,  tongTien: 1650000  },
-  { id: '5',  maXuatHang: 'XK-00005', tenVatTu: 'Máy hàn Riland ARC-200',   khachHang: 'Công ty Xây dựng Phú Mỹ', trangThai: 'da_huy', thoiGianXuat: '2024-03-17 15:00', soLuong: 2,  tongTien: 7800000  },
-  { id: '6',  maXuatHang: 'XK-00006', tenVatTu: 'Laptop Dell XPS 15',        khachHang: 'Ngân hàng Vietcombank',   trangThai: 'cho_xuat', thoiGianXuat: '2024-03-17 09:30', soLuong: 3, tongTien: 84000000 },
-  { id: '7',  maXuatHang: 'XK-00007', tenVatTu: 'Dao mổ y tế hộp 100 cái',  khachHang: 'Bệnh viện Chợ Rẫy',      trangThai: 'da_xuat', thoiGianXuat: '2024-03-16 10:00', soLuong: 20, tongTien: 5600000  },
-  { id: '8',  maXuatHang: 'XK-00008', tenVatTu: 'Bình xịt cồn sát khuẩn',   khachHang: 'Trạm Y tế Phường 5',     trangThai: 'da_xuat', thoiGianXuat: '2024-03-15 08:45', soLuong: 30, tongTien: 1650000  },
-]
-
-const fmtCurrency = (v: number) => v.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
-const genMA = () => `XK-${String(Date.now()).slice(-5)}`
 
 const XuatKhoPage = () => {
-  const [data, setData] = useState<XuatKhoRecord[]>(INIT)
-  const [loading, setLoading] = useState(false)
-  const [search, setSearch] = useState('')
-  const [filterTT, setFilterTT] = useState<TrangThai | undefined>()
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [selected, setSelected] = useState<XuatKhoRecord | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [confirmOpen, setConfirmOpen] = useState(false)
-  const [cancelOpen, setCancelOpen] = useState(false)
-  const [actionTarget, setActionTarget] = useState<XuatKhoRecord | null>(null)
-  const [form] = Form.useForm<FormValues>()
+  const { message } = App.useApp()
+  const [form] = Form.useForm()
+  const [cart, setCart] = useState<CartRow[]>([])
+  const [lastOrder, setLastOrder] = useState<OrderResponse | null>(null)
 
-  const run = (cb: () => void) => { setLoading(true); setTimeout(() => { cb(); setLoading(false) }, 500) }
+  const { data: products = [], isLoading: loadingProducts } = useGetProductsQuery()
+  const [createOrder, { isLoading: submitting }] = useCreateOrderMutation()
 
-  const filtered = data.filter(r => {
-    const ms = !search || r.maXuatHang.toLowerCase().includes(search.toLowerCase()) || r.tenVatTu.toLowerCase().includes(search.toLowerCase())
-    return ms && (!filterTT || r.trangThai === filterTT)
-  })
+  const availableProducts = useMemo(
+    () => products.filter((p) => p.currentStock > 0 && p.status === 'ACTIVE'),
+    [products],
+  )
 
-  const handleXuat = () => {
-    if (!actionTarget) return
-    run(() => {
-      setData(p => p.map(r => r.id === actionTarget.id ? { ...r, trangThai: 'da_xuat' } : r))
-      message.success('Xuất kho thành công!')
-      setConfirmOpen(false)
-    })
-  }
-
-  const handleHuy = () => {
-    if (!actionTarget) return
-    run(() => {
-      setData(p => p.map(r => r.id === actionTarget.id ? { ...r, trangThai: 'da_huy' } : r))
-      message.success('Đã huỷ phiếu xuất!')
-      setCancelOpen(false)
-    })
-  }
-
-  const handleTao = () => {
-    form.validateFields().then(v => {
-      run(() => {
-        setData(p => [{
-          id: String(Date.now()), maXuatHang: genMA(), tenVatTu: v.tenVatTu,
-          khachHang: v.khachHang, trangThai: 'cho_xuat',
-          thoiGianXuat: new Date().toLocaleString('vi-VN'),
-          soLuong: v.soLuong, tongTien: v.soLuong * v.donGia
-        }, ...p])
-        message.success('Tạo phiếu xuất kho thành công!')
-        setModalOpen(false)
-        form.resetFields()
-      })
-    })
-  }
-
-  const columns: ColumnsType<XuatKhoRecord> = [
-    { title: 'STT', key: 'stt', width: 55, render: (_, __, i) => <Text type='secondary'>{i + 1}</Text> },
-    { title: 'Mã xuất hàng', dataIndex: 'maXuatHang', key: 'ma', width: 120 },
-    { title: 'Tên vật tư', dataIndex: 'tenVatTu', key: 'ten', ellipsis: true },
-    { title: 'Khách hàng', dataIndex: 'khachHang', key: 'kh', ellipsis: true },
-    { title: 'Số lượng', dataIndex: 'soLuong', key: 'sl', width: 90, align: 'center' },
-    { title: 'Tổng tiền', dataIndex: 'tongTien', key: 'tt', width: 140, render: fmtCurrency },
-    { title: 'Trạng thái', dataIndex: 'trangThai', key: 'tg', width: 120,
-      render: (v: TrangThai) => <Tag color={TRANG_THAI[v].color}>{TRANG_THAI[v].label}</Tag> },
-    { title: 'Thời gian', dataIndex: 'thoiGianXuat', key: 'tg2', width: 155 },
-    {
-      title: 'Hành động', key: 'act', width: 230,
-      render: (_, r) => (
-        <Space size={4} split={<Text type='secondary'>|</Text>}>
-          {r.trangThai === 'cho_xuat' && <Button type='link' size='small' icon={<ExportOutlined />} onClick={() => { setActionTarget(r); setConfirmOpen(true) }}>Xuất kho</Button>}
-          <Button type='link' size='small' onClick={() => { setSelected(r); setDrawerOpen(true) }}>Chi tiết</Button>
-          {r.trangThai === 'cho_xuat' && <Button type='link' size='small' danger onClick={() => { setActionTarget(r); setCancelOpen(true) }}>Huỷ bỏ</Button>}
-          {r.trangThai === 'da_huy' && <Button type='link' size='small' onClick={() => setData(p => p.map(d => d.id === r.id ? { ...d, trangThai: 'cho_xuat' } : d))}>Hoạt lại</Button>}
-        </Space>
-      )
+  const addToCart = () => {
+    const pid = form.getFieldValue('addProductId') as number | undefined
+    if (!pid) return
+    const p = products.find((x) => x.id === pid)
+    if (!p) return
+    if (cart.some((c) => c.productId === pid)) {
+      void message.warning('Sản phẩm đã có trong giỏ')
+      return
     }
+    setCart((prev) => [
+      ...prev,
+      { productId: p.id, name: p.name, priceExport: p.priceExport, quantity: 1, selectImeis: [], hasImei: !!p.hasImei, imeiInput: '' },
+    ])
+    form.setFieldValue('addProductId', undefined)
+  }
+
+  const updateCart = (productId: number, field: keyof CartRow, value: unknown) => {
+    setCart((prev) => prev.map((c) => (c.productId === productId ? { ...c, [field]: value } : c)))
+  }
+
+  const addImeiToRow = (productId: number) => {
+    const row = cart.find((c) => c.productId === productId)
+    if (!row) return
+    const imei = row.imeiInput.trim()
+    if (!imei) return
+    if (row.selectImeis.includes(imei)) { void message.warning('IMEI đã được thêm'); return }
+    updateCart(productId, 'selectImeis', [...row.selectImeis, imei])
+    updateCart(productId, 'imeiInput', '')
+  }
+
+  const removeFromCart = (productId: number) => {
+    setCart((prev) => prev.filter((c) => c.productId !== productId))
+  }
+
+  const total = cart.reduce((s, c) => s + c.priceExport * c.quantity, 0)
+
+  const handleSubmit = () => {
+    form.validateFields(['customerName', 'customerPhone', 'paymentMethod']).then(async (values) => {
+      if (cart.length === 0) { void message.error('Giỏ hàng trống'); return }
+      for (const row of cart) {
+        if (row.hasImei && row.selectImeis.length === 0) {
+          void message.error(`Sản phẩm "${row.name}" cần nhập IMEI`); return
+        }
+        if (row.hasImei && row.selectImeis.length !== row.quantity) {
+          void message.error(`Sản phẩm "${row.name}": số lượng và số IMEI phải bằng nhau`); return
+        }
+      }
+      try {
+        const order = await createOrder({
+          customerName: values.customerName as string,
+          customerPhone: values.customerPhone as string,
+          customerEmail: values.customerEmail as string | undefined,
+          customerAddress: values.customerAddress as string | undefined,
+          paymentMethod: values.paymentMethod as PaymentMethod,
+          items: cart.map((c) => ({ productId: c.productId, quantity: c.quantity, selectImeis: c.selectImeis })),
+        }).unwrap()
+        setLastOrder(order)
+        void message.success('Tạo đơn xuất kho thành công!')
+        form.resetFields(['customerName', 'customerPhone', 'customerEmail', 'customerAddress', 'paymentMethod'])
+        setCart([])
+      } catch (err: unknown) {
+        const e = err as { data?: { message?: string } }
+        void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+      }
+    })
+  }
+
+  const cartColumns: ColumnsType<CartRow> = [
+    { title: 'Sản phẩm', dataIndex: 'name', key: 'name', ellipsis: true },
+    { title: 'Đơn giá', dataIndex: 'priceExport', key: 'price', width: 130, render: (v: number) => fmtCurrency(v) },
+    {
+      title: 'Số lượng', key: 'qty', width: 110,
+      render: (_, r) => (
+        <InputNumber min={1} value={r.quantity} style={{ width: 80 }}
+          onChange={(v) => updateCart(r.productId, 'quantity', v ?? 1)} />
+      ),
+    },
+    {
+      title: 'IMEI', key: 'imei', width: 200,
+      render: (_, r) =>
+        r.hasImei ? (
+          <div>
+            <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
+              <Input size='small' placeholder='Nhập IMEI' value={r.imeiInput}
+                onChange={(e) => updateCart(r.productId, 'imeiInput', e.target.value)}
+                onPressEnter={() => addImeiToRow(r.productId)} style={{ flex: 1 }} />
+              <Button size='small' icon={<PlusOutlined />} onClick={() => addImeiToRow(r.productId)} />
+            </div>
+            {r.selectImeis.map((imei) => (
+              <Tag key={imei} closable onClose={() => updateCart(r.productId, 'selectImeis', r.selectImeis.filter((i) => i !== imei))}
+                style={{ marginBottom: 2, fontSize: 11 }}>
+                {imei}
+              </Tag>
+            ))}
+          </div>
+        ) : <Text type='secondary' style={{ fontSize: 12 }}>Không cần IMEI</Text>,
+    },
+    { title: 'Thành tiền', key: 'sum', width: 130, render: (_, r) => fmtCurrency(r.priceExport * r.quantity) },
+    {
+      title: '', key: 'del', width: 50,
+      render: (_, r) => (
+        <Button type='text' danger size='small' icon={<DeleteOutlined />} onClick={() => removeFromCart(r.productId)} />
+      ),
+    },
   ]
 
   return (
     <div>
-      <Breadcrumb className='mb-4' items={[{ title: <HomeOutlined />, href: '/' }, { title: 'Xuất kho vật tư' }]} />
-      <div className='bg-white rounded-lg p-6 shadow-sm'>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <Title level={4} style={{ margin: 0 }}>Xuất kho vật tư</Title>
-          <Button type='primary' icon={<PlusOutlined />} onClick={() => { form.resetFields(); setModalOpen(true) }}>Tạo phiếu xuất</Button>
-        </div>
-        <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-          <Input.Search placeholder='Tìm mã xuất, tên vật tư...' style={{ width: 260 }} value={search} onChange={e => setSearch(e.target.value)} allowClear />
-          <Select placeholder='Trạng thái' style={{ width: 160 }} allowClear value={filterTT} onChange={setFilterTT}
-            options={[{ value: 'cho_xuat', label: 'Chờ xuất' }, { value: 'da_xuat', label: 'Đã xuất' }, { value: 'da_huy', label: 'Đã huỷ' }]} />
-          <DatePicker placeholder='Ngày xuất hàng' />
-        </div>
-        <Table rowKey='id' loading={loading} columns={columns} dataSource={filtered} bordered size='middle'
-          pagination={{ pageSize: 10, showTotal: t => `Tổng ${t} phiếu` }} />
-      </div>
+      <Breadcrumb style={{ marginBottom: 16 }}
+        items={[{ href: '/', title: <HomeOutlined /> }, { title: 'Xuất kho' }]} />
 
-      <Drawer title='Chi tiết phiếu xuất kho' width={560} open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        {selected && (
-          <Descriptions bordered column={2} size='small'>
-            <Descriptions.Item label='Mã xuất hàng'>{selected.maXuatHang}</Descriptions.Item>
-            <Descriptions.Item label='Trạng thái'><Tag color={TRANG_THAI[selected.trangThai].color}>{TRANG_THAI[selected.trangThai].label}</Tag></Descriptions.Item>
-            <Descriptions.Item label='Tên vật tư' span={2}>{selected.tenVatTu}</Descriptions.Item>
-            <Descriptions.Item label='Khách hàng' span={2}>{selected.khachHang}</Descriptions.Item>
-            <Descriptions.Item label='Số lượng'>{selected.soLuong}</Descriptions.Item>
-            <Descriptions.Item label='Tổng tiền'><Text strong style={{ color: '#1677ff' }}>{fmtCurrency(selected.tongTien)}</Text></Descriptions.Item>
-            <Descriptions.Item label='Thời gian xuất' span={2}>{selected.thoiGianXuat}</Descriptions.Item>
-          </Descriptions>
-        )}
-      </Drawer>
+      <Title level={4} style={{ marginBottom: 20 }}>
+        <ExportOutlined style={{ color: PRIMARY, marginRight: 8 }} />Xuất kho / Tạo đơn bán
+      </Title>
 
-      <Modal title='Tạo phiếu xuất kho' open={modalOpen} onCancel={() => setModalOpen(false)}
-        footer={[<Button key='c' onClick={() => setModalOpen(false)}>Huỷ</Button>, <Button key='s' type='primary' loading={loading} onClick={handleTao}>Tạo phiếu</Button>]}>
-        <Form form={form} layout='vertical' style={{ marginTop: 16 }}>
-          <Form.Item label='Vật tư' name='tenVatTu' rules={[{ required: true, message: 'Chọn vật tư' }]}>
-            <Select placeholder='Chọn vật tư' options={VAT_TU_OPTIONS.map(v => ({ value: v, label: v }))} />
-          </Form.Item>
-          <Form.Item label='Khách hàng / Đơn vị nhận' name='khachHang' rules={[{ required: true, message: 'Nhập tên khách hàng' }]}>
-            <Input placeholder='Tên công ty, đơn vị...' />
-          </Form.Item>
-          <Space style={{ width: '100%' }} styles={{ item: { flex: 1 } }}>
-            <Form.Item label='Số lượng' name='soLuong' rules={[{ required: true, message: 'Nhập số lượng' }]}>
-              <InputNumber min={1} style={{ width: '100%' }} placeholder='0' />
-            </Form.Item>
-            <Form.Item label='Đơn giá (₫)' name='donGia' rules={[{ required: true, message: 'Nhập đơn giá' }]}>
-              <InputNumber min={0} style={{ width: '100%' }} placeholder='0' formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')} />
-            </Form.Item>
-          </Space>
-          <Form.Item label='Ghi chú' name='ghiChu'>
-            <Input.TextArea rows={2} placeholder='Ghi chú thêm...' />
-          </Form.Item>
-        </Form>
-      </Modal>
+      {lastOrder && (
+        <Card style={{ borderRadius: 12, background: '#f6ffed', border: '1px solid #b7eb8f', marginBottom: 20 }}>
+          <Text strong style={{ color: '#52c41a' }}>
+            ✓ Đơn hàng #{lastOrder.id} — Khách: {lastOrder.customerName} — Tổng: {fmtCurrency(lastOrder.totalAmount)}
+          </Text>
+          <Tag color={STATUS_CONFIG[lastOrder.status]?.color ?? 'default'} style={{ marginLeft: 12 }}>
+            {STATUS_CONFIG[lastOrder.status]?.label ?? lastOrder.status}
+          </Tag>
+          <Button type='link' size='small' onClick={() => setLastOrder(null)} style={{ float: 'right' }}>Đóng</Button>
+        </Card>
+      )}
 
-      <Modal title='Xác nhận xuất kho' open={confirmOpen} onCancel={() => setConfirmOpen(false)}
-        footer={[<Button key='c' onClick={() => setConfirmOpen(false)}>Huỷ</Button>, <Button key='x' type='primary' loading={loading} onClick={handleXuat} icon={<ExportOutlined />}>Xuất kho</Button>]}>
-        <Text>Bạn có chắc muốn xuất kho phiếu <Text strong>"{actionTarget?.maXuatHang}"</Text>?</Text>
-      </Modal>
+      <Row gutter={[20, 20]}>
+        <Col xs={24} lg={14}>
+          <Card title='Giỏ hàng' style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}
+            extra={
+              <Space>
+                <Select showSearch loading={loadingProducts} placeholder='Chọn sản phẩm để thêm'
+                  style={{ width: 260 }}
+                  filterOption={(input, opt) => (opt?.label as string ?? '').toLowerCase().includes(input.toLowerCase())}
+                  value={form.getFieldValue('addProductId')}
+                  onChange={(v) => form.setFieldValue('addProductId', v)}
+                  options={availableProducts.map((p) => ({ value: p.id, label: `${p.name} (còn ${p.currentStock})` }))}
+                />
+                <Button type='primary' icon={<PlusOutlined />} onClick={addToCart}>Thêm</Button>
+              </Space>
+            }
+          >
+            <Form form={form}>
+              <Form.Item name='addProductId' hidden />
+              <Table
+                rowKey='productId' columns={cartColumns} dataSource={cart}
+                pagination={false} size='small'
+                locale={{ emptyText: 'Chưa có sản phẩm trong giỏ hàng' }}
+              />
+              {cart.length > 0 && (
+                <div style={{ textAlign: 'right', marginTop: 16, padding: '12px 0', borderTop: '2px solid #f0f0f0' }}>
+                  <Text strong style={{ fontSize: 16 }}>Tổng cộng: </Text>
+                  <Text strong style={{ fontSize: 20, color: PRIMARY }}>{fmtCurrency(total)}</Text>
+                </div>
+              )}
+            </Form>
+          </Card>
+        </Col>
 
-      <Modal title='Xác nhận huỷ' open={cancelOpen} onCancel={() => setCancelOpen(false)}
-        footer={[<Button key='c' onClick={() => setCancelOpen(false)}>Đóng</Button>, <Button key='h' danger type='primary' loading={loading} onClick={handleHuy}>Huỷ phiếu</Button>]}>
-        <Text>Bạn có chắc muốn huỷ phiếu xuất kho <Text strong style={{ color: '#ff4d4f' }}>"{actionTarget?.maXuatHang}"</Text>?</Text>
-      </Modal>
+        <Col xs={24} lg={10}>
+          <Card title='Thông tin khách hàng & Thanh toán' style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
+            <Form form={form} layout='vertical'>
+              <Form.Item label='Tên khách hàng' name='customerName' rules={[{ required: true, message: 'Nhập tên khách hàng' }]}>
+                <Input placeholder='Nguyễn Văn A' />
+              </Form.Item>
+              <Form.Item label='Số điện thoại' name='customerPhone' rules={[{ required: true, message: 'Nhập số điện thoại' }]}>
+                <Input placeholder='09xxxxxxxx' />
+              </Form.Item>
+              <Form.Item label='Email' name='customerEmail'>
+                <Input placeholder='email@example.com' />
+              </Form.Item>
+              <Form.Item label='Địa chỉ' name='customerAddress'>
+                <Input.TextArea rows={2} placeholder='Địa chỉ giao hàng (không bắt buộc)' />
+              </Form.Item>
+              <Form.Item label='Phương thức thanh toán' name='paymentMethod' rules={[{ required: true, message: 'Chọn phương thức' }]}>
+                <Select options={[
+                  { value: 'CASH', label: 'Tiền mặt' },
+                  { value: 'TRANSFER', label: 'Chuyển khoản' },
+                  { value: 'CARD', label: 'Thẻ' },
+                ]} />
+              </Form.Item>
+              <Divider />
+
+              <div style={{ background: '#fafafa', borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text type='secondary'>Số mặt hàng</Text>
+                  <Text>{cart.length} loại</Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text strong>Tổng cộng</Text>
+                  <Text strong style={{ color: PRIMARY, fontSize: 16 }}>{fmtCurrency(total)}</Text>
+                </div>
+              </div>
+
+              <Button type='primary' block size='large' loading={submitting}
+                onClick={handleSubmit} icon={<ExportOutlined />} disabled={cart.length === 0}>
+                Xác nhận xuất kho
+              </Button>
+            </Form>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Gợi ý sản phẩm có hàng */}
+      <Card title='Sản phẩm có thể xuất' style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginTop: 20 }}>
+        <Table
+          rowKey='id' size='small'
+          dataSource={availableProducts.slice(0, 10)} pagination={false}
+          columns={[
+            { title: 'Tên sản phẩm', dataIndex: 'name', key: 'name', ellipsis: true },
+            { title: 'SKU', dataIndex: 'sku', key: 'sku', width: 110 },
+            { title: 'Tồn kho', dataIndex: 'currentStock', key: 'stock', width: 90,
+              render: (v: number, r: Product) => <Text style={{ color: v < r.minThreshold ? '#faad14' : '#52c41a', fontWeight: 700 }}>{v}</Text> },
+            { title: 'Giá xuất', dataIndex: 'priceExport', key: 'price', width: 130, render: (v: number) => fmtCurrency(v) },
+            {
+              title: '', key: 'add', width: 80,
+              render: (_, r: Product) => (
+                <Button size='small' icon={<MinusCircleOutlined rotate={45} />}
+                  onClick={() => {
+                    if (cart.some((c) => c.productId === r.id)) { void message.info('Đã có trong giỏ'); return }
+                    setCart((prev) => [...prev, { productId: r.id, name: r.name, priceExport: r.priceExport, quantity: 1, selectImeis: [], hasImei: !!r.hasImei, imeiInput: '' }])
+                  }}>
+                  Thêm
+                </Button>
+              ),
+            },
+          ]}
+        />
+      </Card>
     </div>
   )
 }

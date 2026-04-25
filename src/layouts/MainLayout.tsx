@@ -16,7 +16,6 @@ import {
 } from '@ant-design/icons'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { clearCredentials } from '@/features/auth/authSlice'
-import { useLogoutMutation } from '@/features/auth/authApi'
 
 const { Header, Content, Footer, Sider } = Layout
 const { Text } = Typography
@@ -39,16 +38,11 @@ const MainLayout = () => {
   const location = useLocation()
   const dispatch = useAppDispatch()
   const user = useAppSelector((state) => state.auth.user)
-  const [logout] = useLogoutMutation()
   const [collapsed, setCollapsed] = useState(false)
 
-  const handleLogout = async () => {
-    try {
-      await logout().unwrap()
-    } finally {
-      dispatch(clearCredentials())
-      navigate('/login', { replace: true })
-    }
+  const handleLogout = () => {
+    dispatch(clearCredentials())
+    navigate('/login', { replace: true })
   }
 
   return (

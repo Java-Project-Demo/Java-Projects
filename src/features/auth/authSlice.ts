@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { UserProfile } from './types'
+import { TOKEN_KEY } from '@/config/axios'
 
 interface AuthState {
   user: UserProfile | null
@@ -9,7 +10,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  isAuthenticated: false
+  isAuthenticated: !!localStorage.getItem(TOKEN_KEY),
 }
 
 const authSlice = createSlice({
@@ -23,8 +24,9 @@ const authSlice = createSlice({
     clearCredentials: (state) => {
       state.user = null
       state.isAuthenticated = false
-    }
-  }
+      localStorage.removeItem(TOKEN_KEY)
+    },
+  },
 })
 
 export const { setCredentials, clearCredentials } = authSlice.actions

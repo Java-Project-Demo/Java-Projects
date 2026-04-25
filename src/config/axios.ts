@@ -1,13 +1,20 @@
 import axios from 'axios'
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios'
 
+export const TOKEN_KEY = 'dawn_jwt'
+
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASE_API_URL ?? 'http://localhost:8888/api/v1',
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true
+  withCredentials: true,
 })
 
-// Queue các request bị lỗi 401 trong khi đang refresh token
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY)
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
 let isRefreshing = false
 let failedQueue: Array<{
   resolve: (value: unknown) => void
@@ -39,11 +46,14 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true
 
       try {
-        await axiosInstance.post('/auth/refresh')
+        const res = await axiosInstance.post<{ data: { accessToken: string } }>('/auth/refresh-token')
+        const newToken = res.data?.data?.accessToken
+        if (newToken) localStorage.setItem(TOKEN_KEY, newToken)
         processQueue(null)
         return axiosInstance(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError as AxiosError)
+        localStorage.removeItem(TOKEN_KEY)
         window.location.href = '/login'
         return Promise.reject(refreshError)
       } finally {
@@ -52,7 +62,7 @@ axiosInstance.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )
 
 export default axiosInstance

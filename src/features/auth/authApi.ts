@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { axiosBaseQuery } from '@/config/axiosBaseQuery'
-import type { LoginRequest, LoginResponse, UserProfile } from './types'
+import type { LoginRequest, LoginResponse } from './types'
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -10,22 +10,17 @@ export const authApi = createApi({
       query: (credentials) => ({
         url: '/auth/login',
         method: 'POST',
-        data: credentials
-      })
+        data: credentials,
+      }),
     }),
-    logout: builder.mutation<void, void>({
-      query: () => ({
-        url: '/auth/logout',
-        method: 'POST'
-      })
+    changePassword: builder.mutation<string, { oldPassword: string; newPassword: string; confirmPassword: string }>({
+      query: (data) => ({
+        url: '/auth/change-password',
+        method: 'PUT',
+        data,
+      }),
     }),
-    getMe: builder.query<UserProfile, void>({
-      query: () => ({
-        url: '/auth/me',
-        method: 'GET'
-      })
-    })
-  })
+  }),
 })
 
-export const { useLoginMutation, useLogoutMutation, useGetMeQuery } = authApi
+export const { useLoginMutation, useChangePasswordMutation } = authApi

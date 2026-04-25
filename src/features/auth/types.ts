@@ -1,8 +1,7 @@
 export interface UserProfile {
-  id: string
+  id: number
   username: string
-  email: string
-  roles: string[]
+  role: string
 }
 
 export interface LoginRequest {
@@ -11,5 +10,16 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  user: UserProfile
+  accessToken: string
+  userId: number
+  username: string
+}
+
+export const decodeJwt = (token: string): { id: number; username: string; role: string } | null => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return { id: payload.id, username: payload.username, role: payload.role }
+  } catch {
+    return null
+  }
 }

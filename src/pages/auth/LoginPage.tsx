@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { useLoginMutation } from '@/features/auth/authApi'
 import { setCredentials } from '@/features/auth/authSlice'
 import { useAppDispatch } from '@/app/hooks'
+import { TOKEN_KEY } from '@/config/axios'
+import { decodeJwt } from '@/features/auth/types'
 import type { LoginRequest } from '@/features/auth/types'
 
 const { Title, Text } = Typography
@@ -17,7 +19,9 @@ const LoginPage = () => {
   const onFinish = async (values: LoginRequest) => {
     try {
       const result = await login(values).unwrap()
-      dispatch(setCredentials(result.user))
+      localStorage.setItem(TOKEN_KEY, result.accessToken)
+      const profile = decodeJwt(result.accessToken) ?? { id: result.userId, username: result.username, role: '' }
+      dispatch(setCredentials(profile))
       void message.success('Đăng nhập thành công!')
       navigate('/', { replace: true })
     } catch {
