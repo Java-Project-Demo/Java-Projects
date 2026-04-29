@@ -1,8 +1,8 @@
-package org.dawn.backend.repository.Impl;
+package org.dawn.backend.repository.sales.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.entity.OrderItem;
-import org.dawn.backend.repository.OrderItemRepository;
+import org.dawn.backend.repository.sales.OrderItemRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;

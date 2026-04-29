@@ -1,4 +1,4 @@
-package org.dawn.backend.repository;
+package org.dawn.backend.repository.auth;
 
 import org.dawn.backend.constant.URole;
 import org.dawn.backend.entity.Role;

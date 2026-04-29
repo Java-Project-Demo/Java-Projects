@@ -9,8 +9,7 @@ import org.dawn.backend.entity.Category;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.helper.CategoryMappingHelper;
-import org.dawn.backend.helper.UserMappingHelper;
-import org.dawn.backend.repository.CategoryRepository;
+import org.dawn.backend.repository.catalog.CategoryRepository;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
-package org.dawn.backend.repository.Impl;
+package org.dawn.backend.repository.warranty.Impl;
 
 import org.dawn.backend.constant.WarrantyStatus;
 import org.dawn.backend.entity.Warranty;
-import org.dawn.backend.repository.WarrantyRepository;
+import org.dawn.backend.repository.warranty.WarrantyRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;

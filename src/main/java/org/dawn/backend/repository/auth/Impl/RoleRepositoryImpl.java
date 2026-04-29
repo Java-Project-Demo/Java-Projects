@@ -1,8 +1,8 @@
-package org.dawn.backend.repository.Impl;
+package org.dawn.backend.repository.auth.Impl;
 
 import org.dawn.backend.constant.URole;
 import org.dawn.backend.entity.Role;
-import org.dawn.backend.repository.RoleRepository;
+import org.dawn.backend.repository.auth.RoleRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;

@@ -1,9 +1,9 @@
-package org.dawn.backend.repository.Impl;
+package org.dawn.backend.repository.auth.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
-import org.dawn.backend.repository.RefreshTokenRepository;
+import org.dawn.backend.repository.auth.RefreshTokenRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;

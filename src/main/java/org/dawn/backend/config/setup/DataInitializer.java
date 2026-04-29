@@ -10,8 +10,8 @@ import org.dawn.backend.constant.URole;
 import org.dawn.backend.entity.Role;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
-import org.dawn.backend.repository.RoleRepository;
-import org.dawn.backend.repository.UserRepository;
+import org.dawn.backend.repository.auth.RoleRepository;
+import org.dawn.backend.repository.auth.UserRepository;
 
 @Slf4j
 @RequiredArgsConstructor

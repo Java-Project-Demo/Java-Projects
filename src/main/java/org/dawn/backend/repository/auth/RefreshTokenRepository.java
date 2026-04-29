@@ -1,4 +1,4 @@
-package org.dawn.backend.repository;
+package org.dawn.backend.repository.auth;
 
 import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;

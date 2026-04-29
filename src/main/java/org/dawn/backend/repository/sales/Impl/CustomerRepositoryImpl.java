@@ -1,8 +1,7 @@
-package org.dawn.backend.repository.Impl;
+package org.dawn.backend.repository.sales.Impl;
 
-import org.dawn.backend.entity.Category;
 import org.dawn.backend.entity.Customer;
-import org.dawn.backend.repository.CustomerRepository;
+import org.dawn.backend.repository.sales.CustomerRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;

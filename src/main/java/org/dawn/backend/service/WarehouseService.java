@@ -14,7 +14,11 @@ import org.dawn.backend.entity.*;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.helper.ProductMappingHelper;
-import org.dawn.backend.repository.*;
+import org.dawn.backend.repository.catalog.ProductItemRepository;
+import org.dawn.backend.repository.catalog.ProductRepository;
+import org.dawn.backend.repository.sales.OrderItemRepository;
+import org.dawn.backend.repository.sales.OrderRepository;
+import org.dawn.backend.repository.warehouse.StockMovementRepository;
 
 import java.time.Duration;
 import java.time.Instant;

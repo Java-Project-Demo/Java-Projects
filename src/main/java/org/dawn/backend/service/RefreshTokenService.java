@@ -7,8 +7,8 @@ import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.exception.wrapper.ResourceExpiredException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
-import org.dawn.backend.repository.RefreshTokenRepository;
-import org.dawn.backend.repository.UserRepository;
+import org.dawn.backend.repository.auth.RefreshTokenRepository;
+import org.dawn.backend.repository.auth.UserRepository;
 
 import java.time.Instant;
 import java.util.Optional;

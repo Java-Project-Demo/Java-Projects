@@ -1,9 +1,8 @@
-package org.dawn.backend.repository;
+package org.dawn.backend.repository.system;
 
 import org.dawn.backend.entity.AuditLog;
 import org.dawn.backend.repository.base.BaseRepository;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 

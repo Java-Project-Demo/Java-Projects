@@ -1,6 +1,5 @@
-package org.dawn.backend.repository;
+package org.dawn.backend.repository.catalog;
 
-import org.dawn.backend.entity.Product;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.repository.base.BaseRepository;
 

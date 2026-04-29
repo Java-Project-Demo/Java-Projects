@@ -1,9 +1,9 @@
-package org.dawn.backend.repository.Impl;
+package org.dawn.backend.repository.warehouse.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.constant.MovementType;
 import org.dawn.backend.entity.StockMovement;
-import org.dawn.backend.repository.StockMovementRepository;
+import org.dawn.backend.repository.warehouse.StockMovementRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;

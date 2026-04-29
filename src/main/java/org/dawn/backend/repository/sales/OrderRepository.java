@@ -1,4 +1,4 @@
-package org.dawn.backend.repository;
+package org.dawn.backend.repository.sales;
 
 import org.dawn.backend.constant.OrderStatus;
 import org.dawn.backend.entity.Order;

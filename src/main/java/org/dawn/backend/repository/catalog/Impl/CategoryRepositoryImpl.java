@@ -1,9 +1,9 @@
-package org.dawn.backend.repository.Impl;
+package org.dawn.backend.repository.catalog.Impl;
 
 import org.dawn.backend.constant.ProductStatus;
 import org.dawn.backend.entity.Category;
 import org.dawn.backend.entity.Product;
-import org.dawn.backend.repository.CategoryRepository;
+import org.dawn.backend.repository.catalog.CategoryRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;

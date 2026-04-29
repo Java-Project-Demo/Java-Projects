@@ -1,4 +1,4 @@
-package org.dawn.backend.repository;
+package org.dawn.backend.repository.catalog;
 
 import org.dawn.backend.entity.Category;
 import org.dawn.backend.repository.base.BaseRepository;

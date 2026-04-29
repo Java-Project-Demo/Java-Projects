@@ -14,7 +14,7 @@ import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
-import org.dawn.backend.repository.UserRepository;
+import org.dawn.backend.repository.auth.UserRepository;
 import org.dawn.backend.utils.JWTUtils;
 import org.dawn.backend.utils.UserUtils;
 

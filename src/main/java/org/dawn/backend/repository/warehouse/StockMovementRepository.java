@@ -1,4 +1,4 @@
-package org.dawn.backend.repository;
+package org.dawn.backend.repository.warehouse;
 
 import org.dawn.backend.entity.StockMovement;
 import org.dawn.backend.repository.base.BaseRepository;

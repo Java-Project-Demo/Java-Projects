@@ -1,4 +1,4 @@
-package org.dawn.backend.repository.Impl;
+package org.dawn.backend.repository.catalog.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.constant.ItemStatus;
@@ -6,7 +6,7 @@ import org.dawn.backend.constant.ProductStatus;
 import org.dawn.backend.entity.Category;
 import org.dawn.backend.entity.Product;
 import org.dawn.backend.entity.ProductItem;
-import org.dawn.backend.repository.ProductRepository;
+import org.dawn.backend.repository.catalog.ProductRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;

@@ -1,10 +1,10 @@
-package org.dawn.backend.repository.Impl;
+package org.dawn.backend.repository.catalog.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.constant.ItemStatus;
-import org.dawn.backend.entity.Product;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.dawn.backend.repository.catalog.ProductItemRepository;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -14,7 +14,7 @@ import java.util.Optional;
 
 
 @Slf4j
-public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, Long> implements org.dawn.backend.repository.ProductItemRepository {
+public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, Long> implements ProductItemRepository {
 
 
     public ProductItemRepositoryImpl(DataSource dataSource) {

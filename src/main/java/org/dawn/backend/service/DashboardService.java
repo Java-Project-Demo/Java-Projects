@@ -8,7 +8,12 @@ import org.dawn.backend.dto.response.ProductResponse;
 import org.dawn.backend.entity.*;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.helper.ProductMappingHelper;
-import org.dawn.backend.repository.*;
+import org.dawn.backend.repository.catalog.ProductItemRepository;
+import org.dawn.backend.repository.catalog.ProductRepository;
+import org.dawn.backend.repository.sales.CustomerRepository;
+import org.dawn.backend.repository.sales.OrderRepository;
+import org.dawn.backend.repository.system.AuditLogRepository;
+import org.dawn.backend.repository.warranty.WarrantyRepository;
 
 import java.util.HashMap;
 import java.util.List;

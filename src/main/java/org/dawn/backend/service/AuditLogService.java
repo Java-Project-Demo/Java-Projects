@@ -8,7 +8,7 @@ import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.dto.response.AuditLogResponse;
 import org.dawn.backend.entity.AuditLog;
 import org.dawn.backend.helper.AuditLogMappingHelper;
-import org.dawn.backend.repository.AuditLogRepository;
+import org.dawn.backend.repository.system.AuditLogRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;

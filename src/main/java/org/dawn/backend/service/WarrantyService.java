@@ -12,9 +12,9 @@ import org.dawn.backend.entity.Order;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.entity.Warranty;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
-import org.dawn.backend.repository.OrderRepository;
-import org.dawn.backend.repository.ProductItemRepository;
-import org.dawn.backend.repository.WarrantyRepository;
+import org.dawn.backend.repository.sales.OrderRepository;
+import org.dawn.backend.repository.catalog.ProductItemRepository;
+import org.dawn.backend.repository.warranty.WarrantyRepository;
 
 import java.time.Instant;
 import java.util.ArrayList;
