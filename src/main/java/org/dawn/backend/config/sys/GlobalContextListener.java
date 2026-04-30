@@ -8,10 +8,14 @@ import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.cloudinary.CloudinaryConfig;
+import org.dawn.backend.config.database.DatabaseConfig;
+import org.dawn.backend.config.database.FlywayConfig;
+import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.langchain.LangChainConfig;
 import org.dawn.backend.config.security.AuthTokenFilter;
 import org.dawn.backend.config.security.CorsConfig;
 import org.dawn.backend.config.security.handler.SecurityHandler;
+import org.dawn.backend.config.security.hashing.BCryptPasswordEncoderImpl;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
 import org.dawn.backend.config.setup.DataInitializer;
 import org.dawn.backend.controller.*;
@@ -35,12 +39,11 @@ import org.dawn.backend.repository.sales.OrderItemRepository;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.system.AuditLogRepository;
 import org.dawn.backend.repository.system.Impl.AuditLogRepositoryImpl;
-import org.dawn.backend.repository.warehouse.Impl.StockMovementRepositoryImpl;
+import org.dawn.backend.repository.warehouse.Impl.*;
+import org.dawn.backend.repository.warehouse.*;
 import org.dawn.backend.repository.warranty.Impl.WarrantyRepositoryImpl;
-import org.dawn.backend.repository.warehouse.StockMovementRepository;
 import org.dawn.backend.repository.warranty.WarrantyRepository;
 import org.dawn.backend.service.*;
-import org.dawn.backend.config.security.hashing.BCryptPasswordEncoderImpl;
 import org.dawn.backend.utils.JWTUtils;
 
 import javax.sql.DataSource;
@@ -60,7 +63,7 @@ public class GlobalContextListener implements ServletContextListener {
             // Database & Migration
             DataSource datasource = DatabaseConfig.getDataSource();
             FlywayConfig.migrate();
-
+            TransactionManager transactionManager = new TransactionManager(datasource);
             // Repository JDBC
             AuditLogRepository auditLogRepository = new AuditLogRepositoryImpl(datasource);
             OrderItemRepository orderItemRepository = new OrderItemRepositoryImpl(datasource);
@@ -70,6 +73,10 @@ public class GlobalContextListener implements ServletContextListener {
             StockMovementRepository stockMovementRepository = new StockMovementRepositoryImpl(datasource);
             UserRepository userRepository = new UserRepositoryImpl(datasource);
             RoleRepository roleRepository = new RoleRepositoryImpl(datasource);
+            InventoryDetailRepository inventoryDetailRepository = new InventoryDetailRepositoryImpl(datasource);
+            InventorySessionRepository inventorySessionRepository = new InventorySessionRepositoryImpl(datasource);
+            WarehouseRepository warehouseRepository = new WarehouseRepositoryImpl(datasource);
+            WarehouseLocationRepository warehouseLocationRepository = new WarehouseLocationRepositoryImpl(datasource);
             RefreshTokenRepository refreshTokenRepository = new RefreshTokenRepositoryImpl(datasource);
             WarrantyRepository warrantyRepository = new WarrantyRepositoryImpl(datasource);
             CustomerRepository customerRepository = new CustomerRepositoryImpl(datasource);
@@ -89,15 +96,18 @@ public class GlobalContextListener implements ServletContextListener {
             // Service
             PasswordEncoder passwordEncoder = new BCryptPasswordEncoderImpl();
             CloudinaryService cloudinaryService = new CloudinaryService(cloudinary);
-            AuditLogService auditLogService = new AuditLogService(auditLogRepository);
-            RefreshTokenService refreshTokenService = new RefreshTokenService(refreshTokenRepository, userRepository);
+            AuditLogService auditLogService = new AuditLogService(auditLogRepository, transactionManager);
+            RefreshTokenService refreshTokenService = new RefreshTokenService(refreshTokenRepository, userRepository, transactionManager);
             DashboardService dashboardService = new DashboardService(productRepository, orderRepository, productItemRepository, auditLogRepository, warrantyRepository, customerRepository);
-            UserService userService = new UserService(userRepository, roleRepository, passwordEncoder, auditLogService, datasource);
-            AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService, auditLogService);
-            WarehouseService warehouseService = new WarehouseService(productRepository, productItemRepository, stockMovementRepository, orderRepository, orderItemRepository, auditLogService);
-            OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository, productItemRepository, customerRepository, warehouseService, auditLogService);
-            CategoryService categoryService = new CategoryService(categoryRepository, auditLogService);
-            WarrantyService warrantyService = new WarrantyService(warrantyRepository, productItemRepository, orderRepository, auditLogService, warehouseService);
+            UserService userService = new UserService(userRepository, roleRepository, passwordEncoder, auditLogService, transactionManager);
+            AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService, auditLogService, transactionManager);
+            ProductService productService = new ProductService(auditLogService, productRepository, transactionManager);
+            StockService stockService = new StockService(productRepository, productItemRepository, stockMovementRepository, orderRepository, orderItemRepository, auditLogService, transactionManager);
+            InventoryService inventoryService = new InventoryService(inventorySessionRepository, inventoryDetailRepository, productItemRepository, transactionManager);
+            WarehouseService warehouseService = new WarehouseService(warehouseRepository, warehouseLocationRepository, stockService, auditLogService, productItemRepository, transactionManager);
+            OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository, productItemRepository, customerRepository, stockService, auditLogService, transactionManager);
+            CategoryService categoryService = new CategoryService(categoryRepository, auditLogService, transactionManager);
+            WarrantyService warrantyService = new WarrantyService(warrantyRepository, productItemRepository, orderRepository, auditLogService, stockService, transactionManager);
             AiAgentService aiAgentService = LangChainConfig.getAssistant();
             // Controller
             UserController userController = new UserController(userService);
@@ -109,7 +119,9 @@ public class GlobalContextListener implements ServletContextListener {
             AuthController authController = new AuthController(authService);
             CloudinaryController cloudinaryController = new CloudinaryController(cloudinaryService);
             AiAgentController aiAgentController = new AiAgentController(aiAgentService);
-            ProductController productController = new ProductController(warehouseService);
+            ProductController productController = new ProductController(productService);
+            InventoryController inventoryController = new InventoryController(inventoryService);
+            StockController stockController = new StockController(stockService);
             WarrantyController warrantyController = new WarrantyController(warrantyService);
             // Initializer
             DataInitializer initializer = new DataInitializer(userRepository, roleRepository, passwordEncoder);
@@ -129,6 +141,8 @@ public class GlobalContextListener implements ServletContextListener {
             ctx.setAttribute("categoryController", categoryController);
             ctx.setAttribute("cloudinaryController", cloudinaryController);
             ctx.setAttribute("dashboardController", dashboardController);
+            ctx.setAttribute("inventoryController", inventoryController);
+            ctx.setAttribute("stockController", stockController);
             ctx.setAttribute("orderController", orderController);
             ctx.setAttribute("productController", productController);
             ctx.setAttribute("userController", userController);
