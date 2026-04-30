@@ -86,4 +86,8 @@ public class DashboardService {
         return result;
     }
 
+
+    public List<ProductItem> getAgingStockReport(int daysThreshold) {
+        return itemRepository.findAgingStock(daysThreshold);
+    }
 }

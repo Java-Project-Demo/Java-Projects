@@ -1,6 +1,7 @@
 package org.dawn.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.sys.AppConfig;
 import org.dawn.backend.constant.Message;
 import org.dawn.backend.entity.RefreshToken;
@@ -19,28 +20,28 @@ public class RefreshTokenService {
 
 
     private final Long refreshTokenDurations = Long.valueOf(AppConfig.get("app.jwtRefreshExpirationsMs"));
-
     private final RefreshTokenRepository refreshTokenRepository;
-
     private final UserRepository userRepository;
-
+    private final TransactionManager manager;
 
 
     public RefreshToken createRefreshToken(Long userId) {
-        User user = userRepository
-                .findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
+        return manager.execute(() -> {
+            User user = userRepository
+                    .findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
 
-        refreshTokenRepository.deleteByUser(user);
+            refreshTokenRepository.deleteByUser(user);
 
-        RefreshToken refreshToken = RefreshToken
-                .builder()
-                .user(user)
-                .expiryDate(Instant.now().plusMillis(refreshTokenDurations))
-                .token(UUID.randomUUID().toString())
-                .build();
+            RefreshToken refreshToken = RefreshToken
+                    .builder()
+                    .user(user)
+                    .expiryDate(Instant.now().plusMillis(refreshTokenDurations))
+                    .token(UUID.randomUUID().toString())
+                    .build();
 
-        return refreshTokenRepository.save(refreshToken);
+            return refreshTokenRepository.save(refreshToken);
+        });
     }
 
     public Optional<RefreshToken> findByToken(String token) {
@@ -60,9 +61,12 @@ public class RefreshTokenService {
 
 
     public void deleteByUserId(Long userId) {
-        userRepository
-                .findById(userId)
-                .ifPresent(refreshTokenRepository::deleteByUser);
+        manager.execute(() -> {
+            userRepository
+                    .findById(userId)
+                    .ifPresent(refreshTokenRepository::deleteByUser);
+            return null;
+        });
     }
 
 }

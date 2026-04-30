@@ -2,6 +2,7 @@ package org.dawn.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.response.PageResponse;
 import org.dawn.backend.config.response.ResponsePage;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
@@ -30,7 +31,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService auditLogService;
-    private final DataSource dataSource;
+    private final TransactionManager manager;
 
     public ResponsePage<UserResponse> findAll(int page, int size) {
         PageResponse<User> users = userRepository.findAll(page, size);
@@ -52,94 +53,102 @@ public class UserService {
     }
 
     public UserResponse createUser(RegisterRequest request) {
-        String baseUsername = UserUtils.getBaseUsername(request.getFullName());
+        return manager.execute(() -> {
+            String baseUsername = UserUtils.getBaseUsername(request.getFullName());
 
-        String finalUsername = baseUsername;
+            String finalUsername = baseUsername;
 
-        int counter = 1;
+            int counter = 1;
 
-        while (userRepository.existsByUserName(finalUsername)) {
-            finalUsername = baseUsername + counter;
-            counter++;
-        }
+            while (userRepository.existsByUserName(finalUsername)) {
+                finalUsername = baseUsername + counter;
+                counter++;
+            }
 
 
-        String tempPass = UserUtils.generateTempPassword();
+            String tempPass = UserUtils.generateTempPassword();
 
-        Role role = roleRepository
-                .findByName(URole.valueOf(request.getRoleName()))
-                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ROLE_NOT_FOUND));
+            Role role = roleRepository
+                    .findByName(URole.valueOf(request.getRoleName()))
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ROLE_NOT_FOUND));
 
-        User user = User.builder()
-                .username(finalUsername)
-                .fullName(request.getFullName())
-                .password(passwordEncoder.encode(tempPass))
-                .status(request.getStatus() != null ? request.getStatus() : "NEW")
-                .role(role)
-                .isPasswordReset(true)
-                .build();
-        User savedUser = userRepository.save(user);
+            User user = User.builder()
+                    .username(finalUsername)
+                    .fullName(request.getFullName())
+                    .password(passwordEncoder.encode(tempPass))
+                    .status(request.getStatus() != null ? request.getStatus() : "NEW")
+                    .role(role)
+                    .isPasswordReset(true)
+                    .build();
+            User savedUser = userRepository.save(user);
 
-        auditLogService.saveLog(
-                LogConstant.Action.CREATE_USER,
-                LogConstant.Entity.USER,
-                savedUser.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Create new user");
-        return UserMappingHelper.map(savedUser);
+            auditLogService.saveLog(
+                    LogConstant.Action.CREATE_USER,
+                    LogConstant.Entity.USER,
+                    savedUser.getId().toString(),
+                    LogConstant.Status.SUCCESS,
+                    "Create new user");
+            return UserMappingHelper.map(savedUser);
+        });
     }
 
     public UserResponse updateStatus(Long id, Boolean status) {
-        User user = userRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
-        user.setIsDeleted(status);
-        User savedUser = userRepository.save(user);
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_STATUS,
-                LogConstant.Entity.USER,
-                savedUser.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Update user status");
-        return UserMappingHelper.map(savedUser);
+        return manager.execute(() -> {
+            User user = userRepository
+                    .findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
+            user.setIsDeleted(status);
+            User savedUser = userRepository.save(user);
+            auditLogService.saveLog(
+                    LogConstant.Action.UPDATE_STATUS,
+                    LogConstant.Entity.USER,
+                    savedUser.getId().toString(),
+                    LogConstant.Status.SUCCESS,
+                    "Update user status");
+            return UserMappingHelper.map(savedUser);
+        });
     }
 
     public UserResponse updateInfo(Long id, UpdateInfoRequest request) {
-        User user = userRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
+        return manager.execute(() -> {
+            User user = userRepository
+                    .findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
 
-        user.setFullName(request.getFullName());
-        user.setGender(request.getGender());
-        user.setDob(request.getDob());
-        user.setPhoneNumber(request.getPhoneNumber());
+            user.setFullName(request.getFullName());
+            user.setGender(request.getGender());
+            user.setDob(request.getDob());
+            user.setPhoneNumber(request.getPhoneNumber());
 
-        User savedUser = userRepository.save(user);
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_INFO,
-                LogConstant.Entity.USER,
-                savedUser.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Update user info");
-        return UserMappingHelper.map(savedUser);
+            User savedUser = userRepository.save(user);
+            auditLogService.saveLog(
+                    LogConstant.Action.UPDATE_INFO,
+                    LogConstant.Entity.USER,
+                    savedUser.getId().toString(),
+                    LogConstant.Status.SUCCESS,
+                    "Update user info");
+            return UserMappingHelper.map(savedUser);
+        });
     }
 
     public UserResponse updateRole(Long id, URole roleName) {
-        User user = userRepository
-                .findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
+        return manager.execute(() -> {
+            User user = userRepository
+                    .findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
 
-        Role role = roleRepository.findByName(roleName).orElse(user.getRole());
-        user.setRole(role);
+            Role role = roleRepository.findByName(roleName).orElse(user.getRole());
+            user.setRole(role);
 
-        User savedUser = userRepository.save(user);
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_ROLE,
-                LogConstant.Entity.USER,
-                savedUser.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Update user role");
-        return UserMappingHelper.map(savedUser);
+            User savedUser = userRepository.save(user);
+            auditLogService.saveLog(
+                    LogConstant.Action.UPDATE_ROLE,
+                    LogConstant.Entity.USER,
+                    savedUser.getId().toString(),
+                    LogConstant.Status.SUCCESS,
+                    "Update user role");
+            return UserMappingHelper.map(savedUser);
+        });
     }
 
     public boolean existsByRoleName(String roleName) {

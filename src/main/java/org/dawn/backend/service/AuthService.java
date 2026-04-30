@@ -3,6 +3,7 @@ package org.dawn.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
 import org.dawn.backend.constant.LogConstant;
 import org.dawn.backend.constant.Message;
@@ -23,14 +24,11 @@ import org.dawn.backend.utils.UserUtils;
 public class AuthService {
 
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final JWTUtils jwtUtils;
-
     private final RefreshTokenService refreshTokenService;
-
     private final AuditLogService auditLogService;
+    private final TransactionManager manager;
 
     public JwtResponse login(LoginRequest req) {
 
