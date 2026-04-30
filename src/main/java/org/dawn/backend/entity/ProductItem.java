@@ -12,8 +12,8 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(exclude = {"product", "location"})
-@ToString(exclude = {"product", "location"})
+@EqualsAndHashCode(exclude = {"supplier", "product", "location"})
+@ToString(exclude = {"supplier", "product", "location"})
 public class ProductItem {
 
     private Long id;
@@ -26,10 +26,11 @@ public class ProductItem {
 
     private BigDecimal costPrice;
 
-    private String supplierName;
+    private Long supplierId;
 
     private String condition;
 
+    @Builder.Default
     private ItemStatus status = ItemStatus.AVAILABLE;
 
     private Long orderId;
@@ -42,6 +43,8 @@ public class ProductItem {
     private Instant soldDate;
 
     private Product product;
+
+    private Supplier supplier;
 
     private WarehouseLocation location;
 }

@@ -6,7 +6,7 @@ import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.constant.catalog.ItemStatus;
-import org.dawn.backend.constant.catalog.ProductStatus;
+import org.dawn.backend.constant.system.ActiveStatus;
 import org.dawn.backend.constant.inventory.MovementType;
 import org.dawn.backend.constant.sales.OrderStatus;
 import org.dawn.backend.constant.system.LogConstant;
@@ -61,7 +61,7 @@ public class StockService {
                         .productId(req.getProductId())
                         .locationId(req.getLocationId())
                         .costPrice(req.getCostPrice())
-                        .supplierName(req.getSupplier())
+                        .supplierId(req.getSupplierId())
                         .imei(imei)
                         .status(ItemStatus.AVAILABLE)
                         .build());
@@ -72,8 +72,8 @@ public class StockService {
             int importQty = req.getImeiList().size();
             product.setCurrentStock(product.getCurrentStock() + importQty);
 
-            if (product.getStatus() == ProductStatus.INACTIVE) {
-                product.setStatus(ProductStatus.ACTIVE);
+            if (product.getStatus() == ActiveStatus.INACTIVE) {
+                product.setStatus(ActiveStatus.ACTIVE);
             }
 
             Product savedProduct = productRepository.save(product);

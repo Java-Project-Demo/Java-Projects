@@ -3,12 +3,12 @@ package org.dawn.backend.constant.system;
 public class LogConstant {
     // Action
     public static class Action {
-        // Auth
+        //     Auth
         public static final String LOGIN = "LOGIN";
         public static final String LOGOUT = "LOGOUT";
         public static final String REFRESH_TOKEN = "REFRESH_TOKEN";
 
-        // User
+        //     User
         public static final String CREATE_USER = "CREATE_USER";
         public static final String UPDATE_USER = "UPDATE_USER";
         public static final String UPDATE_INFO = "UPDATE_USER_INFO";
@@ -18,12 +18,18 @@ public class LogConstant {
         public static final String CHANGE_PASSWORD = "CHANGE_PASSWORD";
         public static final String RESET_PASSWORD = "RESET_PASSWORD";
 
-        // Category
+
+        //     Supplier
+        public static final String CREATE_SUPPLIER = "CREATE_SUPPLIER";
+        public static final String UPDATE_SUPPLIER = "UPDATE_SUPPLIER";
+        public static final String DELETE_SUPPLIER = "DELETE_SUPPLIER";
+
+        //     Category
         public static final String CREATE_CATEGORY = "CREATE_CATEGORY";
         public static final String UPDATE_CATEGORY = "UPDATE_CATEGORY";
         public static final String DELETE_CATEGORY = "DELETE_CATEGORY";
 
-        // Warehouse/Product
+        //     Warehouse/Product
         public static final String CREATE_PRODUCT = "CREATE_PRODUCT";
         public static final String UPDATE_PRODUCT = "UPDATE_PRODUCT";
         public static final String DELETE_PRODUCT = "DELETE_PRODUCT";
@@ -32,13 +38,13 @@ public class LogConstant {
         public static final String ADJUST_STOCK = "ADJUST_STOCK";
         public static final String MARK_DAMAGED = "MARK_DAMAGED";
 
-        // Order
+        //     Order
         public static final String CREATE_ORDER = "CREATE_ORDER";
         public static final String CANCEL_ORDER = "CANCEL_ORDER";
         public static final String COMPLETE_ORDER = "COMPLETE_ORDER";
         public static final String RETURN_ORDER = "RETURN_ORDER";
 
-        // Warranty
+        //     Warranty
         public static final String RECEIVE_WARRANTY = "RECEIVE_WARRANTY";
     }
 
@@ -50,6 +56,7 @@ public class LogConstant {
         public static final String PRODUCT = "PRODUCT";
         public static final String PRODUCT_ITEM = "PRODUCT_ITEM";
         public static final String ORDER = "ORDER";
+        public static final String SUPPLIER = "SUPPLIER";
         public static final String WARRANTY_CLAIM = "WARRANTY_CLAIM";
         public static final String AUDIT_LOG = "AUDIT_LOG";
         public static final String WAREHOUSE = "WAREHOUSE";

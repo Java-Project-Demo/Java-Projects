@@ -78,7 +78,7 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
         if (entity.getId() == null) {
             String sql = """
                     INSERT INTO product_items
-                    (product_id, location_id, imei, cost_price, supplier_name, condition, status, order_id, warranty_expiry_date, import_date)
+                    (product_id, location_id, imei, cost_price, supplier_id, condition, status, order_id, warranty_expiry_date, import_date)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
 
@@ -87,7 +87,7 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
                     entity.getLocationId(),
                     entity.getImei(),
                     entity.getCostPrice(),
-                    entity.getSupplierName(),
+                    entity.getSupplierId(),
                     entity.getCondition(),
                     ItemStatus.AVAILABLE.name(),
                     null,
@@ -98,14 +98,14 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
         } else {
             String sql = """
                     UPDATE product_items
-                    SET location_id = ?, cost_price = ?, supplier_name = ?, condition = ?,status = ?, order_id = ?, warranty_expiry_date = ?, sold_date = ?
+                    SET location_id = ?, cost_price = ?, supplier_id = ?, condition = ?,status = ?, order_id = ?, warranty_expiry_date = ?, sold_date = ?
                     WHERE id = ?
                     """;
 
             executeQuery(sql,
                     entity.getLocationId(),
                     entity.getCostPrice(),
-                    entity.getSupplierName(),
+                    entity.getSupplierId(),
                     entity.getCondition(),
                     entity.getStatus().name(),
                     entity.getOrderId(),
@@ -123,7 +123,7 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
     public void saveAll(List<ProductItem> entities) {
         String sql = """
                 INSERT INTO product_items
-                (product_id, location_id, imei, cost_price, supplier_name, condition, status, order_id, warranty_expiry_date, import_date)
+                (product_id, location_id, imei, cost_price, supplier_id, condition, status, order_id, warranty_expiry_date, import_date)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         Timestamp now = Timestamp.from(Instant.now());
@@ -132,7 +132,7 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
                 entity.getLocationId(),
                 entity.getImei(),
                 entity.getCostPrice(),
-                entity.getSupplierName(),
+                entity.getSupplierId(),
                 entity.getCondition(),
                 entity.getStatus() != null ? entity.getStatus().name() : ItemStatus.AVAILABLE.name(),
                 entity.getOrderId() != null ? entity.getOrderId() : null,
@@ -203,12 +203,13 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
     private ProductItem mapResultSet(ResultSet rs) throws SQLException {
         Long orderId = rs.getObject("order_id") != null ? rs.getLong("order_id") : null;
         Long locationId = rs.getObject("location_id") != null ? rs.getLong("location_id") : null;
+        Long supplierId = rs.getObject("supplier_id") != null ? rs.getLong("supplier_id") : null;
         return ProductItem.builder()
                 .id(rs.getLong("id"))
                 .productId(rs.getLong("product_id"))
                 .imei(rs.getString("imei"))
                 .costPrice(rs.getBigDecimal("cost_price"))
-                .supplierName(rs.getString("supplier_name"))
+                .supplierId(supplierId)
                 .locationId(locationId)
                 .condition(rs.getString("condition"))
                 .status(ItemStatus.valueOf(rs.getString("status")))

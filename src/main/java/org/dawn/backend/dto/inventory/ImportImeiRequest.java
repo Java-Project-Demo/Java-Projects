@@ -16,6 +16,6 @@ public class ImportImeiRequest {
     private Long productId;
     private Long locationId;
     private BigDecimal costPrice;
-    private String supplier;
+    private Long supplierId;
     private List<String> imeiList;
 }
