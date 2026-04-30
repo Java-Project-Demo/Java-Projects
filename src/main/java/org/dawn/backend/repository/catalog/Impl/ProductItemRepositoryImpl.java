@@ -207,7 +207,6 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
                 .id(rs.getLong("id"))
                 .productId(rs.getLong("product_id"))
                 .imei(rs.getString("imei"))
-
                 .costPrice(rs.getBigDecimal("cost_price"))
                 .supplierName(rs.getString("supplier_name"))
                 .locationId(locationId)

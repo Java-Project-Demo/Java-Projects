@@ -23,10 +23,10 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
     public List<Category> findAll() {
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description, c.is_deleted AS cat_is_deleted,
-                c.created_at, c.updated_at,
+                c.created_at AS cat_created_at, c.updated_at AS cat_updated_at,
                 p.id AS pro_id, p.sku, p.name AS pro_name, p.price_import_std, p.price_export_std,
-                p.current_stock, p.min_threshold, p.status AS pro_status,
-                p.created_at, p.updated_at
+                p.current_stock, p.min_threshold, p.status AS pro_status, p.specifications AS pro_spec,
+                p.created_at AS pro_created_at, p.updated_at AS pro_updated_at
                 FROM categories c
                 LEFT JOIN products p ON c.id = p.category_id
                 ORDER BY c.created_at DESC
@@ -54,15 +54,17 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
                     Product item = Product
                             .builder()
                             .id(itemId)
+                            .categoryId(id)
                             .sku(rs.getString("sku"))
                             .name(rs.getString("pro_name"))
-                            .priceImport(rs.getBigDecimal("price_import"))
-                            .priceExport(rs.getBigDecimal("price_export"))
+                            .specifications(rs.getString("pro_spec"))
+                            .priceImport(rs.getBigDecimal("price_import_std"))
+                            .priceExport(rs.getBigDecimal("price_export_std"))
                             .currentStock(rs.getInt("current_stock"))
                             .minThreshold(rs.getInt("min_threshold"))
                             .status(ProductStatus.valueOf(rs.getString("pro_status")))
-                            .createdAt(getInstant(rs, "created_at"))
-                            .updatedAt(getInstant(rs, "updated_at"))
+                            .createdAt(getInstant(rs, "pro_created_at"))
+                            .updatedAt(getInstant(rs, "pro_updated_at"))
                             .build();
                     category.getItems().add(item);
                 }
@@ -76,10 +78,10 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
     public Optional<Category> findById(Long id) {
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description, c.is_deleted AS cat_is_deleted,
-                c.created_at, c.updated_at,
+                c.created_at AS cat_created_at, c.updated_at AS cat_updated_at,
                 p.id AS pro_id, p.sku, p.name AS pro_name, p.price_import_std, p.price_export_std,
-                p.current_stock, p.min_threshold, p.status,
-                p.created_at, p.updated_at
+                p.current_stock, p.min_threshold, p.status AS pro_status, p.specifications AS pro_spec,
+                p.created_at AS pro_created_at, p.updated_at AS pro_updated_at
                 FROM categories c
                 LEFT JOIN products p ON c.id = p.category_id
                 WHERE c.id = ?
@@ -107,15 +109,17 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
                     Product item = Product
                             .builder()
                             .id(itemId)
+                            .categoryId(id)
                             .sku(rs.getString("sku"))
                             .name(rs.getString("pro_name"))
-                            .priceImport(rs.getBigDecimal("price_import"))
-                            .priceExport(rs.getBigDecimal("price_export"))
+                            .specifications(rs.getString("pro_spec"))
+                            .priceImport(rs.getBigDecimal("price_import_std"))
+                            .priceExport(rs.getBigDecimal("price_export_std"))
                             .currentStock(rs.getInt("current_stock"))
                             .minThreshold(rs.getInt("min_threshold"))
                             .status(ProductStatus.valueOf(rs.getString("pro_status")))
-                            .createdAt(getInstant(rs, "created_at"))
-                            .updatedAt(getInstant(rs, "updated_at"))
+                            .createdAt(getInstant(rs, "pro_created_at"))
+                            .updatedAt(getInstant(rs, "pro_updated_at"))
                             .build();
                     category.getItems().add(item);
                 }
@@ -130,10 +134,10 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
     public Optional<Category> findByName(String name) {
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description, c.is_deleted AS cat_is_deleted,
-                c.created_at, c.updated_at,
+                c.created_at AS cat_created_at, c.updated_at AS cat_updated_at,
                 p.id AS pro_id, p.sku, p.name AS pro_name, p.price_import_std, p.price_export_std,
-                p.current_stock, p.min_threshold, p.status,
-                p.created_at, p.updated_at
+                p.current_stock, p.min_threshold, p.status AS pro_status, p.specifications AS pro_spec,
+                p.created_at AS pro_created_at, p.updated_at AS pro_updated_at
                 FROM categories c
                 LEFT JOIN products p ON c.id = p.category_id
                 WHERE c.name = ?
@@ -144,7 +148,7 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
 
         super.query(sql, rs -> {
             while (rs.next()) {
-                String categoryName = rs.getString("cat_id");
+                Long id = rs.getLong("cat_id");
 
                 Category category = map.computeIfAbsent(name, k -> {
                     try {
@@ -161,8 +165,10 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
                     Product item = Product
                             .builder()
                             .id(itemId)
+                            .categoryId(id)
                             .sku(rs.getString("sku"))
                             .name(rs.getString("pro_name"))
+                            .specifications(rs.getString("pro_spec"))
                             .priceImport(rs.getBigDecimal("price_import_std"))
                             .priceExport(rs.getBigDecimal("price_export_std"))
                             .currentStock(rs.getInt("current_stock"))
@@ -227,8 +233,8 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
                 .name(rs.getString("cat_name"))
                 .description(rs.getString("description"))
                 .isDeleted(rs.getBoolean("cat_is_deleted"))
-                .createdAt(getInstant(rs, "created_at"))
-                .updatedAt(getInstant(rs, "updated_at"))
+                .createdAt(getInstant(rs, "cat_created_at"))
+                .updatedAt(getInstant(rs, "cat_updated_at"))
                 .build();
     }
 
