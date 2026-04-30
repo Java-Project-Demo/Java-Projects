@@ -6,7 +6,10 @@ import lombok.RequiredArgsConstructor;
 import org.dawn.backend.config.annotation.Get;
 import org.dawn.backend.config.response.ResponseObject;
 import org.dawn.backend.controller.config.AbstractController;
+import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.service.DashboardService;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 public class DashboardController extends AbstractController {
@@ -20,11 +23,16 @@ public class DashboardController extends AbstractController {
     }
 
 
-    @Get("/trace-imei")
-
+    @Get("/trace")
     public ResponseObject<?> trace(HttpServletRequest req) {
         String imei = req.getParameter("imei");
         return ResponseObject.success(dashboardService.traceImei(imei));
+    }
+
+    @Get("/aging-report")
+    public ResponseObject<List<ProductItem>> getAgingReport(HttpServletRequest req) {
+        int days = Integer.parseInt(req.getParameter("days"));
+        return ResponseObject.success(dashboardService.getAgingStockReport(days));
     }
 
     @Get("/summary")
