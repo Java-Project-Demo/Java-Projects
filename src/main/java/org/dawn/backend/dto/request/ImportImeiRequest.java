@@ -14,6 +14,7 @@ import java.util.List;
 @SuperBuilder
 public class ImportImeiRequest {
     private Long productId;
+    private Long locationId;
     private BigDecimal costPrice;
     private String supplier;
     private List<String> imeiList;

@@ -27,6 +27,7 @@ public class LogConstant {
         public static final String CREATE_PRODUCT = "CREATE_PRODUCT";
         public static final String UPDATE_PRODUCT = "UPDATE_PRODUCT";
         public static final String DELETE_PRODUCT = "DELETE_PRODUCT";
+        public static final String CREATE_WAREHOUSE = "CREATE_WAREHOUSE";
         public static final String IMPORT_STOCK = "IMPORT_STOCK";
         public static final String ADJUST_STOCK = "ADJUST_STOCK";
         public static final String MARK_DAMAGED = "MARK_DAMAGED";
@@ -51,6 +52,7 @@ public class LogConstant {
         public static final String ORDER = "ORDER";
         public static final String WARRANTY_CLAIM = "WARRANTY_CLAIM";
         public static final String AUDIT_LOG = "AUDIT_LOG";
+        public static final String WAREHOUSE = "WAREHOUSE";
     }
 
     // Status
