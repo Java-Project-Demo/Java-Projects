@@ -1,5 +1,6 @@
 package org.dawn.backend.controller.base;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -9,13 +10,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.config.security.SecurityContext;
+import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.config.web.annotation.Delete;
 import org.dawn.backend.config.web.annotation.Get;
 import org.dawn.backend.config.web.annotation.Post;
 import org.dawn.backend.config.web.annotation.Put;
 import org.dawn.backend.config.web.response.ResponseObject;
-import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.config.security.UserPrincipal;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -29,6 +30,7 @@ import java.util.regex.Pattern;
 public abstract class AbstractController extends HttpServlet {
     protected final ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     private final Map<String, Method> routeMap = new HashMap<>();
 
