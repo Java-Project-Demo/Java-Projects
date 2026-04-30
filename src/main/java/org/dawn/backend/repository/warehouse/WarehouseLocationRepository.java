@@ -1,0 +1,15 @@
+package org.dawn.backend.repository.warehouse;
+
+import org.dawn.backend.entity.ProductItem;
+import org.dawn.backend.entity.WarehouseLocation;
+import org.dawn.backend.repository.base.BaseRepository;
+
+import java.util.List;
+
+public interface WarehouseLocationRepository extends BaseRepository<WarehouseLocation, Long> {
+    void saveAll(List<WarehouseLocation> entities);
+
+    List<WarehouseLocation> findByWarehouseId(Long warehouseId);
+
+    List<WarehouseLocation> findEmptyLocations();
+}

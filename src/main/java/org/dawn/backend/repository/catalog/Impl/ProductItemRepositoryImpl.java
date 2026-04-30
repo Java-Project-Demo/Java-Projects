@@ -9,6 +9,7 @@ import org.dawn.backend.repository.catalog.ProductItemRepository;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,17 +37,54 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
     }
 
     @Override
+    public List<String> findMissingImeis(Long sessionId) {
+        String sql = """
+                SELECT imei FROM product_items
+                WHERE status = 'AVAILABLE'
+                AND imei NOT IN (
+                     SELECT imei FROM inventory_details WHERE session_id = ?
+                )
+                """;
+        List<String> list = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setObject(1, sessionId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString("imei"));
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error find missing imeis for session {}", sessionId, e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<ProductItem> findAgingStock(int days) {
+        String sql = """
+                SELECT *
+                FROM product_items
+                WHERE status = 'AVAILABLE'
+                AND import_date < (CURRENT_TIMESTAMP - NUMTODSINTERVAL(? , 'DAY'))
+                ORDER BY import_date ASC
+                """;
+        return queryList(sql, this::mapResultSet, (double) days);
+    }
+
+    @Override
     public ProductItem save(ProductItem entity) {
         Timestamp now = Timestamp.from(Instant.now());
         if (entity.getId() == null) {
             String sql = """
                     INSERT INTO product_items
-                    (product_id, imei, cost_price, supplier_name, condition, status, order_id, warranty_expiry_date, import_date)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (product_id, location_id, imei, cost_price, supplier_name, condition, status, order_id, warranty_expiry_date, import_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
 
             Long id = insert(sql,
                     entity.getProductId(),
+                    entity.getLocationId(),
                     entity.getImei(),
                     entity.getCostPrice(),
                     entity.getSupplierName(),
@@ -59,19 +97,20 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
             entity.setId(id);
         } else {
             String sql = """
-                     UPDATE product_items
-                     SET cost_price = ?, supplier_name = ?, condition = ?, status = ?, order_id = ?, warranty_expiry_date = ?, sold_date = ?
-                     WHERE id = ?
+                    UPDATE product_items
+                    SET location_id = ?, cost_price = ?, supplier_name = ?, condition = ?,status = ?, order_id = ?, warranty_expiry_date = ?, sold_date = ?
+                    WHERE id = ?
                     """;
 
             executeQuery(sql,
+                    entity.getLocationId(),
                     entity.getCostPrice(),
                     entity.getSupplierName(),
                     entity.getCondition(),
                     entity.getStatus().name(),
                     entity.getOrderId(),
-                    entity.getWarrantyExpiryDate(),
-                    entity.getSoldDate() != null ? Timestamp.from(entity.getSoldDate()) : now,
+                    entity.getWarrantyExpiryDate() != null ? Timestamp.from(entity.getWarrantyExpiryDate()) : null,
+                    entity.getSoldDate() != null ? Timestamp.from(entity.getSoldDate()) : null,
                     entity.getId());
 
         }
@@ -84,12 +123,13 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
     public void saveAll(List<ProductItem> entities) {
         String sql = """
                 INSERT INTO product_items
-                (product_id, imei, cost_price, supplier_name, condition, status, order_id, warranty_expiry_date, import_date)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (product_id, location_id, imei, cost_price, supplier_name, condition, status, order_id, warranty_expiry_date, import_date)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         Timestamp now = Timestamp.from(Instant.now());
         List<Object[]> paramsList = entities.stream().map(entity -> new Object[]{
                 entity.getProductId(),
+                entity.getLocationId(),
                 entity.getImei(),
                 entity.getCostPrice(),
                 entity.getSupplierName(),
@@ -161,15 +201,19 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
     }
 
     private ProductItem mapResultSet(ResultSet rs) throws SQLException {
+        Long orderId = rs.getObject("order_id") != null ? rs.getLong("order_id") : null;
+        Long locationId = rs.getObject("location_id") != null ? rs.getLong("location_id") : null;
         return ProductItem.builder()
                 .id(rs.getLong("id"))
                 .productId(rs.getLong("product_id"))
                 .imei(rs.getString("imei"))
+
                 .costPrice(rs.getBigDecimal("cost_price"))
                 .supplierName(rs.getString("supplier_name"))
+                .locationId(locationId)
                 .condition(rs.getString("condition"))
                 .status(ItemStatus.valueOf(rs.getString("status")))
-                .orderId(rs.getLong("order_id"))
+                .orderId(orderId)
                 .warrantyExpiryDate(getInstant(rs, "warranty_expiry_date"))
                 .importDate(getInstant(rs, "import_date"))
                 .soldDate(getInstant(rs, "sold_date"))

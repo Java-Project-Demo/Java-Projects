@@ -11,6 +11,10 @@ public interface ProductItemRepository extends BaseRepository<ProductItem, Long>
 
     List<ProductItem> findByOrderId(Long orderId);
 
+    List<String> findMissingImeis(Long sessionId);
+
+    List<ProductItem> findAgingStock(int days);
+
     void saveAll(List<ProductItem> entities);
 
     long countByOrderId(Long orderId);
