@@ -3,7 +3,7 @@ package org.dawn.backend.entity;
 
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.dawn.backend.constant.catalog.ProductStatus;
+import org.dawn.backend.constant.system.ActiveStatus;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -41,7 +41,8 @@ public class Product extends AbstractMappedEntity {
     @Builder.Default
     private Integer minThreshold = 5;
 
-    private ProductStatus status = ProductStatus.ACTIVE;
+    @Builder.Default
+    private ActiveStatus status = ActiveStatus.INACTIVE;
 
     @Builder.Default
     private Boolean isDeleted = false;

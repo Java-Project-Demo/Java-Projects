@@ -26,7 +26,6 @@ public class User extends AbstractMappedEntity {
     private String password;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-
     private Instant lastLogin;
 
     private Long roleId;

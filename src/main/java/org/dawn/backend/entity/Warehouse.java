@@ -19,5 +19,6 @@ public class Warehouse extends AbstractMappedEntity {
 
     private String address;
 
+    @Builder.Default
     private List<WarehouseLocation> locations = new ArrayList<>();
 }
