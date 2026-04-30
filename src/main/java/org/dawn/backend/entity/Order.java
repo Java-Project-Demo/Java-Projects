@@ -6,12 +6,15 @@ import org.dawn.backend.constant.sales.OrderStatus;
 import org.dawn.backend.constant.sales.PaymentMethod;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"seller", "customer", "items"})
+@ToString(exclude = {"seller", "customer", "items"})
 public class Order extends AbstractMappedEntity {
     private Long id;
 
@@ -26,5 +29,10 @@ public class Order extends AbstractMappedEntity {
     @Builder.Default
     private OrderStatus status = OrderStatus.PENDING;
 
+    private User seller;
+
     private Customer customer;
+
+    @Builder.Default
+    private List<OrderItem> items = new ArrayList<>();
 }

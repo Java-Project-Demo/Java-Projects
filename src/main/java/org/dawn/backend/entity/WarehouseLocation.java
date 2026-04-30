@@ -1,9 +1,6 @@
 package org.dawn.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @Data
@@ -11,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(exclude = "warehouse")
+@ToString(exclude = "warehouse")
 public class WarehouseLocation {
     private Long id;
 

@@ -1,9 +1,6 @@
 package org.dawn.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 
@@ -11,7 +8,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "user")
+@ToString(callSuper = true, exclude = "user")
 public class AuditLog extends AbstractMappedEntity {
     private Long id;
 

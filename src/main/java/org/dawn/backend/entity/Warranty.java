@@ -1,8 +1,6 @@
 package org.dawn.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.dawn.backend.constant.warranty.WarrantyStatus;
 
@@ -12,6 +10,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@EqualsAndHashCode(exclude = {"staff", "customer", "productItem"})
+@ToString(exclude = {"staff", "customer", "productItem"})
 public class Warranty {
     private Long id;
 
@@ -28,4 +28,10 @@ public class Warranty {
     private Instant receivedDate;
 
     private Instant returnDate;
+
+    private User staff;
+
+    private Customer customer;
+
+    private ProductItem productItem;
 }

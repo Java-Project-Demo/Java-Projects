@@ -1,11 +1,9 @@
 package org.dawn.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -13,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true, exclude = "locations")
+@ToString(callSuper = true, exclude = "locations")
 public class Warehouse extends AbstractMappedEntity {
     private Long id;
 
@@ -20,5 +19,5 @@ public class Warehouse extends AbstractMappedEntity {
 
     private String address;
 
-    private List<WarehouseLocation> locations;
+    private List<WarehouseLocation> locations = new ArrayList<>();
 }

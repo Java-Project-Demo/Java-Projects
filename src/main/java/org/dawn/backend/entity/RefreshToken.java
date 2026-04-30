@@ -1,10 +1,7 @@
 package org.dawn.backend.entity;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 
@@ -13,14 +10,17 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(exclude = "user")
+@ToString(exclude = "user")
 public class RefreshToken {
 
     private Long id;
 
-    private User user;
+    private Long userId;
 
     private String token;
 
     private Instant expiryDate;
 
+    private User user;
 }

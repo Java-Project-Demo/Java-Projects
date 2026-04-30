@@ -1,9 +1,6 @@
 package org.dawn.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.dawn.backend.constant.inventory.MovementType;
 
@@ -12,7 +9,8 @@ import org.dawn.backend.constant.inventory.MovementType;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"product", "staff"})
+@ToString(exclude = {"product", "staff"})
 public class StockMovement extends AbstractMappedEntity {
     private Long id;
 
@@ -24,12 +22,13 @@ public class StockMovement extends AbstractMappedEntity {
 
     private Integer quantity;
 
-
     private Long referenceId;
 
     private Long createdBy;
 
     private String note;
 
+    private Product product;
 
+    private User staff;
 }

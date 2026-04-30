@@ -1,8 +1,6 @@
 package org.dawn.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
@@ -11,6 +9,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
+@EqualsAndHashCode(callSuper = false, exclude = "product")
+@ToString(exclude = "product")
 public class OrderItem {
 
     private Long id;
@@ -22,4 +22,6 @@ public class OrderItem {
     private Integer quantity;
 
     private BigDecimal unitPrice;
+
+    private Product product;
 }

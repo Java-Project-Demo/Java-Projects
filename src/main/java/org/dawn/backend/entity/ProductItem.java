@@ -12,7 +12,8 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(exclude = "product")
+@EqualsAndHashCode(exclude = {"product", "location"})
+@ToString(exclude = {"product", "location"})
 public class ProductItem {
 
     private Long id;
@@ -41,4 +42,6 @@ public class ProductItem {
     private Instant soldDate;
 
     private Product product;
+
+    private WarehouseLocation location;
 }

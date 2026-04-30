@@ -13,7 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true, exclude = "items")
+@EqualsAndHashCode(callSuper = true, exclude = {"items", "category"})
+@ToString(exclude = {"items", "category"})
 public class Product extends AbstractMappedEntity {
 
     private Long id;
@@ -45,10 +46,8 @@ public class Product extends AbstractMappedEntity {
     @Builder.Default
     private Boolean isDeleted = false;
 
-
     @Builder.Default
     private List<ProductItem> items = new ArrayList<>();
 
     private Category category;
-
 }

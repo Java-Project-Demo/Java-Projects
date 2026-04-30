@@ -1,8 +1,6 @@
 package org.dawn.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.dawn.backend.constant.inventory.DetailStatus;
 
@@ -10,12 +8,24 @@ import org.dawn.backend.constant.inventory.DetailStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
+@EqualsAndHashCode(callSuper = false, exclude = {"expectedLocation", "actualLocation"})
+@ToString(exclude = {"expectedLocation", "actualLocation"})
 public class InventoryDetail {
     private Long id;
+
     private Long sessionId;
+
     private String imei;
+
     private Long expectedLoc;
+
     private Long actualLoc;
+
     private DetailStatus recordStatus;
+
     private String note;
+
+    private WarehouseLocation expectedLocation;
+
+    private WarehouseLocation actualLocation;
 }

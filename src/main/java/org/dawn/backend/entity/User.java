@@ -11,7 +11,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "role")
+@ToString(callSuper = true, exclude = {"password", "role"})
 public class User extends AbstractMappedEntity {
 
     private Long id;
@@ -28,7 +29,7 @@ public class User extends AbstractMappedEntity {
 
     private Instant lastLogin;
 
-    private Role role;
+    private Long roleId;
 
     private String status;
 
@@ -38,13 +39,11 @@ public class User extends AbstractMappedEntity {
 
     private String phoneNumber;
 
+    private Role role;
+
     @Builder.Default
     private Boolean isPasswordReset = false;
 
     @Builder.Default
     private Boolean isDeleted = false;
-
-    public void updateRole(Role newRole) {
-        this.role = newRole;
-    }
 }

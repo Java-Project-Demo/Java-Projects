@@ -1,9 +1,6 @@
 package org.dawn.backend.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.dawn.backend.constant.auth.URole;
 
@@ -12,15 +9,12 @@ import org.dawn.backend.constant.auth.URole;
 @AllArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class Role extends AbstractMappedEntity {
 
     private Long id;
 
-
     private URole name;
 
-
     private String description;
-
-
 }

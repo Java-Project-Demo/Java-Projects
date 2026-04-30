@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true, exclude = "items")
+@ToString(callSuper = true, exclude = "items")
 public class Category extends AbstractMappedEntity {
     private Long id;
 
