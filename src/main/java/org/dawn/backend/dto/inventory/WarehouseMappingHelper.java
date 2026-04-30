@@ -13,6 +13,7 @@ public interface WarehouseMappingHelper {
 
     static WarehouseResponse map(Warehouse req) {
         return WarehouseResponse.builder()
+                .id(req.getId())
                 .name(req.getName())
                 .address(req.getAddress())
                 .locations(req

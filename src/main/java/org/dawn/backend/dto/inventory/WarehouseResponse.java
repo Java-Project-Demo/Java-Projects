@@ -14,10 +14,11 @@ import java.util.List;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = false)
 public class WarehouseResponse extends BaseResponse {
+    private Long id;
+
     private String name;
 
     private String address;
 
-    @Builder.Default
-    private List<WarehouseLocationResponse> locations = new ArrayList<>();
+    private List<WarehouseLocationResponse> locations;
 }

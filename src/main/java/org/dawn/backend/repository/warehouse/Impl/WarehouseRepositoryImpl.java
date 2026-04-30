@@ -9,6 +9,8 @@ import org.dawn.backend.repository.warehouse.WarehouseRepository;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 
 @Slf4j
@@ -105,13 +107,18 @@ public class WarehouseRepositoryImpl extends AbstractRepository<Warehouse, Long>
 
     @Override
     public Warehouse save(Warehouse entity) {
+        Timestamp now = Timestamp.from(Instant.now());
         if (entity.getId() == null) {
             String sql = """
-                    INSERT INTO warehouses (name, address) VALUES (?, ?)
+                    INSERT INTO warehouses (name, address, created_at, updated_at) VALUES (?, ?, ?, ?)
                     """;
             Long id = insert(sql,
                     entity.getName(),
-                    entity.getAddress());
+                    entity.getAddress(),
+                    now,
+                    now);
+            entity.setCreatedAt(now.toInstant());
+            entity.setUpdatedAt(now.toInstant());
             entity.setId(id);
         } else {
             String sql = """
@@ -120,6 +127,7 @@ public class WarehouseRepositoryImpl extends AbstractRepository<Warehouse, Long>
             executeQuery(sql,
                     entity.getName(),
                     entity.getAddress(),
+                    now,
                     entity.getId());
         }
         return entity;
