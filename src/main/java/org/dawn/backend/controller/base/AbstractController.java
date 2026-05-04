@@ -17,6 +17,8 @@ import org.dawn.backend.config.web.annotation.Get;
 import org.dawn.backend.config.web.annotation.Post;
 import org.dawn.backend.config.web.annotation.Put;
 import org.dawn.backend.config.web.response.ResponseObject;
+import org.dawn.backend.exception.wrapper.AuthorizedDeniedException;
+import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -102,10 +104,10 @@ public abstract class AbstractController extends HttpServlet {
 
     protected void checkRole(String... allowedRoles) {
         UserPrincipal user = currentUser();
-        if (user == null) throw new RuntimeException("401 Unauthorized");
+        if (user == null) throw new AuthorizedDeniedException("401 Unauthorized");
 
         boolean hasAccess = Arrays.asList(allowedRoles).contains(user.role());
-        if (!hasAccess) throw new RuntimeException("403 Forbidden");
+        if (!hasAccess) throw new PermissionDeniedException("403 Forbidden");
     }
 
     protected String query(HttpServletRequest req, String name) {

@@ -13,6 +13,6 @@ public class ApiException extends RuntimeException {
 
     public ApiException(int status, String message) {
         super(message);
-        this.status = 400;
+        this.status = status;
     }
 }
