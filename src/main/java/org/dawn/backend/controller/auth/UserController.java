@@ -59,7 +59,7 @@ public class UserController extends AbstractController {
         return ResponseObject.success(userService.updateStatus(id, status));
     }
 
-    @Put("/{id}/status")
+    @Put("/{id}/role")
     public ResponseObject<UserResponse> updateRole(HttpServletRequest req, HttpServletResponse res) throws Exception {
         checkRole(URole.ADMIN.name());
         Long id = getPathId(req);

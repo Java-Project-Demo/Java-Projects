@@ -3,9 +3,11 @@ package org.dawn.backend.service.auth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.database.TransactionManager;
+import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.web.response.PageResponse;
 import org.dawn.backend.config.web.response.ResponsePage;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
+import org.dawn.backend.constant.system.ActiveStatus;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.constant.auth.URole;
@@ -14,12 +16,15 @@ import org.dawn.backend.dto.auth.UpdateInfoRequest;
 import org.dawn.backend.dto.auth.UserResponse;
 import org.dawn.backend.entity.Role;
 import org.dawn.backend.entity.User;
+import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.dto.auth.UserMappingHelper;
 import org.dawn.backend.repository.auth.RoleRepository;
 import org.dawn.backend.repository.auth.UserRepository;
 import org.dawn.backend.service.system.AuditLogService;
 import org.dawn.backend.utils.UserUtils;
+
+import java.util.Objects;
 
 
 @RequiredArgsConstructor
@@ -93,10 +98,16 @@ public class UserService {
 
     public UserResponse updateStatus(Long id, Boolean status) {
         return manager.execute(() -> {
+
+            if (Objects.equals(id, SecurityContext.get().id())) {
+                throw new PermissionDeniedException("You can not update yourself");
+            }
+
             User user = userRepository
                     .findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
-            user.setIsDeleted(status);
+            user.setIsDeleted(!status);
+            user.setStatus(status ? ActiveStatus.ACTIVE.name() : ActiveStatus.INACTIVE.name());
             User savedUser = userRepository.save(user);
             auditLogService.saveLog(
                     LogConstant.Action.UPDATE_STATUS,
