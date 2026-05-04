@@ -189,7 +189,16 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
 
     @Override
     public Optional<Product> findBySku(String sku) {
-        String sql = "SELECT * FROM products WHERE sku = ?";
+        String sql = """
+                SELECT c.id AS cat_id, c.name AS cat_name, c.description AS cat_desc,
+                       p.id AS pro_id, p.sku, p.name, p.specifications,
+                       p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
+                       p.current_stock, p.min_threshold, p.status AS pro_status, p.is_deleted AS pro_is_deleted,
+                       p.created_at, p.updated_at
+                FROM products p
+                JOIN categories c ON p.category_id = c.id
+                WHERE p.sku = ?
+                """;
         return queryOne(sql, this::mapResultSet, sku);
     }
 
@@ -224,7 +233,16 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
 
     @Override
     public List<Product> findLowStockProducts() {
-        String sql = "SELECT * FROM products WHERE current_stock <= min_threshold";
+        String sql = """
+                SELECT c.id AS cat_id, c.name AS cat_name, c.description AS cat_desc,
+                       p.id AS pro_id, p.sku, p.name, p.specifications,
+                       p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
+                       p.current_stock, p.min_threshold, p.status AS pro_status, p.is_deleted AS pro_is_deleted,
+                       p.created_at, p.updated_at
+                FROM products p
+                JOIN categories c ON p.category_id = c.id
+                WHERE p.current_stock <= p.min_threshold
+                """;
         return queryList(sql, this::mapResultSet);
     }
 

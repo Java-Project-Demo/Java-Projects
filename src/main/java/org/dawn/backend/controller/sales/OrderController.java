@@ -4,6 +4,7 @@ package org.dawn.backend.controller.sales;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.dawn.backend.config.web.annotation.Get;
 import org.dawn.backend.config.web.annotation.Post;
 import org.dawn.backend.config.web.response.ResponseObject;
 import org.dawn.backend.constant.system.Message;
@@ -14,10 +15,21 @@ import org.dawn.backend.dto.sales.OrderResponse;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.service.sales.OrderService;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 public class OrderController extends AbstractController {
 
     private final OrderService orderService;
+
+    @Get("/")
+    public ResponseObject<List<OrderResponse>> getAll(HttpServletRequest req, HttpServletResponse res) {
+
+        String status = query(req, "status");
+        int page = queryInt(req, "page", 0);
+        int size = queryInt(req, "size", 20);
+        return ResponseObject.success(orderService.getAll(status, null, null, page, size));
+    }
 
     @Post("/create")
     public ResponseObject<OrderResponse> create(HttpServletRequest req, HttpServletResponse res) {

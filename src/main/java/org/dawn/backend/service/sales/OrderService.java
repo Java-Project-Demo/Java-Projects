@@ -27,6 +27,7 @@ import org.dawn.backend.service.inventory.StockService;
 import org.dawn.backend.service.system.AuditLogService;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -40,6 +41,23 @@ public class OrderService {
     private final StockService stockService;
     private final AuditLogService auditLogService;
     private final TransactionManager manager;
+
+    public List<OrderResponse> getAll(String status,
+                                      LocalDateTime startDate,
+                                      LocalDateTime endDate,
+                                      int page,
+                                      int size) {
+        return orderRepository.search(
+                        status,
+                        startDate,
+                        endDate,
+                        page,
+                        size)
+                .stream()
+                .map(OrderMappingHelper::map)
+                .toList();
+
+    }
 
     public OrderResponse create(OrderRequest req) {
         return manager.execute(() -> {

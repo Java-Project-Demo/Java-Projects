@@ -3,7 +3,9 @@ package org.dawn.backend.repository.sales.Impl;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.constant.sales.OrderStatus;
 import org.dawn.backend.constant.sales.PaymentMethod;
+import org.dawn.backend.entity.Customer;
 import org.dawn.backend.entity.Order;
+import org.dawn.backend.entity.User;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
@@ -11,6 +13,8 @@ import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +25,44 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
         super(dataSource);
     }
 
+
+    @Override
+    public List<Order> search(String status, LocalDateTime startDate, LocalDateTime endDate, int page, int size) {
+        StringBuilder sql = new StringBuilder("""
+                SELECT o.*,
+                u.full_name AS staff_name,
+                c.full_name AS customer_name,
+                c.phone_number AS customer_phone
+                FROM orders o
+                JOIN users u ON o.sale_id = u.id
+                JOIN customers c ON o.customer_id = c.id
+                WHERE 1=1
+                """);
+        List<Object> params = new ArrayList<>();
+
+        if (status != null && !status.isBlank()) {
+            sql.append(" AND o.status = ?");
+            params.add(status);
+        }
+
+        if (startDate != null) {
+            sql.append(" AND o.created_at >= ?");
+            params.add(Timestamp.valueOf(startDate));
+        }
+
+        if (endDate != null) {
+            sql.append(" AND o.created_at <= ?");
+            params.add(Timestamp.valueOf(endDate));
+        }
+
+        sql.append("""
+                ORDER BY o.created_at DESC
+                OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                """);
+        params.add(page * size);
+        params.add(size);
+        return queryList(sql.toString(), this::mapResultSet, params.toArray());
+    }
 
     @Override
     public List<Order> findAll() {
@@ -183,6 +225,16 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
     }
 
     private Order mapResultSet(ResultSet rs) throws SQLException {
+        Customer customer = Customer
+                .builder()
+                .fullName(rs.getString("customer_name"))
+                .phoneNumber(rs.getString("customer_phone"))
+                .build();
+
+        User seller = User.builder()
+                .fullName(rs.getString("staff_name"))
+                .build();
+
         return Order
                 .builder()
                 .id(rs.getLong("id"))
@@ -191,6 +243,8 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
                 .totalAmount(rs.getBigDecimal("total_amount"))
                 .paymentMethod(PaymentMethod.valueOf(rs.getString("payment_method")))
                 .status(OrderStatus.valueOf(rs.getString("status")))
+                .customer(customer)
+                .seller(seller)
                 .createdAt(getInstant(rs, "created_at"))
                 .updatedAt(getInstant(rs, "updated_at"))
                 .build();
