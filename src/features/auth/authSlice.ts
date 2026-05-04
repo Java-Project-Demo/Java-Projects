@@ -2,15 +2,19 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { UserProfile } from './types'
 import { TOKEN_KEY } from '@/config/axios'
+import { decodeJwt } from './types'
 
 interface AuthState {
   user: UserProfile | null
   isAuthenticated: boolean
 }
 
+const _storedToken = localStorage.getItem(TOKEN_KEY)
+const _restoredUser = _storedToken ? decodeJwt(_storedToken) : null
+
 const initialState: AuthState = {
-  user: null,
-  isAuthenticated: !!localStorage.getItem(TOKEN_KEY),
+  user: _restoredUser,
+  isAuthenticated: !!_storedToken && !!_restoredUser,
 }
 
 const authSlice = createSlice({

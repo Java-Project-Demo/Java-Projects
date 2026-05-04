@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { axiosBaseQuery } from '@/config/axiosBaseQuery'
-import type { DashboardSummary, Product } from '@/types/api'
+import type { DashboardSummary, Product, ProductItem } from '@/types/api'
 
 export const dashboardApi = createApi({
   reducerPath: 'dashboardApi',
@@ -16,9 +16,23 @@ export const dashboardApi = createApi({
       providesTags: ['Dashboard'],
     }),
     traceImei: builder.query<Record<string, unknown>, string>({
-      query: (imei) => ({ url: '/dashboard/trace-imei', method: 'GET', params: { imei } }),
+      query: (imei) => ({ url: '/dashboard/trace', method: 'GET', params: { imei } }),
+    }),
+    getAgingReport: builder.query<ProductItem[], { daysThreshold: number }>({
+      query: ({ daysThreshold }) => ({
+        url: '/dashboard/aging-report',
+        method: 'GET',
+        params: { daysThreshold },
+      }),
     }),
   }),
 })
 
-export const { useGetDashboardSummaryQuery, useGetLowStockQuery, useTraceImeiQuery } = dashboardApi
+export const {
+  useGetDashboardSummaryQuery,
+  useGetLowStockQuery,
+  useTraceImeiQuery,
+  useLazyTraceImeiQuery,
+  useGetAgingReportQuery,
+  useLazyGetAgingReportQuery,
+} = dashboardApi

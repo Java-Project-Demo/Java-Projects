@@ -7,6 +7,7 @@ import viVN from 'antd/locale/vi_VN'
 import { store } from '@/app/store'
 import { antdTheme } from '@/config/theme'
 import AppRoutes from '@/routes'
+import ErrorBoundary from '@/components/shared/ErrorBoundary'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -15,10 +16,12 @@ createRoot(document.getElementById('root')!).render(
       <ConfigProvider theme={antdTheme} locale={viVN}>
         <AntApp>
           <BrowserRouter>
-            <AppRoutes />
+            <ErrorBoundary>
+              <AppRoutes />
+            </ErrorBoundary>
           </BrowserRouter>
         </AntApp>
       </ConfigProvider>
     </Provider>
-  </StrictMode>
+  </StrictMode>,
 )

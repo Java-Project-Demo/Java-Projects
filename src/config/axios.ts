@@ -48,13 +48,17 @@ axiosInstance.interceptors.response.use(
       try {
         const res = await axiosInstance.post<{ data: { accessToken: string } }>('/auth/refresh-token')
         const newToken = res.data?.data?.accessToken
-        if (newToken) localStorage.setItem(TOKEN_KEY, newToken)
+        if (!newToken) throw new Error('No token in refresh response')
+        localStorage.setItem(TOKEN_KEY, newToken)
         processQueue(null)
         return axiosInstance(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError as AxiosError)
         localStorage.removeItem(TOKEN_KEY)
-        window.location.href = '/login'
+        // Avoid redirect loop if already on login page
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false

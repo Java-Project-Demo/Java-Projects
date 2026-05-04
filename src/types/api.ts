@@ -7,10 +7,13 @@ export type UserRole = 'ADMIN' | 'SALES' | 'STOCK'
 
 export interface ProductItem {
   id: number
+  productId?: number
   imei: string
   status: ItemStatus
   importDate: string | null
   soldDate: string | null
+  warrantyExpiryDate?: string | null
+  orderId?: number | null
 }
 
 export interface Product {
@@ -57,6 +60,26 @@ export interface User {
   updatedAt: string
 }
 
+export interface Supplier {
+  id: number
+  name: string
+  contactPerson: string | null
+  phoneNumber: string | null
+  email: string | null
+  address: string | null
+  taxCode: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface OrderItem {
+  id: number
+  productId: number
+  productName: string
+  quantity: number
+  unitPrice: number
+}
+
 export interface OrderResponse {
   id: number
   customerId: number
@@ -66,6 +89,21 @@ export interface OrderResponse {
   paymentMethod: PaymentMethod
   status: OrderStatus
   createdAt: string
+  items?: OrderItem[]
+}
+
+export interface WarrantyResponse {
+  id: number
+  productItemId: number
+  customerId: number | null
+  createdBy: number
+  issueDescription: string
+  status: WarrantyStatus
+  receivedDate: string
+  returnDate: string | null
+  technicalNote?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface AuditLog {
@@ -123,6 +161,17 @@ export interface CategoryRequest {
   name: string
   description?: string
 }
+
+export interface SupplierRequest {
+  name: string
+  contactPerson?: string
+  phoneNumber?: string
+  email?: string
+  address?: string
+  taxCode?: string
+}
+
+export type SupplierUpdateRequest = Partial<SupplierRequest>
 
 export interface ImportImeiRequest {
   productId: number

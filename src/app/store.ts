@@ -4,7 +4,8 @@ import { dashboardApi } from '@/features/dashboard/dashboardApi'
 import { productApi } from '@/features/product/productApi'
 import { categoryApi } from '@/features/category/categoryApi'
 import { orderApi } from '@/features/order/orderApi'
-import { warehouseApi } from '@/features/warehouse/warehouseApi'
+import { stockApi } from '@/features/stock/stockApi'
+import { supplierApi } from '@/features/supplier/supplierApi'
 import { userApi } from '@/features/user/userApi'
 import { warrantyApi } from '@/features/warranty/warrantyApi'
 import { auditLogApi } from '@/features/auditLog/auditLogApi'
@@ -18,7 +19,8 @@ export const store = configureStore({
     [productApi.reducerPath]: productApi.reducer,
     [categoryApi.reducerPath]: categoryApi.reducer,
     [orderApi.reducerPath]: orderApi.reducer,
-    [warehouseApi.reducerPath]: warehouseApi.reducer,
+    [stockApi.reducerPath]: stockApi.reducer,
+    [supplierApi.reducerPath]: supplierApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [warrantyApi.reducerPath]: warrantyApi.reducer,
     [auditLogApi.reducerPath]: auditLogApi.reducer,
@@ -30,7 +32,8 @@ export const store = configureStore({
       .concat(productApi.middleware)
       .concat(categoryApi.middleware)
       .concat(orderApi.middleware)
-      .concat(warehouseApi.middleware)
+      .concat(stockApi.middleware)
+      .concat(supplierApi.middleware)
       .concat(userApi.middleware)
       .concat(warrantyApi.middleware)
       .concat(auditLogApi.middleware),
