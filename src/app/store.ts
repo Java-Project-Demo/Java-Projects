@@ -10,6 +10,7 @@ import { userApi } from '@/features/user/userApi'
 import { warrantyApi } from '@/features/warranty/warrantyApi'
 import { auditLogApi } from '@/features/auditLog/auditLogApi'
 import authReducer from '@/features/auth/authSlice'
+import { aiAgentApi } from '@/features/aiAgent/aiAgentApi.ts'
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +25,7 @@ export const store = configureStore({
     [userApi.reducerPath]: userApi.reducer,
     [warrantyApi.reducerPath]: warrantyApi.reducer,
     [auditLogApi.reducerPath]: auditLogApi.reducer,
+    [aiAgentApi.reducerPath]: aiAgentApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -36,7 +38,8 @@ export const store = configureStore({
       .concat(supplierApi.middleware)
       .concat(userApi.middleware)
       .concat(warrantyApi.middleware)
-      .concat(auditLogApi.middleware),
+      .concat(auditLogApi.middleware)
+      .concat(aiAgentApi.middleware)
 })
 
 export type RootState = ReturnType<typeof store.getState>

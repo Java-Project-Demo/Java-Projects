@@ -1,17 +1,28 @@
 import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { App, Avatar, Button, Dropdown, Form, Input, Layout, Menu, Modal, Typography, theme } from 'antd'
 import {
-  App, Avatar, Button, Dropdown, Form, Input, Layout, Menu, Modal, Typography, theme,
-} from 'antd'
-import {
-  LogoutOutlined, UserOutlined, DashboardOutlined, AppstoreOutlined,
-  ImportOutlined, ExportOutlined, BarChartOutlined, TeamOutlined,
-  InboxOutlined, BarcodeOutlined, SafetyCertificateOutlined, ShopOutlined,
-  ShoppingCartOutlined, SearchOutlined, WarningOutlined, KeyOutlined,
+  LogoutOutlined,
+  UserOutlined,
+  DashboardOutlined,
+  AppstoreOutlined,
+  ImportOutlined,
+  ExportOutlined,
+  BarChartOutlined,
+  TeamOutlined,
+  InboxOutlined,
+  BarcodeOutlined,
+  SafetyCertificateOutlined,
+  ShopOutlined,
+  ShoppingCartOutlined,
+  SearchOutlined,
+  WarningOutlined,
+  KeyOutlined
 } from '@ant-design/icons'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { clearCredentials } from '@/features/auth/authSlice'
 import { useChangePasswordMutation } from '@/features/auth/authApi'
+import ChatPopup from '@/components/shared/ChatPopup.tsx'
 
 const { Header, Content, Footer, Sider } = Layout
 const { Text } = Typography
@@ -26,43 +37,54 @@ interface MenuItem {
 
 const ALL_MENU: MenuItem[] = [
   {
-    key: 'kho', label: 'Kho hàng', icon: <InboxOutlined />,
+    key: 'kho',
+    label: 'Kho hàng',
+    icon: <InboxOutlined />,
     children: [
-      { key: '/',          label: 'Tổng quan',  icon: <DashboardOutlined /> },
-      { key: '/vat-tu',    label: 'Vật tư',     icon: <InboxOutlined />,  roles: ['ADMIN', 'STOCK'] },
-      { key: '/nhap-kho',  label: 'Nhập kho',   icon: <ImportOutlined />, roles: ['ADMIN', 'STOCK'] },
-      { key: '/xuat-kho',  label: 'Xuất kho',   icon: <ExportOutlined />, roles: ['ADMIN', 'SALES'] },
-    ],
+      { key: '/', label: 'Tổng quan', icon: <DashboardOutlined /> },
+      { key: '/vat-tu', label: 'Vật tư', icon: <InboxOutlined />, roles: ['ADMIN', 'STOCK'] },
+      { key: '/nhap-kho', label: 'Nhập kho', icon: <ImportOutlined />, roles: ['ADMIN', 'STOCK'] },
+      { key: '/xuat-kho', label: 'Xuất kho', icon: <ExportOutlined />, roles: ['ADMIN', 'SALES'] }
+    ]
   },
   {
-    key: 'danhmuc', label: 'Danh mục', icon: <AppstoreOutlined />,
+    key: 'danhmuc',
+    label: 'Danh mục',
+    icon: <AppstoreOutlined />,
     children: [
       { key: '/danh-muc-vat-tu', label: 'Danh mục vật tư', icon: <AppstoreOutlined /> },
-      { key: '/nha-cung-cap',    label: 'Nhà cung cấp',    icon: <ShopOutlined /> },
-    ],
+      { key: '/nha-cung-cap', label: 'Nhà cung cấp', icon: <ShopOutlined /> }
+    ]
   },
   {
-    key: 'banhang', label: 'Bán hàng', icon: <ShoppingCartOutlined />,
+    key: 'banhang',
+    label: 'Bán hàng',
+    icon: <ShoppingCartOutlined />,
     children: [
       { key: '/lich-su-don-hang', label: 'Lịch sử đơn hàng', icon: <ShoppingCartOutlined /> },
-      { key: '/bao-hanh',         label: 'Bảo hành',          icon: <SafetyCertificateOutlined /> },
-      { key: '/tra-cuu-imei',     label: 'Tra cứu IMEI',      icon: <SearchOutlined /> },
-    ],
+      { key: '/bao-hanh', label: 'Bảo hành', icon: <SafetyCertificateOutlined /> },
+      { key: '/tra-cuu-imei', label: 'Tra cứu IMEI', icon: <SearchOutlined /> }
+    ]
   },
   {
-    key: 'baocao', label: 'Báo cáo', icon: <BarChartOutlined />, roles: ['ADMIN'],
+    key: 'baocao',
+    label: 'Báo cáo',
+    icon: <BarChartOutlined />,
+    roles: ['ADMIN'],
     children: [
-      { key: '/thong-ke',   label: 'Thống kê',       icon: <BarChartOutlined />, roles: ['ADMIN'] },
-      { key: '/ton-kho-cu', label: 'Tồn kho cũ',     icon: <WarningOutlined />,  roles: ['ADMIN', 'STOCK'] },
-    ],
+      { key: '/thong-ke', label: 'Thống kê', icon: <BarChartOutlined />, roles: ['ADMIN'] },
+      { key: '/ton-kho-cu', label: 'Tồn kho cũ', icon: <WarningOutlined />, roles: ['ADMIN', 'STOCK'] }
+    ]
   },
   {
-    key: 'hethong', label: 'Hệ thống', icon: <TeamOutlined />,
+    key: 'hethong',
+    label: 'Hệ thống',
+    icon: <TeamOutlined />,
     children: [
-      { key: '/nhan-vien',  label: 'Nhân viên',   icon: <TeamOutlined />,  roles: ['ADMIN'] },
-      { key: '/in-barcode', label: 'In Barcode',  icon: <BarcodeOutlined /> },
-    ],
-  },
+      { key: '/nhan-vien', label: 'Nhân viên', icon: <TeamOutlined />, roles: ['ADMIN'] },
+      { key: '/in-barcode', label: 'In Barcode', icon: <BarcodeOutlined /> }
+    ]
+  }
 ]
 
 const filterMenuByRole = (items: MenuItem[], role: string): MenuItem[] => {
@@ -70,7 +92,7 @@ const filterMenuByRole = (items: MenuItem[], role: string): MenuItem[] => {
     .filter((item) => !item.roles || item.roles.includes(role))
     .map((item) => ({
       ...item,
-      children: item.children ? filterMenuByRole(item.children, role) : undefined,
+      children: item.children ? filterMenuByRole(item.children, role) : undefined
     }))
     .filter((item) => !item.children || item.children.length > 0)
 }
@@ -81,7 +103,7 @@ const buildAntdItems = (items: MenuItem[]): any[] =>
     key: item.key,
     icon: item.icon,
     label: item.label,
-    children: item.children ? buildAntdItems(item.children) : undefined,
+    children: item.children ? buildAntdItems(item.children) : undefined
   }))
 
 const MainLayout = () => {
@@ -102,9 +124,7 @@ const MainLayout = () => {
   const antdMenuItems = buildAntdItems(filteredMenu)
 
   // Find which submenu keys should be open based on current path
-  const openKeys = filteredMenu
-    .filter((g) => g.children?.some((c) => c.key === location.pathname))
-    .map((g) => g.key)
+  const openKeys = filteredMenu.filter((g) => g.children?.some((c) => c.key === location.pathname)).map((g) => g.key)
 
   const handleLogout = () => {
     dispatch(clearCredentials())
@@ -113,7 +133,11 @@ const MainLayout = () => {
 
   const handleChangePwd = () => {
     pwdForm.validateFields().then(async (values) => {
-      const { oldPassword, newPassword, confirmPassword } = values as { oldPassword: string; newPassword: string; confirmPassword: string }
+      const { oldPassword, newPassword, confirmPassword } = values as {
+        oldPassword: string
+        newPassword: string
+        confirmPassword: string
+      }
       if (newPassword !== confirmPassword) {
         void message.error('Mật khẩu mới và xác nhận không khớp')
         return
@@ -135,7 +159,10 @@ const MainLayout = () => {
       key: 'change-pwd',
       icon: <KeyOutlined />,
       label: 'Đổi mật khẩu',
-      onClick: () => { pwdForm.resetFields(); setPwdOpen(true) },
+      onClick: () => {
+        pwdForm.resetFields()
+        setPwdOpen(true)
+      }
     },
     { type: 'divider' as const },
     {
@@ -143,18 +170,27 @@ const MainLayout = () => {
       icon: <LogoutOutlined />,
       label: 'Đăng xuất',
       danger: true,
-      onClick: handleLogout,
-    },
+      onClick: handleLogout
+    }
   ]
 
   return (
     <Layout className='min-h-screen'>
-      <Header style={{
-        background: token.colorPrimary, padding: '0 24px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        position: 'sticky', top: 0, zIndex: 100,
-      }}>
-        <Text strong style={{ fontSize: 18, color: '#fff' }}>Warehouse Management System</Text>
+      <Header
+        style={{
+          background: token.colorPrimary,
+          padding: '0 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          position: 'sticky',
+          top: 0,
+          zIndex: 100
+        }}
+      >
+        <Text strong style={{ fontSize: 18, color: '#fff' }}>
+          Warehouse Management System
+        </Text>
 
         <Dropdown menu={{ items: userMenuItems }} placement='bottomRight'>
           <div className='flex items-center gap-2 cursor-pointer select-none'>
@@ -166,11 +202,15 @@ const MainLayout = () => {
 
       <Layout style={{ minHeight: 'calc(100vh - 64px)' }}>
         <Sider
-          collapsible collapsed={collapsed} onCollapse={setCollapsed} width={220}
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          width={220}
           style={{ background: '#001529', minHeight: '100%' }}
         >
           <Menu
-            theme='dark' mode='inline'
+            theme='dark'
+            mode='inline'
             selectedKeys={[location.pathname]}
             defaultOpenKeys={openKeys}
             items={antdMenuItems}
@@ -189,32 +229,59 @@ const MainLayout = () => {
         </Layout>
       </Layout>
 
+      {/* Chatbox Modal*/}
+      <ChatPopup username={user?.username} />
       {/* Change Password Modal */}
       <Modal
-        title={<><KeyOutlined style={{ color: '#1677ff', marginRight: 8 }} />Đổi mật khẩu</>}
-        open={pwdOpen} onCancel={() => setPwdOpen(false)} width={440}
+        title={
+          <>
+            <KeyOutlined style={{ color: '#1677ff', marginRight: 8 }} />
+            Đổi mật khẩu
+          </>
+        }
+        open={pwdOpen}
+        onCancel={() => setPwdOpen(false)}
+        width={440}
         footer={[
-          <Button key='c' onClick={() => setPwdOpen(false)}>Huỷ</Button>,
-          <Button key='s' type='primary' loading={changingPwd} onClick={handleChangePwd}>Xác nhận</Button>,
+          <Button key='c' onClick={() => setPwdOpen(false)}>
+            Huỷ
+          </Button>,
+          <Button key='s' type='primary' loading={changingPwd} onClick={handleChangePwd}>
+            Xác nhận
+          </Button>
         ]}
       >
         <Form form={pwdForm} layout='vertical' style={{ marginTop: 16 }}>
-          <Form.Item label='Mật khẩu hiện tại' name='oldPassword' rules={[{ required: true, message: 'Nhập mật khẩu hiện tại' }]}>
+          <Form.Item
+            label='Mật khẩu hiện tại'
+            name='oldPassword'
+            rules={[{ required: true, message: 'Nhập mật khẩu hiện tại' }]}
+          >
             <Input.Password autoFocus placeholder='Mật khẩu hiện tại' />
           </Form.Item>
-          <Form.Item label='Mật khẩu mới' name='newPassword' rules={[{ required: true, message: 'Nhập mật khẩu mới' }, { min: 6, message: 'Tối thiểu 6 ký tự' }]}>
+          <Form.Item
+            label='Mật khẩu mới'
+            name='newPassword'
+            rules={[
+              { required: true, message: 'Nhập mật khẩu mới' },
+              { min: 6, message: 'Tối thiểu 6 ký tự' }
+            ]}
+          >
             <Input.Password placeholder='Mật khẩu mới' />
           </Form.Item>
-          <Form.Item label='Xác nhận mật khẩu mới' name='confirmPassword'
+          <Form.Item
+            label='Xác nhận mật khẩu mới'
+            name='confirmPassword'
             rules={[
               { required: true, message: 'Xác nhận mật khẩu mới' },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue('newPassword') === value) return Promise.resolve()
                   return Promise.reject(new Error('Mật khẩu xác nhận không khớp'))
-                },
-              }),
-            ]}>
+                }
+              })
+            ]}
+          >
             <Input.Password placeholder='Nhập lại mật khẩu mới' />
           </Form.Item>
         </Form>

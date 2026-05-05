@@ -7,6 +7,7 @@ const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BASE_API_URL ?? 'http://localhost:8888/api/v1',
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
+  timeout: 60000
 })
 
 axiosInstance.interceptors.request.use((config) => {

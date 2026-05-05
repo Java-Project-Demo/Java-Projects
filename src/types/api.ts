@@ -218,3 +218,7 @@ export interface UpdateWarrantyRequest {
   status: WarrantyStatus
   technicalNote?: string
 }
+
+export interface AiAgentRequest {
+  message: string
+}
