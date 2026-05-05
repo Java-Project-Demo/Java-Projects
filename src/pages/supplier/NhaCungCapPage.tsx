@@ -4,7 +4,7 @@ import {
   Space, Statistic, Table, Tag, Tooltip, Typography,
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { PlusOutlined, EditOutlined, ShopOutlined } from '@ant-design/icons'
+import { PlusOutlined, EditOutlined, ShopOutlined, DeleteOutlined, UndoOutlined } from '@ant-design/icons'
 import PageHeader from '@/components/shared/PageHeader'
 import EmptyState from '@/components/shared/EmptyState'
 import {
@@ -19,11 +19,12 @@ const { Text } = Typography
 const PRIMARY = '#E8603C'
 
 const NhaCungCapPage = () => {
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const user = useAppSelector((s) => s.auth.user)
   const isAdmin = user?.role === 'ADMIN'
 
   const [search, setSearch] = useState('')
+  const [showDeleted, setShowDeleted] = useState(false)
   const [editItem, setEditItem] = useState<Supplier | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [form] = Form.useForm<SupplierRequest>()
@@ -34,6 +35,7 @@ const NhaCungCapPage = () => {
 
   const filtered = useMemo(
     () => suppliers.filter((s) => {
+      if (!showDeleted && s.isDeleted) return false
       if (!search) return true
       const q = search.toLowerCase()
       return (
@@ -42,8 +44,32 @@ const NhaCungCapPage = () => {
         (s.taxCode ?? '').toLowerCase().includes(q)
       )
     }),
-    [suppliers, search],
+    [suppliers, search, showDeleted],
   )
+
+  const handleSoftDelete = (record: Supplier) => {
+    modal.confirm({
+      title: record.isDeleted ? 'Khôi phục nhà cung cấp?' : 'Ẩn nhà cung cấp?',
+      content: record.isDeleted
+        ? `Khôi phục lại nhà cung cấp "${record.name}"?`
+        : `Nhà cung cấp "${record.name}" sẽ không còn hiển thị trong danh mục nhập kho. Bạn có thể bật "Hiện đã ẩn" để xem lại.`,
+      okText: record.isDeleted ? 'Khôi phục' : 'Ẩn',
+      okButtonProps: { danger: !record.isDeleted },
+      cancelText: 'Huỷ',
+      onOk: async () => {
+        try {
+          await updateSupplier({
+            id: record.id,
+            data: { isDeleted: !record.isDeleted },
+          }).unwrap()
+          void message.success(record.isDeleted ? 'Đã khôi phục' : 'Đã ẩn nhà cung cấp')
+        } catch (err: unknown) {
+          const e = err as { data?: { message?: string } }
+          void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+        }
+      },
+    })
+  }
 
   const openAdd = () => { setEditItem(null); form.resetFields(); setModalOpen(true) }
   const openEdit = (r: Supplier) => {
@@ -100,12 +126,22 @@ const NhaCungCapPage = () => {
       render: (v: string) => <Text style={{ fontSize: 12 }}>{v ? new Date(v).toLocaleDateString('vi-VN') : '—'}</Text>,
     },
     {
-      title: 'Hành động', key: 'action', width: 90,
+      title: 'Hành động', key: 'action', width: 110,
       render: (_, record) => isAdmin ? (
-        <Tooltip title='Chỉnh sửa'>
-          <Button type='text' size='small' icon={<EditOutlined style={{ color: '#1677ff' }} />}
-            onClick={() => openEdit(record)} />
-        </Tooltip>
+        <Space size={2}>
+          <Tooltip title='Chỉnh sửa'>
+            <Button type='text' size='small' icon={<EditOutlined style={{ color: '#1677ff' }} />}
+              onClick={() => openEdit(record)} disabled={record.isDeleted} />
+          </Tooltip>
+          <Tooltip title={record.isDeleted ? 'Khôi phục' : 'Ẩn nhà cung cấp'}>
+            <Button
+              type='text' size='small'
+              icon={record.isDeleted
+                ? <UndoOutlined style={{ color: '#52c41a' }} />
+                : <DeleteOutlined style={{ color: '#ff4d4f' }} />}
+              onClick={() => handleSoftDelete(record)} />
+          </Tooltip>
+        </Space>
       ) : null,
     },
   ]
@@ -130,9 +166,19 @@ const NhaCungCapPage = () => {
       </Row>
 
       <Card style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 16, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <Input.Search placeholder='Tìm tên, SĐT, mã số thuế...' style={{ width: 300 }}
             value={search} onChange={(e) => setSearch(e.target.value)} allowClear />
+          {isAdmin && (
+            <Button
+              type={showDeleted ? 'primary' : 'default'}
+              ghost={showDeleted}
+              icon={<DeleteOutlined />}
+              onClick={() => setShowDeleted((v) => !v)}
+            >
+              {showDeleted ? 'Đang xem đã ẩn' : 'Hiện đã ẩn'}
+            </Button>
+          )}
         </div>
         <Table
           rowKey='id' loading={isLoading} columns={columns} dataSource={filtered}

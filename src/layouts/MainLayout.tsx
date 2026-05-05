@@ -17,11 +17,13 @@ import {
   ShoppingCartOutlined,
   SearchOutlined,
   WarningOutlined,
-  KeyOutlined
+  KeyOutlined,
+  ScanOutlined,
+  EnvironmentOutlined
 } from '@ant-design/icons'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { clearCredentials } from '@/features/auth/authSlice'
-import { useChangePasswordMutation } from '@/features/auth/authApi'
+import { useChangePasswordMutation, useLogoutMutation } from '@/features/auth/authApi'
 import ChatPopup from '@/components/shared/ChatPopup.tsx'
 
 const { Header, Content, Footer, Sider } = Layout
@@ -44,7 +46,9 @@ const ALL_MENU: MenuItem[] = [
       { key: '/', label: 'Tổng quan', icon: <DashboardOutlined /> },
       { key: '/vat-tu', label: 'Vật tư', icon: <InboxOutlined />, roles: ['ADMIN', 'STOCK'] },
       { key: '/nhap-kho', label: 'Nhập kho', icon: <ImportOutlined />, roles: ['ADMIN', 'STOCK'] },
-      { key: '/xuat-kho', label: 'Xuất kho', icon: <ExportOutlined />, roles: ['ADMIN', 'SALES'] }
+      { key: '/xuat-kho', label: 'Xuất kho', icon: <ExportOutlined />, roles: ['ADMIN', 'SALES'] },
+      { key: '/quan-ly-kho', label: 'Quản lý kho vật lý', icon: <EnvironmentOutlined />, roles: ['ADMIN', 'STOCK'] },
+      { key: '/kiem-ke', label: 'Kiểm kê', icon: <ScanOutlined />, roles: ['ADMIN', 'STOCK'] }
     ]
   },
   {
@@ -118,6 +122,7 @@ const MainLayout = () => {
   const [pwdForm] = Form.useForm()
 
   const [changePassword, { isLoading: changingPwd }] = useChangePasswordMutation()
+  const [logout] = useLogoutMutation()
 
   const role = user?.role ?? 'SALES'
   const filteredMenu = filterMenuByRole(ALL_MENU, role)
@@ -126,7 +131,12 @@ const MainLayout = () => {
   // Find which submenu keys should be open based on current path
   const openKeys = filteredMenu.filter((g) => g.children?.some((c) => c.key === location.pathname)).map((g) => g.key)
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap()
+    } catch {
+      // Ignore — token có thể đã hết hạn, vẫn clear FE
+    }
     dispatch(clearCredentials())
     navigate('/login', { replace: true })
   }

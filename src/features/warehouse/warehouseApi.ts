@@ -1,25 +1,56 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { axiosBaseQuery } from '@/config/axiosBaseQuery'
-import type { ImportImeiRequest, Product, ProductItem } from '@/types/api'
+import type {
+  WarehouseRequest,
+  WarehouseResponse,
+  WarehouseLocationResponse,
+  SetupLayoutRequest,
+} from '@/types/api'
 
 export const warehouseApi = createApi({
   reducerPath: 'warehouseApi',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Warehouse'],
+  tagTypes: ['Warehouse', 'WarehouseLocation'],
   endpoints: (builder) => ({
-    importImei: builder.mutation<Product, ImportImeiRequest>({
-      query: (data) => ({ url: '/warehouse/import', method: 'POST', data }),
+    getMap: builder.query<WarehouseResponse[], void>({
+      query: () => ({ url: '/warehouse/map', method: 'GET' }),
+      providesTags: ['Warehouse', 'WarehouseLocation'],
+    }),
+    getAvailableBins: builder.query<WarehouseLocationResponse[], number>({
+      query: (warehouseId) => ({
+        url: '/warehouse/available-bins',
+        method: 'GET',
+        params: { warehouseId },
+      }),
+      providesTags: ['WarehouseLocation'],
+    }),
+    createWarehouse: builder.mutation<WarehouseResponse, WarehouseRequest>({
+      query: (data) => ({ url: '/warehouse/create', method: 'POST', data }),
       invalidatesTags: ['Warehouse'],
     }),
-    exportImei: builder.mutation<ProductItem, { orderId: number; imei: string }>({
-      query: ({ orderId, imei }) => ({
-        url: '/warehouse/export',
+    setupLayout: builder.mutation<string, SetupLayoutRequest>({
+      query: ({ warehouseId, zone, row, shelfCount, binCount }) => ({
+        url: '/warehouse/setup-layout',
         method: 'POST',
-        params: { orderId, imei },
+        params: { warehouseId, zone, row, shelfCount, binCount },
       }),
-      invalidatesTags: ['Warehouse'],
+      invalidatesTags: ['Warehouse', 'WarehouseLocation'],
+    }),
+    moveItem: builder.mutation<string, { imei: string; targetLocId: number }>({
+      query: ({ imei, targetLocId }) => ({
+        url: '/warehouse/move-item',
+        method: 'POST',
+        params: { imei, targetLocId },
+      }),
+      invalidatesTags: ['WarehouseLocation'],
     }),
   }),
 })
 
-export const { useImportImeiMutation, useExportImeiMutation } = warehouseApi
+export const {
+  useGetMapQuery,
+  useGetAvailableBinsQuery,
+  useCreateWarehouseMutation,
+  useSetupLayoutMutation,
+  useMoveItemMutation,
+} = warehouseApi

@@ -23,6 +23,14 @@ export const categoryApi = createApi({
       query: ({ id, data }) => ({ url: `/category/${id}`, method: 'PUT', data }),
       invalidatesTags: ['Category'],
     }),
+    setCategoryDeleted: builder.mutation<Category, { id: number; isDeleted: boolean }>({
+      query: ({ id, isDeleted }) => ({
+        url: `/category/${id}/status`,
+        method: 'PUT',
+        data: isDeleted,
+      }),
+      invalidatesTags: ['Category'],
+    }),
   }),
 })
 
@@ -31,4 +39,5 @@ export const {
   useGetCategoryQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
+  useSetCategoryDeletedMutation,
 } = categoryApi

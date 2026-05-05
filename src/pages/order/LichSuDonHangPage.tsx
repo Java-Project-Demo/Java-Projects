@@ -1,14 +1,19 @@
 import { useState, useMemo } from 'react'
 import {
-  App, Button, Card, Col, Descriptions, Drawer, Row,
+  App, Button, Card, Col, Descriptions, Drawer, Form, Input, Modal, Row,
   Select, Space, Statistic, Table, Tag, Tooltip, Typography,
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { EyeOutlined, StopOutlined, ShoppingCartOutlined } from '@ant-design/icons'
+import { EyeOutlined, StopOutlined, ShoppingCartOutlined, RollbackOutlined } from '@ant-design/icons'
 import PageHeader from '@/components/shared/PageHeader'
 import CurrencyDisplay from '@/components/shared/CurrencyDisplay'
 import EmptyState from '@/components/shared/EmptyState'
-import { useGetOrdersQuery, useCancelOrderMutation } from '@/features/order/orderApi'
+import {
+  useGetOrdersQuery,
+  useGetOrderQuery,
+  useCancelOrderMutation,
+  useReturnOrderMutation,
+} from '@/features/order/orderApi'
 import type { OrderResponse, OrderStatus, PaymentMethod } from '@/types/api'
 
 const { Text } = Typography
@@ -30,14 +35,20 @@ const LichSuDonHangPage = () => {
   const { message, modal } = App.useApp()
   const [filterStatus, setFilterStatus] = useState<OrderStatus | undefined>()
   const [page, setPage] = useState(1)
-  const [drawerOrder, setDrawerOrder] = useState<OrderResponse | null>(null)
+  const [drawerOrderId, setDrawerOrderId] = useState<number | null>(null)
+  const [returnTarget, setReturnTarget] = useState<OrderResponse | null>(null)
+  const [returnForm] = Form.useForm<{ imeis: string; reason: string }>()
 
   const { data, isLoading, isError } = useGetOrdersQuery({
     page: page - 1,
     size: 20,
     status: filterStatus,
   })
+  const { data: drawerOrder, isFetching: loadingDetail } = useGetOrderQuery(drawerOrderId!, {
+    skip: drawerOrderId == null,
+  })
   const [cancelOrder, { isLoading: cancelling }] = useCancelOrderMutation()
+  const [returnOrder, { isLoading: returning }] = useReturnOrderMutation()
 
   const orders = data?.content ?? []
   const total = data?.pagination?.totalElements ?? 0
@@ -68,6 +79,33 @@ const LichSuDonHangPage = () => {
           void message.error(e?.data?.message ?? 'Lỗi hệ thống')
         }
       },
+    })
+  }
+
+  const openReturn = (order: OrderResponse) => {
+    returnForm.resetFields()
+    setReturnTarget(order)
+  }
+
+  const handleReturn = () => {
+    returnForm.validateFields().then(async (values) => {
+      if (!returnTarget) return
+      const imeis = values.imeis
+        .split(/[\s,;\n]+/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+      if (imeis.length === 0) {
+        void message.error('Cần nhập ít nhất 1 IMEI để hoàn trả')
+        return
+      }
+      try {
+        await returnOrder({ id: returnTarget.id, imeis, reason: values.reason }).unwrap()
+        void message.success(`Đã hoàn trả ${imeis.length} IMEI cho đơn #${returnTarget.id}`)
+        setReturnTarget(null)
+      } catch (err: unknown) {
+        const e = err as { data?: { message?: string } }
+        void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+      }
     })
   }
 
@@ -102,12 +140,12 @@ const LichSuDonHangPage = () => {
       render: (v: string) => <Text style={{ fontSize: 12 }}>{v ? new Date(v).toLocaleString('vi-VN') : '—'}</Text>,
     },
     {
-      title: 'Hành động', key: 'action', width: 100,
+      title: 'Hành động', key: 'action', width: 130,
       render: (_, record) => (
         <Space size={4}>
           <Tooltip title='Xem chi tiết'>
             <Button type='text' size='small' icon={<EyeOutlined style={{ color: PRIMARY }} />}
-              onClick={() => setDrawerOrder(record)} />
+              onClick={() => setDrawerOrderId(record.id)} />
           </Tooltip>
           {record.status === 'PENDING' && (
             <Tooltip title='Huỷ đơn'>
@@ -115,6 +153,13 @@ const LichSuDonHangPage = () => {
                 icon={<StopOutlined />}
                 loading={cancelling}
                 onClick={() => handleCancel(record.id, record.customerName)} />
+            </Tooltip>
+          )}
+          {record.status === 'COMPLETED' && (
+            <Tooltip title='Hoàn trả'>
+              <Button type='text' size='small'
+                icon={<RollbackOutlined style={{ color: '#faad14' }} />}
+                onClick={() => openReturn(record)} />
             </Tooltip>
           )}
         </Space>
@@ -176,8 +221,9 @@ const LichSuDonHangPage = () => {
       </Card>
 
       <Drawer
-        title={drawerOrder ? `Đơn hàng #${drawerOrder.id}` : ''}
-        width={480} open={!!drawerOrder} onClose={() => setDrawerOrder(null)}
+        title={drawerOrder ? `Đơn hàng #${drawerOrder.id}` : `Đơn hàng #${drawerOrderId ?? ''}`}
+        width={520} open={drawerOrderId != null} onClose={() => setDrawerOrderId(null)}
+        loading={loadingDetail}
       >
         {drawerOrder && (
           <>
@@ -193,24 +239,58 @@ const LichSuDonHangPage = () => {
               </Descriptions.Item>
               <Descriptions.Item label='Ngày tạo'>{new Date(drawerOrder.createdAt).toLocaleString('vi-VN')}</Descriptions.Item>
             </Descriptions>
-            {drawerOrder.items && drawerOrder.items.length > 0 && (
-              <div style={{ marginTop: 20 }}>
-                <Text strong>Chi tiết sản phẩm:</Text>
+            <div style={{ marginTop: 20 }}>
+              <Text strong>Chi tiết sản phẩm:</Text>
+              {drawerOrder.items && drawerOrder.items.length > 0 ? (
                 <Table
                   rowKey='id' size='small' style={{ marginTop: 8 }}
                   dataSource={drawerOrder.items} pagination={false}
                   columns={[
                     { title: 'Sản phẩm', dataIndex: 'productName', key: 'name', ellipsis: true },
-                    { title: 'SL', dataIndex: 'quantity', key: 'qty', width: 55 },
-                    { title: 'Đơn giá', dataIndex: 'unitPrice', key: 'price', width: 120,
+                    { title: 'SL', dataIndex: 'quantity', key: 'qty', width: 55, align: 'right' },
+                    { title: 'Đơn giá', dataIndex: 'unitPrice', key: 'price', width: 120, align: 'right',
                       render: (v: number) => <CurrencyDisplay value={v} size='small' /> },
+                    { title: 'Thành tiền', key: 'subTotal', width: 130, align: 'right',
+                      render: (_, r) => <CurrencyDisplay value={r.unitPrice * r.quantity} size='small' /> },
                   ]}
                 />
-              </div>
-            )}
+              ) : (
+                <div style={{ marginTop: 8 }}><Text type='secondary'>Chưa có sản phẩm.</Text></div>
+              )}
+            </div>
           </>
         )}
       </Drawer>
+
+      <Modal
+        title={<Space><RollbackOutlined style={{ color: '#faad14' }} /><span>Hoàn trả đơn #{returnTarget?.id}</span></Space>}
+        open={!!returnTarget} onCancel={() => setReturnTarget(null)}
+        width={520}
+        footer={[
+          <Button key='c' onClick={() => setReturnTarget(null)}>Huỷ</Button>,
+          <Button key='r' type='primary' danger loading={returning} onClick={handleReturn}>
+            Xác nhận hoàn trả
+          </Button>,
+        ]}
+      >
+        <Form form={returnForm} layout='vertical'>
+          <Form.Item
+            label='Danh sách IMEI cần trả'
+            name='imeis'
+            extra='Mỗi IMEI cách nhau bằng dấu phẩy, dấu cách hoặc xuống dòng.'
+            rules={[{ required: true, message: 'Nhập IMEI cần trả' }]}
+          >
+            <Input.TextArea rows={4} placeholder='IMEI1, IMEI2, ...' />
+          </Form.Item>
+          <Form.Item
+            label='Lý do trả'
+            name='reason'
+            rules={[{ required: true, message: 'Nhập lý do trả hàng' }]}
+          >
+            <Input.TextArea rows={2} placeholder='VD: Khách đổi ý, lỗi kỹ thuật, ...' />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }

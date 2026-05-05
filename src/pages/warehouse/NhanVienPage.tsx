@@ -8,7 +8,7 @@ import { PlusOutlined, EditOutlined, LockOutlined, UserOutlined } from '@ant-des
 import {
   useGetUsersQuery, useCreateUserMutation,
   useUpdateUserInfoMutation, useResetPasswordMutation,
-  useUpdateUserStatusMutation,
+  useUpdateUserStatusMutation, useUpdateUserRoleMutation,
 } from '@/features/user/userApi'
 import type { User } from '@/types/api'
 import PageHeader from '@/components/shared/PageHeader'
@@ -49,6 +49,7 @@ const NhanVienPage = () => {
   const [updateUserInfo, { isLoading: updating }] = useUpdateUserInfoMutation()
   const [resetPassword, { isLoading: resetting }] = useResetPasswordMutation()
   const [updateUserStatus, { isLoading: togglingStatus }] = useUpdateUserStatusMutation()
+  const [updateUserRole, { isLoading: changingRole }] = useUpdateUserRoleMutation()
 
   const filtered = users.filter((u) => {
     const ms = !search ||
@@ -114,6 +115,17 @@ const NhanVienPage = () => {
     }
   }
 
+  const handleChangeRole = async (u: User, roleName: string) => {
+    if (roleName === u.role) return
+    try {
+      await updateUserRole({ id: u.id, roleName }).unwrap()
+      void message.success(`Đã chuyển vai trò của ${u.username} sang ${ROLE_CONFIG[roleName]?.label ?? roleName}`)
+    } catch (err: unknown) {
+      const e = err as { data?: { message?: string } }
+      void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+    }
+  }
+
   const columns: ColumnsType<User> = [
     {
       title: 'Nhân viên', key: 'user', width: 240,
@@ -132,8 +144,21 @@ const NhanVienPage = () => {
     { title: 'Email', dataIndex: 'email', key: 'email', ellipsis: true, render: (v: string | null) => <Text type='secondary'>{v ?? '—'}</Text> },
     { title: 'Điện thoại', dataIndex: 'phoneNumber', key: 'phone', width: 130, render: (v: string | null) => v ?? '—' },
     {
-      title: 'Vai trò', dataIndex: 'role', key: 'role', width: 140,
-      render: (v: string) => { const cfg = ROLE_CONFIG[v] ?? { label: v, color: 'default' }; return <Tag color={cfg.color}>{cfg.label}</Tag> },
+      title: 'Vai trò', dataIndex: 'role', key: 'role', width: 160,
+      render: (v: string, r: User) => (
+        <Select
+          size='small'
+          variant='borderless'
+          value={v}
+          loading={changingRole}
+          style={{ width: '100%' }}
+          onChange={(next) => handleChangeRole(r, next)}
+          options={Object.entries(ROLE_CONFIG).map(([k, { label, color }]) => ({
+            value: k,
+            label: <Tag color={color} style={{ marginInlineEnd: 0 }}>{label}</Tag>,
+          }))}
+        />
+      ),
     },
     {
       title: 'Trạng thái', key: 'status', width: 120,

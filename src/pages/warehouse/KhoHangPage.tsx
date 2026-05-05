@@ -8,8 +8,12 @@ import type { ColumnsType } from 'antd/es/table'
 import {
   PlusOutlined, EyeOutlined, EditOutlined,
   ShoppingOutlined, WarningOutlined, ImportOutlined, ExportOutlined, DownloadOutlined,
+  DeleteOutlined, UndoOutlined,
 } from '@ant-design/icons'
-import { useGetProductsQuery, useCreateProductMutation, useUpdateProductMutation } from '@/features/product/productApi'
+import {
+  useGetProductsQuery, useCreateProductMutation, useUpdateProductMutation,
+  useSetProductDeletedMutation,
+} from '@/features/product/productApi'
 import { useGetCategoriesQuery } from '@/features/category/categoryApi'
 import { useGetAuditLogsQuery } from '@/features/auditLog/auditLogApi'
 import type { Product, ProductStatus } from '@/types/api'
@@ -38,10 +42,11 @@ interface FormValues {
 }
 
 const KhoHangPage = () => {
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const [search, setSearch] = useState('')
   const [filterCat, setFilterCat] = useState<number | undefined>()
   const [filterStatus, setFilterStatus] = useState<string | undefined>()
+  const [showDeleted, setShowDeleted] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerItem, setDrawerItem] = useState<Product | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -52,6 +57,7 @@ const KhoHangPage = () => {
   const { data: categories = [] } = useGetCategoriesQuery()
   const [createProduct, { isLoading: creating }] = useCreateProductMutation()
   const [updateProduct, { isLoading: updating }] = useUpdateProductMutation()
+  const [setProductDeleted] = useSetProductDeletedMutation()
 
   // Audit logs cho drawer detail (lọc theo entityId)
   const { data: allLogs = [] } = useGetAuditLogsQuery({ page: 0, size: 100 })
@@ -64,12 +70,13 @@ const KhoHangPage = () => {
 
   const filtered = useMemo(
     () => products.filter((p) => {
+      if (!showDeleted && p.isDeleted) return false
       const ms = !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase())
       const mc = !filterCat || p.categoryId === filterCat
       const mst = !filterStatus || p.status === filterStatus
       return ms && mc && mst
     }),
-    [products, search, filterCat, filterStatus],
+    [products, search, filterCat, filterStatus, showDeleted],
   )
 
   const stats = useMemo(() => ({
@@ -114,6 +121,27 @@ const KhoHangPage = () => {
         const e = err as { data?: { message?: string } }
         void message.error(e?.data?.message ?? 'Lỗi hệ thống')
       }
+    })
+  }
+
+  const handleSoftDelete = (r: Product) => {
+    modal.confirm({
+      title: r.isDeleted ? 'Khôi phục sản phẩm?' : 'Ẩn sản phẩm?',
+      content: r.isDeleted
+        ? `Khôi phục sản phẩm "${r.name}" — sẽ hiển thị lại trong danh sách.`
+        : `Sản phẩm "${r.name}" sẽ được ẩn khỏi danh mục bán hàng. Tồn kho hiện tại không bị thay đổi.`,
+      okText: r.isDeleted ? 'Khôi phục' : 'Ẩn',
+      okButtonProps: { danger: !r.isDeleted },
+      cancelText: 'Huỷ',
+      onOk: async () => {
+        try {
+          await setProductDeleted({ id: r.id, isDeleted: !r.isDeleted, current: r }).unwrap()
+          void message.success(r.isDeleted ? 'Đã khôi phục sản phẩm' : 'Đã ẩn sản phẩm')
+        } catch (err: unknown) {
+          const e = err as { data?: { message?: string } }
+          void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+        }
+      },
     })
   }
 
@@ -196,7 +224,7 @@ const KhoHangPage = () => {
       ),
     },
     {
-      title: 'Hành động', key: 'action', width: 90,
+      title: 'Hành động', key: 'action', width: 130,
       render: (_, record) => (
         <Space size={2}>
           <Tooltip title='Xem chi tiết'>
@@ -205,7 +233,15 @@ const KhoHangPage = () => {
           </Tooltip>
           <Tooltip title='Chỉnh sửa'>
             <Button type='text' size='small' icon={<EditOutlined style={{ color: '#1677ff' }} />}
-              onClick={() => openEdit(record)} />
+              onClick={() => openEdit(record)} disabled={record.isDeleted} />
+          </Tooltip>
+          <Tooltip title={record.isDeleted ? 'Khôi phục' : 'Ẩn sản phẩm'}>
+            <Button
+              type='text' size='small'
+              icon={record.isDeleted
+                ? <UndoOutlined style={{ color: '#52c41a' }} />
+                : <DeleteOutlined style={{ color: '#ff4d4f' }} />}
+              onClick={() => handleSoftDelete(record)} />
           </Tooltip>
         </Space>
       ),
@@ -248,6 +284,11 @@ const KhoHangPage = () => {
             options={categories.map((c) => ({ value: c.id, label: c.name }))} />
           <Select placeholder='Trạng thái' style={{ width: 140 }} allowClear value={filterStatus} onChange={setFilterStatus}
             options={[{ value: 'ACTIVE', label: 'Hoạt động' }, { value: 'INACTIVE', label: 'Ngừng bán' }]} />
+          <Button
+            type={showDeleted ? 'primary' : 'default'} ghost={showDeleted}
+            icon={<DeleteOutlined />} onClick={() => setShowDeleted((v) => !v)}>
+            {showDeleted ? 'Đang xem đã ẩn' : 'Hiện đã ẩn'}
+          </Button>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
             <Button icon={<DownloadOutlined />} onClick={handleExportCSV}>Xuất CSV</Button>
             <Button type='primary' icon={<PlusOutlined />} onClick={openAdd}>Thêm sản phẩm</Button>

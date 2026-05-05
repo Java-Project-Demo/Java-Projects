@@ -31,6 +31,10 @@ export const userApi = createApi({
       query: ({ id, active }) => ({ url: `/user/${id}/status`, method: 'PUT', data: active }),
       invalidatesTags: ['User'],
     }),
+    updateUserRole: builder.mutation<User, { id: number; roleName: string }>({
+      query: ({ id, roleName }) => ({ url: `/user/${id}/role`, method: 'PUT', data: roleName }),
+      invalidatesTags: ['User'],
+    }),
     resetPassword: builder.mutation<string, number>({
       query: (id) => ({ url: `/auth/${id}/reset-password`, method: 'PUT' }),
     }),
@@ -43,5 +47,6 @@ export const {
   useCreateUserMutation,
   useUpdateUserInfoMutation,
   useUpdateUserStatusMutation,
+  useUpdateUserRoleMutation,
   useResetPasswordMutation,
 } = userApi
