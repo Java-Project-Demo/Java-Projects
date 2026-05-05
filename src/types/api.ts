@@ -40,6 +40,7 @@ export interface Category {
   name: string
   description: string | null
   items: Product[]
+  isDeleted?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -68,6 +69,7 @@ export interface Supplier {
   email: string | null
   address: string | null
   taxCode: string | null
+  isDeleted?: boolean
   createdAt: string
   updatedAt: string
 }
@@ -171,12 +173,15 @@ export interface SupplierRequest {
   taxCode?: string
 }
 
-export type SupplierUpdateRequest = Partial<SupplierRequest>
+export type SupplierUpdateRequest = Partial<SupplierRequest> & {
+  isDeleted?: boolean
+}
 
 export interface ImportImeiRequest {
   productId: number
+  locationId: number
+  supplierId: number
   costPrice: number
-  supplier: string
   imeiList: string[]
 }
 
@@ -222,3 +227,38 @@ export interface UpdateWarrantyRequest {
 export interface AiAgentRequest {
   message: string
 }
+
+// ─── Warehouse / Inventory ────────────────────────────────────────────────────
+
+export interface WarehouseLocationResponse {
+  id: number
+  warehouseId: number
+  zoneName: string | null
+  rowNum: string | null
+  shelfNum: string | null
+  binNum: string | null
+}
+
+export interface WarehouseResponse {
+  id: number
+  name: string
+  address: string | null
+  locations: WarehouseLocationResponse[]
+  createdAt: string
+  updatedAt: string
+}
+
+export interface WarehouseRequest {
+  name: string
+  address?: string
+}
+
+export interface SetupLayoutRequest {
+  warehouseId: number
+  zone: string
+  row: string
+  shelfCount: number
+  binCount: number
+}
+
+export type DetailStatus = 'MATCH' | 'MISMATCH' | 'MISSING' | 'EXTRA'

@@ -23,6 +23,24 @@ export const productApi = createApi({
       query: ({ id, data }) => ({ url: `/product/${id}`, method: 'PUT', data }),
       invalidatesTags: ['Product'],
     }),
+    setProductDeleted: builder.mutation<Product, { id: number; isDeleted: boolean; current: Product }>({
+      query: ({ id, isDeleted, current }) => ({
+        url: `/product/${id}`,
+        method: 'PUT',
+        data: {
+          name: current.name,
+          categoryId: current.categoryId,
+          priceImport: current.priceImport,
+          priceExport: current.priceExport,
+          minThreshold: current.minThreshold,
+          warrantyPeriod: current.warrantyPeriod ?? 12,
+          status: current.status,
+          specifications: current.specifications ?? '',
+          isDeleted,
+        },
+      }),
+      invalidatesTags: ['Product'],
+    }),
   }),
 })
 
@@ -31,4 +49,5 @@ export const {
   useGetProductQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
+  useSetProductDeletedMutation,
 } = productApi

@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   App, Button, Card, Col, Descriptions, Divider, Form,
   Input, InputNumber, Modal, Row, Select, Space, Table, Tag, Typography,
 } from 'antd'
-import { PlusOutlined, ImportOutlined, DeleteOutlined, ShopOutlined } from '@ant-design/icons'
+import { PlusOutlined, ImportOutlined, DeleteOutlined, ShopOutlined, EnvironmentOutlined } from '@ant-design/icons'
 import { useGetProductsQuery } from '@/features/product/productApi'
 import { useImportImeiMutation } from '@/features/stock/stockApi'
 import { useGetSuppliersQuery, useCreateSupplierMutation } from '@/features/supplier/supplierApi'
-import type { Product, SupplierRequest } from '@/types/api'
+import { useGetMapQuery, useGetAvailableBinsQuery } from '@/features/warehouse/warehouseApi'
+import type { Product, SupplierRequest, WarehouseLocationResponse } from '@/types/api'
 import PageHeader from '@/components/shared/PageHeader'
 
 const { Text } = Typography
@@ -16,8 +17,15 @@ const PRIMARY = '#E8603C'
 interface FormValues {
   productId: number
   costPrice: number
-  supplierId: string
+  supplierId: number
+  warehouseId: number
+  locationId: number
   imeiList: string[]
+}
+
+const formatBin = (loc: WarehouseLocationResponse) => {
+  const parts = [loc.zoneName, loc.rowNum, loc.shelfNum, loc.binNum].filter(Boolean)
+  return parts.length > 0 ? `${parts.join('-')} (#${loc.id})` : `#${loc.id}`
 }
 
 const NhapKhoPage = () => {
@@ -27,19 +35,39 @@ const NhapKhoPage = () => {
   const [imeiInput, setImeiInput] = useState('')
   const [imeiList, setImeiList] = useState<string[]>([])
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | undefined>()
   const [result, setResult] = useState<{ name: string; count: number; imeis: string[] } | null>(null)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
 
   const { data: products = [], isLoading: loadingProducts } = useGetProductsQuery()
   const { data: suppliers = [], isLoading: loadingSuppliers } = useGetSuppliersQuery()
+  const { data: warehouses = [], isLoading: loadingWarehouses } = useGetMapQuery()
+  const { data: availableBins = [], isLoading: loadingBins } = useGetAvailableBinsQuery(
+    selectedWarehouseId ?? 0, { skip: selectedWarehouseId == null },
+  )
   const [importImei, { isLoading: importing }] = useImportImeiMutation()
   const [createSupplier, { isLoading: creatingSupplier }] = useCreateSupplierMutation()
 
-  const allProducts = products
-  const supplierOptions = [
-    ...suppliers.map((s) => ({ value: s.name, label: s.name })),
-    { value: '__add__', label: '+ Thêm nhà cung cấp mới...' },
-  ]
+  const allProducts = useMemo(
+    () => products.filter((p) => p.hasImei && !p.isDeleted),
+    [products],
+  )
+  const supplierOptions = useMemo(() => [
+    ...suppliers
+      .filter((s) => !s.isDeleted)
+      .map((s) => ({ value: s.id, label: s.name })),
+    { value: -1, label: '+ Thêm nhà cung cấp mới...' },
+  ], [suppliers])
+
+  const warehouseOptions = useMemo(
+    () => warehouses.map((w) => ({ value: w.id, label: `${w.name}${w.address ? ' — ' + w.address : ''}` })),
+    [warehouses],
+  )
+
+  const binOptions = useMemo(
+    () => availableBins.map((b) => ({ value: b.id, label: formatBin(b) })),
+    [availableBins],
+  )
 
   const handleAddImei = () => {
     const trimmed = imeiInput.trim()
@@ -55,12 +83,18 @@ const NhapKhoPage = () => {
     if (!p?.hasImei) setImeiList([])
   }
 
-  const handleSupplierChange = (v: string) => {
-    if (v === '__add__') {
+  const handleSupplierChange = (v: number) => {
+    if (v === -1) {
       form.setFieldValue('supplierId', undefined)
       quickAddForm.resetFields()
       setQuickAddOpen(true)
     }
+  }
+
+  const handleWarehouseChange = (v: number) => {
+    setSelectedWarehouseId(v)
+    // reset bin selection when warehouse changes
+    form.setFieldValue('locationId', undefined)
   }
 
   const handleQuickAddSupplier = () => {
@@ -68,7 +102,7 @@ const NhapKhoPage = () => {
       try {
         const created = await createSupplier(values).unwrap()
         void message.success('Thêm nhà cung cấp thành công!')
-        form.setFieldValue('supplierId', created.name)
+        form.setFieldValue('supplierId', created.id)
         setQuickAddOpen(false)
       } catch (err: unknown) {
         const e = err as { data?: { message?: string } }
@@ -88,8 +122,9 @@ const NhapKhoPage = () => {
       try {
         await importImei({
           productId: values.productId,
+          locationId: values.locationId,
+          supplierId: values.supplierId,
           costPrice: values.costPrice,
-          supplier: values.supplierId,
           imeiList: product?.hasImei ? imeiList : [],
         }).unwrap()
         setResult({ name: product?.name ?? '', count: product?.hasImei ? imeiList.length : 1, imeis: product?.hasImei ? [...imeiList] : [] })
@@ -97,6 +132,7 @@ const NhapKhoPage = () => {
         form.resetFields()
         setImeiList([])
         setSelectedProduct(null)
+        setSelectedWarehouseId(undefined)
       } catch (err: unknown) {
         const e = err as { data?: { message?: string } }
         void message.error(e?.data?.message ?? 'Lỗi hệ thống')
@@ -168,14 +204,41 @@ const NhapKhoPage = () => {
                   <Form.Item label='Nhà cung cấp' name='supplierId' rules={[{ required: true, message: 'Chọn nhà cung cấp' }]}>
                     <Select
                       showSearch loading={loadingSuppliers} placeholder='Chọn nhà cung cấp'
-                      filterOption={(input, opt) => (opt?.label as string ?? '').toLowerCase().includes(input.toLowerCase())}
+                      filterOption={(input, opt) => String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                       onChange={handleSupplierChange}
                       options={supplierOptions}
                       optionRender={(opt) => (
-                        opt.value === '__add__'
+                        opt.value === -1
                           ? <span style={{ color: PRIMARY }}><ShopOutlined /> {opt.label}</span>
                           : <span>{opt.label as string}</span>
                       )}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item label='Kho lưu' name='warehouseId' rules={[{ required: true, message: 'Chọn kho lưu' }]}>
+                    <Select
+                      showSearch loading={loadingWarehouses} placeholder='Chọn kho'
+                      filterOption={(input, opt) => String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                      onChange={handleWarehouseChange}
+                      options={warehouseOptions}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item label='Vị trí (bin trống)' name='locationId' rules={[{ required: true, message: 'Chọn vị trí lưu' }]}>
+                    <Select
+                      showSearch loading={loadingBins}
+                      placeholder={selectedWarehouseId ? 'Chọn bin trống' : 'Chọn kho trước'}
+                      disabled={!selectedWarehouseId}
+                      filterOption={(input, opt) => String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                      options={binOptions}
+                      notFoundContent={selectedWarehouseId
+                        ? <span style={{ color: '#999' }}><EnvironmentOutlined /> Không còn bin trống ở kho này</span>
+                        : null}
                     />
                   </Form.Item>
                 </Col>

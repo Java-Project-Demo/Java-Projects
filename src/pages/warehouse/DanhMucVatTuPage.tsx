@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { App, Breadcrumb, Button, Card, Form, Input, Modal, Space, Table, Tag, Tooltip, Typography } from 'antd'
-import { HomeOutlined, PlusOutlined, EditOutlined, AppstoreOutlined } from '@ant-design/icons'
+import { HomeOutlined, PlusOutlined, EditOutlined, AppstoreOutlined, DeleteOutlined, UndoOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
-import { useGetCategoriesQuery, useCreateCategoryMutation, useUpdateCategoryMutation } from '@/features/category/categoryApi'
+import {
+  useGetCategoriesQuery, useCreateCategoryMutation, useUpdateCategoryMutation,
+  useSetCategoryDeletedMutation,
+} from '@/features/category/categoryApi'
 import type { Category } from '@/types/api'
 
 const { Text } = Typography
@@ -11,14 +14,42 @@ const PRIMARY = '#E8603C'
 interface FormValues { name: string; description?: string }
 
 const DanhMucVatTuPage = () => {
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const [modalOpen, setModalOpen] = useState(false)
+  const [showDeleted, setShowDeleted] = useState(false)
   const [editItem, setEditItem] = useState<Category | null>(null)
   const [form] = Form.useForm<FormValues>()
 
   const { data: categories = [], isLoading } = useGetCategoriesQuery()
   const [createCategory, { isLoading: creating }] = useCreateCategoryMutation()
   const [updateCategory, { isLoading: updating }] = useUpdateCategoryMutation()
+  const [setCategoryDeleted] = useSetCategoryDeletedMutation()
+
+  const visibleCategories = useMemo(
+    () => categories.filter((c) => showDeleted || !c.isDeleted),
+    [categories, showDeleted],
+  )
+
+  const handleSoftDelete = (record: Category) => {
+    modal.confirm({
+      title: record.isDeleted ? 'Khôi phục danh mục?' : 'Ẩn danh mục?',
+      content: record.isDeleted
+        ? `Khôi phục lại danh mục "${record.name}"?`
+        : `Danh mục "${record.name}" sẽ bị ẩn. Sản phẩm thuộc danh mục này không bị xoá.`,
+      okText: record.isDeleted ? 'Khôi phục' : 'Ẩn',
+      okButtonProps: { danger: !record.isDeleted },
+      cancelText: 'Huỷ',
+      onOk: async () => {
+        try {
+          await setCategoryDeleted({ id: record.id, isDeleted: !record.isDeleted }).unwrap()
+          void message.success(record.isDeleted ? 'Đã khôi phục' : 'Đã ẩn danh mục')
+        } catch (err: unknown) {
+          const e = err as { data?: { message?: string } }
+          void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+        }
+      },
+    })
+  }
 
   const openAdd = () => {
     setEditItem(null)
@@ -79,12 +110,22 @@ const DanhMucVatTuPage = () => {
       render: (v: string) => <Text type='secondary' style={{ fontSize: 12 }}>{v ? new Date(v).toLocaleDateString('vi-VN') : '—'}</Text>,
     },
     {
-      title: 'Hành động', key: 'action', width: 90,
+      title: 'Hành động', key: 'action', width: 110,
       render: (_, record) => (
-        <Tooltip title='Chỉnh sửa'>
-          <Button type='text' size='small' icon={<EditOutlined style={{ color: '#1677ff' }} />}
-            onClick={() => openEdit(record)} />
-        </Tooltip>
+        <Space size={2}>
+          <Tooltip title='Chỉnh sửa'>
+            <Button type='text' size='small' icon={<EditOutlined style={{ color: '#1677ff' }} />}
+              onClick={() => openEdit(record)} disabled={record.isDeleted} />
+          </Tooltip>
+          <Tooltip title={record.isDeleted ? 'Khôi phục' : 'Ẩn danh mục'}>
+            <Button
+              type='text' size='small'
+              icon={record.isDeleted
+                ? <UndoOutlined style={{ color: '#52c41a' }} />
+                : <DeleteOutlined style={{ color: '#ff4d4f' }} />}
+              onClick={() => handleSoftDelete(record)} />
+          </Tooltip>
+        </Space>
       ),
     },
   ]
@@ -97,10 +138,19 @@ const DanhMucVatTuPage = () => {
       <Card
         style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}
         title={<Space><AppstoreOutlined style={{ color: PRIMARY }} /><span>Danh mục vật tư</span></Space>}
-        extra={<Button type='primary' icon={<PlusOutlined />} onClick={openAdd}>Thêm danh mục</Button>}
+        extra={
+          <Space>
+            <Button
+              type={showDeleted ? 'primary' : 'default'} ghost={showDeleted}
+              icon={<DeleteOutlined />} onClick={() => setShowDeleted((v) => !v)}>
+              {showDeleted ? 'Đang xem đã ẩn' : 'Hiện đã ẩn'}
+            </Button>
+            <Button type='primary' icon={<PlusOutlined />} onClick={openAdd}>Thêm danh mục</Button>
+          </Space>
+        }
       >
         <Table
-          rowKey='id' loading={isLoading} columns={columns} dataSource={categories}
+          rowKey='id' loading={isLoading} columns={columns} dataSource={visibleCategories}
           size='middle' bordered
           pagination={{ pageSize: 10, showTotal: (t) => `Tổng ${t} danh mục` }}
         />

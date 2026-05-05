@@ -24,6 +24,8 @@ import NhaCungCapPage from '@/pages/supplier/NhaCungCapPage'
 import LichSuDonHangPage from '@/pages/order/LichSuDonHangPage'
 import TraCuuImeiPage from '@/pages/imei/TraCuuImeiPage'
 import TonKhoCuPage from '@/pages/report/TonKhoCuPage'
+import KiemKePage from '@/pages/inventory/KiemKePage'
+import QuanLyKhoPage from '@/pages/warehouse-mgmt/QuanLyKhoPage'
 
 const AppRoutes = () => {
   return useRoutes([
@@ -47,6 +49,8 @@ const AppRoutes = () => {
             { path: '/ton-kho-cu',        element: <RoleRoute allowedRoles={['ADMIN', 'STOCK']}><TonKhoCuPage /></RoleRoute> },
             { path: '/nhan-vien',         element: <RoleRoute allowedRoles={['ADMIN']}><NhanVienPage /></RoleRoute> },
             { path: '/in-barcode',        element: <InBarcodePage /> },
+            { path: '/kiem-ke',           element: <RoleRoute allowedRoles={['ADMIN', 'STOCK']}><KiemKePage /></RoleRoute> },
+            { path: '/quan-ly-kho',       element: <RoleRoute allowedRoles={['ADMIN', 'STOCK']}><QuanLyKhoPage /></RoleRoute> },
           ],
         },
       ],
