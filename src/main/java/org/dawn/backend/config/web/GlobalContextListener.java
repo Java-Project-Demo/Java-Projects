@@ -7,16 +7,15 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.integration.CloudinaryConfig;
 import org.dawn.backend.config.database.DatabaseConfig;
 import org.dawn.backend.config.database.FlywayConfig;
 import org.dawn.backend.config.database.TransactionManager;
+import org.dawn.backend.config.integration.CloudinaryConfig;
 import org.dawn.backend.config.integration.LangChainConfig;
 import org.dawn.backend.config.security.AuthTokenFilter;
 import org.dawn.backend.config.security.SecurityHandler;
 import org.dawn.backend.config.security.hashing.BCryptPasswordEncoderImpl;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
-import org.dawn.backend.config.setup.DataInitializer;
 import org.dawn.backend.controller.auth.AuthController;
 import org.dawn.backend.controller.auth.UserController;
 import org.dawn.backend.controller.catalog.CategoryController;
@@ -154,9 +153,6 @@ public class GlobalContextListener implements ServletContextListener {
             InventoryController inventoryController = new InventoryController(inventoryService);
             StockController stockController = new StockController(stockService);
             WarrantyController warrantyController = new WarrantyController(warrantyService);
-            // Initializer
-            DataInitializer initializer = new DataInitializer(userRepository, roleRepository, passwordEncoder);
-            initializer.run();
 
             // Servlet Context
             ServletContext ctx = sce.getServletContext();
