@@ -1,7 +1,16 @@
-import { CloseOutlined, MessageOutlined, RobotOutlined, SendOutlined, UserOutlined } from '@ant-design/icons'
-import { Badge, Button, Card, FloatButton, Input, Space, Spin, theme, Typography } from 'antd'
-import { useEffect, useRef, useState } from 'react'
+import {
+  AudioMutedOutlined,
+  AudioOutlined,
+  CloseOutlined,
+  MessageOutlined,
+  RobotOutlined,
+  SendOutlined,
+  UserOutlined
+} from '@ant-design/icons'
+import { Badge, Button, Card, FloatButton, Input, Space, Spin, theme, Tooltip, Typography } from 'antd'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAskAgentMutation } from '@/features/aiAgent/aiAgentApi.ts'
+import { useSpeechRecognition } from '@/app/hooks.ts'
 
 const { Text } = Typography
 interface Message {
@@ -15,11 +24,12 @@ interface Message {
 interface ChatPopupProps {
   username?: string
 }
-
 const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
   const { token } = theme.useToken()
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
+  const baseTextRef = useRef('') // Lưu trữ đoạn text gốc trước khi nói cụm mới
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -29,22 +39,45 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
       isMe: false
     }
   ])
-  const [askAgent, { isLoading }] = useAskAgentMutation()
 
+  const [askAgent, { isLoading }] = useAskAgentMutation()
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Tự động cuộn xuống cuối mỗi khi có tin nhắn mới
+  // 1. Khi gõ tay: Cập nhật state và Ref đồng bộ
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    setInputValue(val)
+    baseTextRef.current = val
+  }
+
+  // 2. Khi đang nói (Chữ nhảy liên tục - Interim)
+  const handleInterim = useCallback((interim: string) => {
+    const base = baseTextRef.current.trim()
+    // Hiển thị text cũ + text đang nghe dở
+    setInputValue(base ? `${base} ${interim}` : interim)
+  }, [])
+
+  // 3. Khi nói xong cụm (Chốt hạ - Final)
+  const handleFinal = useCallback((final: string) => {
+    const base = baseTextRef.current.trim()
+    const updated = base ? `${base} ${final}` : final
+    setInputValue(updated)
+    baseTextRef.current = updated // Lưu lại mốc mới vào Ref
+  }, [])
+
+  const { isListening, toggleListening } = useSpeechRecognition(handleFinal, handleInterim)
+
+  // Tự động cuộn xuống cuối
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [messages, open, isLoading])
+  }, [messages, open, isLoading, inputValue]) // Cuộn khi inputValue thay đổi (đang nói)
 
   const handleSendMessage = async () => {
     const messageText = inputValue.trim()
     if (!messageText || isLoading) return
 
-    // 2. Thêm tin nhắn của User vào UI ngay lập tức
     const userMsg: Message = {
       id: Date.now(),
       sender: username,
@@ -55,12 +88,10 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
 
     setMessages((prev) => [...prev, userMsg])
     setInputValue('')
+    baseTextRef.current = '' // Reset Ref sau khi gửi
 
     try {
-      // 3. Gọi API thật
-      // Vì axiosBaseQuery của bạn đã lấy .data.data nên kết quả 'res' sẽ là chuỗi text AI trả về
       const aiResponseText = await askAgent({ message: messageText }).unwrap()
-
       const botReply: Message = {
         id: Date.now() + 1,
         sender: 'AI Assistant',
@@ -99,7 +130,7 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
           title={
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Space>
-                <Badge status='processing' color={isLoading ? 'blue' : 'green'} />
+                <Badge status='processing' color={isListening ? 'red' : isLoading ? 'blue' : 'green'} />
                 <Text strong>Trợ lý AI Kho hàng</Text>
               </Space>
               <Button type='text' size='small' icon={<CloseOutlined />} onClick={() => setOpen(false)} />
@@ -109,7 +140,7 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
             position: 'fixed',
             right: 24,
             bottom: 80,
-            width: 380, // Tăng chiều rộng một chút để đọc nội dung AI tốt hơn
+            width: 380,
             zIndex: 1000,
             boxShadow: '0 6px 16px 0 rgba(0, 0, 0, 0.15)',
             borderRadius: 12,
@@ -154,7 +185,7 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
                     background: msg.isMe ? token.colorPrimary : '#fff',
                     color: msg.isMe ? '#fff' : '#000',
                     boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-                    whiteSpace: 'pre-wrap', // Quan trọng: Để hiển thị các dòng kẻ xuống (\n) từ AI
+                    whiteSpace: 'pre-wrap',
                     lineHeight: '1.5'
                   }}
                 >
@@ -163,7 +194,6 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
               </div>
             ))}
 
-            {/* 4. Hiệu ứng đang trả lời */}
             {isLoading && (
               <div style={{ alignSelf: 'flex-start', padding: '8px 12px' }}>
                 <Space>
@@ -178,20 +208,44 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
 
           {/* Ô nhập liệu */}
           <div style={{ padding: '12px', background: '#fff', borderTop: '1px solid #f0f0f0' }}>
+            {isListening && (
+              <div className='text-[10px] text-red-500 mb-1 animate-pulse flex items-center gap-1'>
+                <span className='w-1.5 h-1.5 bg-red-500 rounded-full'></span>
+                Hệ thống đang nghe...
+              </div>
+            )}
             <Input
-              placeholder={isLoading ? 'Đang đợi trả lời...' : 'Nhập câu hỏi về kho hàng, IMEI...'}
+              placeholder={isListening ? 'Đang nghe...' : 'Nhập nội dung...'}
               value={inputValue}
               disabled={isLoading}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={handleInputChange}
               onPressEnter={handleSendMessage}
               suffix={
-                <SendOutlined
-                  onClick={handleSendMessage}
-                  style={{
-                    color: inputValue.trim() && !isLoading ? token.colorPrimary : '#bfbfbf',
-                    cursor: inputValue.trim() && !isLoading ? 'pointer' : 'not-allowed'
-                  }}
-                />
+                <Space size={4}>
+                  <Tooltip title={isListening ? 'Dừng nghe' : 'Nói để nhập liệu'}>
+                    <Button
+                      type='text'
+                      size='small'
+                      shape='circle'
+                      disabled={isLoading}
+                      icon={isListening ? <AudioMutedOutlined style={{ color: '#ff4d4f' }} /> : <AudioOutlined />}
+                      onClick={toggleListening}
+                      className={isListening ? 'animate-pulse bg-red-50' : ''}
+                    />
+                  </Tooltip>
+
+                  <Button
+                    type='text'
+                    size='small'
+                    shape='circle'
+                    icon={<SendOutlined />}
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading}
+                    style={{
+                      color: inputValue.trim() && !isLoading ? token.colorPrimary : '#bfbfbf'
+                    }}
+                  />
+                </Space>
               }
             />
           </div>
