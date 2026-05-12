@@ -65,6 +65,7 @@ public class AuthService {
                 .username(user.getUsername())
                 .accessToken(jwt)
                 .refreshToken(refreshToken.getToken())
+                .isPasswordReset(Boolean.TRUE.equals(user.getIsPasswordReset()))
                 .build();
     }
 

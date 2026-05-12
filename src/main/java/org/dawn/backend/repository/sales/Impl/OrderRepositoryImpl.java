@@ -95,8 +95,12 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
     @Override
     public List<Order> findAll() {
         String sql = """
-                SELECT o.*, c.full_name AS cus_name, c.phone_number AS cus_phone
+                SELECT o.*,
+                u.full_name AS staff_name,
+                c.full_name AS customer_name,
+                c.phone_number AS customer_phone
                 FROM orders o
+                JOIN users u ON o.sale_id = u.id
                 JOIN customers c ON o.customer_id = c.id
                 ORDER BY o.created_at DESC
                 """;
@@ -106,8 +110,12 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
     @Override
     public Optional<Order> findById(Long id) {
         String sql = """
-                SELECT o.*, c.full_name AS cus_name, c.phone_number AS cus_phone
+                SELECT o.*,
+                u.full_name AS staff_name,
+                c.full_name AS customer_name,
+                c.phone_number AS customer_phone
                 FROM orders o
+                JOIN users u ON o.sale_id = u.id
                 JOIN customers c ON o.customer_id = c.id
                 WHERE o.id = ?
                 """;
@@ -160,13 +168,33 @@ public class OrderRepositoryImpl extends AbstractRepository<Order, Long> impleme
 
     @Override
     public List<Order> findByStatus(OrderStatus status) {
-        String sql = "SELECT * FROM orders WHERE status = ? ORDER BY created_at DESC";
+        String sql = """
+                SELECT o.*,
+                u.full_name AS staff_name,
+                c.full_name AS customer_name,
+                c.phone_number AS customer_phone
+                FROM orders o
+                JOIN users u ON o.sale_id = u.id
+                JOIN customers c ON o.customer_id = c.id
+                WHERE o.status = ?
+                ORDER BY o.created_at DESC
+                """;
         return queryList(sql, this::mapResultSet, status.toString());
     }
 
     @Override
     public List<Order> findByStatusOrderByCreatedAtAsc(OrderStatus status) {
-        String sql = "SELECT * FROM orders WHERE status = ? ORDER BY created_at ASC";
+        String sql = """
+                SELECT o.*,
+                u.full_name AS staff_name,
+                c.full_name AS customer_name,
+                c.phone_number AS customer_phone
+                FROM orders o
+                JOIN users u ON o.sale_id = u.id
+                JOIN customers c ON o.customer_id = c.id
+                WHERE o.status = ?
+                ORDER BY o.created_at ASC
+                """;
         return queryList(sql, this::mapResultSet, status.toString());
     }
 
