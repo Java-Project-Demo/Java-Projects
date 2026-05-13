@@ -22,6 +22,8 @@ public class ProductUpdateRequest {
 
     private BigDecimal priceImport;
 
+    private String imageUrl;
+
     private BigDecimal priceExport;
 
     private Boolean hasImei;

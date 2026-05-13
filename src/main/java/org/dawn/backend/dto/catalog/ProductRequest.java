@@ -20,6 +20,8 @@ public class ProductRequest {
 
     private String name;
 
+    private String imageUrl;
+
     private BigDecimal priceImport;
 
     private BigDecimal priceExport;

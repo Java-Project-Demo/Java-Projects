@@ -25,7 +25,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
     public List<Product> findAll() {
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description AS cat_desc,
-                p.id AS pro_id, p.sku, p.name, p.specifications,
+                p.id AS pro_id, p.sku, p.name, p.specifications, p.image_url,
                 p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
                 p.current_stock, p.min_threshold, p.status AS pro_status, p.is_deleted AS pro_is_deleted,
                 p.created_at, p.updated_at,
@@ -77,7 +77,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
     public Optional<Product> findById(Long id) {
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description AS cat_desc,
-                p.id AS pro_id, p.sku, p.name, p.specifications,
+                p.id AS pro_id, p.sku, p.name, p.specifications, p.image_url,
                 p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
                 p.current_stock, p.min_threshold, p.status AS pro_status, p.is_deleted AS pro_is_deleted,
                 p.created_at, p.updated_at,
@@ -129,15 +129,16 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
         Timestamp now = Timestamp.from(Instant.now());
         if (entity.getId() == null) {
             String sql = """
-                    INSERT INTO products (category_id, sku, name, specifications, warranty_period, has_imei,
+                    INSERT INTO products (category_id, sku, name, image_url, specifications, warranty_period, has_imei,
                     price_import_std, price_export_std, current_stock, min_threshold, status, is_deleted, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """;
             Long id = insert(
                     sql,
                     entity.getCategoryId(),
                     entity.getSku(),
                     entity.getName(),
+                    entity.getImageUrl(),
                     entity.getSpecifications(),
                     entity.getWarrantyPeriod(),
                     entity.getHasImei() ? 1 : 0,
@@ -156,7 +157,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
         } else {
             String sql = """
                     UPDATE products
-                    SET category_id = ?, sku = ?, name = ?, specifications = ?, warranty_period = ?,
+                    SET category_id = ?, sku = ?, name = ?, image_url = ?, specifications = ?, warranty_period = ?,
                     has_imei = ?, price_import_std = ?, price_export_std = ?,
                     current_stock = ?, min_threshold = ?, status = ?, is_deleted = ?, updated_at = ?
                     WHERE id = ?
@@ -165,6 +166,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                     entity.getCategoryId(),
                     entity.getSku(),
                     entity.getName(),
+                    entity.getImageUrl(),
                     entity.getSpecifications(),
                     entity.getWarrantyPeriod(),
                     entity.getHasImei() ? 1 : 0,
@@ -191,7 +193,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
     public Optional<Product> findBySku(String sku) {
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description AS cat_desc,
-                       p.id AS pro_id, p.sku, p.name, p.specifications,
+                       p.id AS pro_id, p.sku, p.name, p.specifications, p.image_url,
                        p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
                        p.current_stock, p.min_threshold, p.status AS pro_status, p.is_deleted AS pro_is_deleted,
                        p.created_at, p.updated_at
@@ -235,7 +237,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
     public List<Product> findLowStockProducts() {
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description AS cat_desc,
-                       p.id AS pro_id, p.sku, p.name, p.specifications,
+                       p.id AS pro_id, p.sku, p.name, p.specifications, p.image_url,
                        p.warranty_period, p.has_imei, p.price_import_std, p.price_export_std,
                        p.current_stock, p.min_threshold, p.status AS pro_status, p.is_deleted AS pro_is_deleted,
                        p.created_at, p.updated_at
@@ -284,6 +286,7 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                 .categoryId(category.getId())
                 .sku(rs.getString("sku"))
                 .name(rs.getString("name"))
+                .imageUrl(rs.getString("image_url"))
                 .specifications(rs.getString("specifications"))
                 .warrantyPeriod(rs.getLong("warranty_period"))
                 .hasImei(rs.getBoolean("has_imei"))

@@ -25,6 +25,8 @@ public class ProductResponse extends BaseResponse {
 
     private String name;
 
+    private String imageUrl;
+
     private BigDecimal priceImport;
 
     private BigDecimal priceExport;

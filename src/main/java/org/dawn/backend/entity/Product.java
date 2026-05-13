@@ -25,6 +25,8 @@ public class Product extends AbstractMappedEntity {
 
     private String name;
 
+    private String imageUrl;
+
     private String specifications;
 
     private Long warrantyPeriod;

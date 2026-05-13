@@ -90,6 +90,7 @@ CREATE TABLE products
     category_id      NUMBER(19, 0)                                         NOT NULL,
     sku              VARCHAR2(50)                                          NOT NULL,
     name             VARCHAR2(255),
+    image_url        VARCHAR2(500),
     specifications   CLOB,
     warranty_period  NUMBER(3)                   DEFAULT 12,
     has_imei         NUMBER(1)                   DEFAULT 1,

@@ -24,7 +24,7 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description, c.is_deleted AS cat_is_deleted,
                 c.created_at AS cat_created_at, c.updated_at AS cat_updated_at,
-                p.id AS pro_id, p.sku, p.name AS pro_name, p.price_import_std, p.price_export_std,
+                p.id AS pro_id, p.sku, p.name AS pro_name, p.price_import_std, p.price_export_std, p.image_url,
                 p.current_stock, p.min_threshold, p.status AS pro_status, p.specifications AS pro_spec,
                 p.created_at AS pro_created_at, p.updated_at AS pro_updated_at
                 FROM categories c
@@ -57,6 +57,7 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
                             .categoryId(id)
                             .sku(rs.getString("sku"))
                             .name(rs.getString("pro_name"))
+                            .imageUrl(rs.getString("image_url"))
                             .specifications(rs.getString("pro_spec"))
                             .priceImport(rs.getBigDecimal("price_import_std"))
                             .priceExport(rs.getBigDecimal("price_export_std"))
@@ -79,7 +80,7 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description, c.is_deleted AS cat_is_deleted,
                 c.created_at AS cat_created_at, c.updated_at AS cat_updated_at,
-                p.id AS pro_id, p.sku, p.name AS pro_name, p.price_import_std, p.price_export_std,
+                p.id AS pro_id, p.sku, p.name AS pro_name, p.price_import_std, p.price_export_std, p.image_url,
                 p.current_stock, p.min_threshold, p.status AS pro_status, p.specifications AS pro_spec,
                 p.created_at AS pro_created_at, p.updated_at AS pro_updated_at
                 FROM categories c
@@ -112,6 +113,7 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
                             .categoryId(id)
                             .sku(rs.getString("sku"))
                             .name(rs.getString("pro_name"))
+                            .imageUrl(rs.getString("image_url"))
                             .specifications(rs.getString("pro_spec"))
                             .priceImport(rs.getBigDecimal("price_import_std"))
                             .priceExport(rs.getBigDecimal("price_export_std"))
@@ -135,7 +137,7 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
         String sql = """
                 SELECT c.id AS cat_id, c.name AS cat_name, c.description, c.is_deleted AS cat_is_deleted,
                 c.created_at AS cat_created_at, c.updated_at AS cat_updated_at,
-                p.id AS pro_id, p.sku, p.name AS pro_name, p.price_import_std, p.price_export_std,
+                p.id AS pro_id, p.sku, p.name AS pro_name, p.price_import_std, p.price_export_std, p.image_url,
                 p.current_stock, p.min_threshold, p.status AS pro_status, p.specifications AS pro_spec,
                 p.created_at AS pro_created_at, p.updated_at AS pro_updated_at
                 FROM categories c
@@ -168,6 +170,7 @@ public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> i
                             .categoryId(id)
                             .sku(rs.getString("sku"))
                             .name(rs.getString("pro_name"))
+                            .imageUrl(rs.getString("image_url"))
                             .specifications(rs.getString("pro_spec"))
                             .priceImport(rs.getBigDecimal("price_import_std"))
                             .priceExport(rs.getBigDecimal("price_export_std"))

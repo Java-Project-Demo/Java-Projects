@@ -15,7 +15,6 @@ import java.util.Map;
 @Slf4j
 public class AnalyticService {
     private final DashboardService dashboardService;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Tool("Lấy số liệu tổng quan hệ thống cho Admin (Doanh thu, lợi nhuận, tổng tồn kho, hoạt động gần đây)")
