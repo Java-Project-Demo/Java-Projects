@@ -21,6 +21,7 @@ export interface Product {
   categoryId: number
   sku: string
   name: string
+  imageUrl: string
   priceImport: number
   priceExport: number
   currentStock: number
@@ -149,6 +150,7 @@ export interface ProductRequest {
   sku: string
   categoryId: number
   name: string
+  imageUrl: string
   priceImport: number
   priceExport: number
   hasImei: boolean
