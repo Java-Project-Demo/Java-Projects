@@ -13,6 +13,7 @@ export interface LoginResponse {
   accessToken: string
   userId: number
   username: string
+  isPasswordReset?: boolean
 }
 
 export const decodeJwt = (token: string): { id: number; username: string; role: string } | null => {

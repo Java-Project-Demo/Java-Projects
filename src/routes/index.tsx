@@ -7,6 +7,7 @@ import RoleRoute from './RoleRoute'
 
 import Home from '@/pages/Home'
 import LoginPage from '@/pages/auth/LoginPage'
+import ChangePasswordPage from '@/pages/auth/ChangePasswordPage'
 
 // Warehouse pages
 import DanhMucVatTuPage from '@/pages/warehouse/DanhMucVatTuPage'
@@ -32,6 +33,10 @@ const AppRoutes = () => {
     {
       element: <PrivateRoute />,
       children: [
+        {
+          element: <AuthLayout />,
+          children: [{ path: '/change-password', element: <ChangePasswordPage /> }],
+        },
         {
           element: <MainLayout />,
           children: [

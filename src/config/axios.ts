@@ -24,7 +24,8 @@ let failedQueue: Array<{
 
 const processQueue = (error: AxiosError | null) => {
   failedQueue.forEach(({ resolve, reject }) => {
-    error ? reject(error) : resolve(undefined)
+    if (error) reject(error)
+    else resolve(undefined)
   })
   failedQueue = []
 }

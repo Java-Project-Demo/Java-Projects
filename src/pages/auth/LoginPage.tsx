@@ -21,9 +21,14 @@ const LoginPage = () => {
       const result = await login(values).unwrap()
       localStorage.setItem(TOKEN_KEY, result.accessToken)
       const profile = decodeJwt(result.accessToken) ?? { id: result.userId, username: result.username, role: '' }
-      dispatch(setCredentials(profile))
-      void message.success('Đăng nhập thành công!')
-      navigate('/', { replace: true })
+      dispatch(setCredentials({ user: profile, mustChangePassword: !!result.isPasswordReset }))
+      if (result.isPasswordReset) {
+        void message.warning('Mật khẩu đang ở trạng thái tạm thời, vui lòng đổi mật khẩu trước khi tiếp tục')
+        navigate('/change-password', { replace: true })
+      } else {
+        void message.success('Đăng nhập thành công!')
+        navigate('/', { replace: true })
+      }
     } catch {
       void message.error('Tài khoản hoặc mật khẩu không đúng')
     }
