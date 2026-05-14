@@ -1,6 +1,6 @@
 import { App, Button, Card, Form, Input, Typography } from 'antd'
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLoginMutation } from '@/features/auth/authApi'
 import { setCredentials } from '@/features/auth/authSlice'
 import { useAppDispatch } from '@/app/hooks'
@@ -56,11 +56,19 @@ const LoginPage = () => {
           <Input.Password prefix={<LockOutlined />} placeholder='Mật khẩu' />
         </Form.Item>
 
-        <Form.Item style={{ marginBottom: 0 }}>
+        <Form.Item style={{ marginBottom: 12 }}>
           <Button type='primary' htmlType='submit' block loading={isLoading}>
             Đăng nhập
           </Button>
         </Form.Item>
+
+        <div style={{ textAlign: 'center' }}>
+          <Link to='/forgot-password'>
+            <Button type='link' size='small'>
+              Quên mật khẩu?
+            </Button>
+          </Link>
+        </div>
       </Form>
     </Card>
   )
