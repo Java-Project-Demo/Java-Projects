@@ -12,7 +12,7 @@ services:
       APP_USER: ${DB_USER}
       APP_USER_PASSWORD: ${DB_PASS}
     ports:
-      - '1521:1521'
+      - '1522:1521'
     networks:
       - base-net
     volumes:
@@ -42,10 +42,13 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ###   Mailtrap Config
-      # MAIL_HOST: ${MAIL_HOST}
-      # MAIL_PORT: ${MAIL_PORT}
-      # MAIL_USERNAME: ${MAIL_USERNAME}
-      # MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_ENABLED: ${MAIL_ENABLED}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      FRONTEND_URL: ${FRONTEND_URL}
       ###   Cloudinary Config
       CLOUDINARY_FOLDER_NAME: ${FOLDER_NAME}
       CLOUDINARY_CLOUD_NAME: ${CLOUD_NAME}
