@@ -20,11 +20,14 @@ import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.dto.catalog.ProductMappingHelper;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.catalog.ProductRepository;
+import org.dawn.backend.repository.catalog.SupplierRepository;
 import org.dawn.backend.repository.sales.OrderItemRepository;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.warehouse.StockMovementRepository;
+import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
 import org.dawn.backend.service.system.AuditLogService;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -41,6 +44,8 @@ public class StockService {
     private final OrderItemRepository orderItemRepository;
     private final AuditLogService auditLogService;
     private final TransactionManager manager;
+    private final WarehouseLocationRepository locationRepository;
+    private final SupplierRepository supplierRepository;
 
     public ProductResponse importImei(ImportImeiRequest req) {
         return manager.execute(() -> {
@@ -51,6 +56,17 @@ public class StockService {
             if (!product.getHasImei()) {
                 throw new RuntimeException("This product don't manager by IMEI code");
             }
+            if (req.getImeiList() == null || req.getImeiList().isEmpty()) {
+                throw new RuntimeException("IMEI list must not be empty");
+            }
+            if (req.getCostPrice() == null || req.getCostPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new RuntimeException("Cost price must be greater than 0");
+            }
+            locationRepository.findById(req.getLocationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Warehouse location not found: " + req.getLocationId()));
+            supplierRepository.findById(req.getSupplierId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Supplier not found: " + req.getSupplierId()));
+
             List<ProductItem> itemsSaved = new ArrayList<>();
             for (String imei : req.getImeiList()) {
                 if (itemRepository.existsByImei(imei))

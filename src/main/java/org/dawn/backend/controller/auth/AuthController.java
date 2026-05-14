@@ -13,8 +13,10 @@ import org.dawn.backend.config.web.response.ResponseObject;
 import org.dawn.backend.config.security.UserRoleSecurity;
 import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.dto.auth.ChangePasswordRequest;
+import org.dawn.backend.dto.auth.ForgotPasswordRequest;
 import org.dawn.backend.dto.auth.LoginRequest;
 import org.dawn.backend.dto.auth.JwtResponse;
+import org.dawn.backend.dto.auth.ResetPasswordTokenRequest;
 import org.dawn.backend.dto.auth.TokenRefreshResponse;
 import org.dawn.backend.service.auth.AuthService;
 import org.dawn.backend.utils.JWTUtils;
@@ -50,6 +52,18 @@ public class AuthController extends AbstractController {
         Long id = getPathId(req);
         UserRoleSecurity.authorize(id);
         return ResponseObject.success(authService.resetPassword(id, currentUser().username()));
+    }
+
+    @Post("/forgot-password")
+    public ResponseObject<String> forgotPassword(HttpServletRequest req) {
+        ForgotPasswordRequest forgotReq = body(req, ForgotPasswordRequest.class);
+        return ResponseObject.success(authService.forgotPassword(forgotReq));
+    }
+
+    @Post("/reset-password")
+    public ResponseObject<String> resetPasswordByToken(HttpServletRequest req) {
+        ResetPasswordTokenRequest resetReq = body(req, ResetPasswordTokenRequest.class);
+        return ResponseObject.success(authService.resetPasswordByToken(resetReq));
     }
 
     @Put("/change-password")

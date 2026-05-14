@@ -91,6 +91,10 @@ public class OrderService {
             BigDecimal total = BigDecimal.ZERO;
 
             for (CartItemRequest item : req.getItems()) {
+                if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                    throw new RuntimeException("Quantity must be greater than 0");
+                }
+
                 Product product = productRepository
                         .findById(item.getProductId())
                         .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
@@ -112,17 +116,17 @@ public class OrderService {
                         .unitPrice(product.getPriceExport())
                         .build());
 
-                // Solve IMEI if product have manager
-                if (product.getHasImei() && item.getSelectImeis() != null && !item.getSelectImeis().isEmpty()) {
-
+                if (product.getHasImei()) {
+                    if (item.getSelectImeis() == null || item.getSelectImeis().isEmpty()) {
+                        throw new RuntimeException("Product " + product.getName() + " requires IMEI selection");
+                    }
                     if (item.getSelectImeis().size() != item.getQuantity()) {
-                        throw new RuntimeException("IMEI do not match with quantity buy");
+                        throw new RuntimeException("IMEI count must match quantity for product " + product.getName());
                     }
                     for (String imei : item.getSelectImeis()) {
                         stockService.exportByImei(saveOrder.getId(), imei);
                     }
-                } else if (!product.getHasImei()) {
-                    // With product don't have IMEI, record export order
+                } else {
                     stockService.saveMovement(
                             product.getId(),
                             MovementType.EXPORT,

@@ -4,21 +4,31 @@ package org.dawn.backend.service.auth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.database.TransactionManager;
+import org.dawn.backend.config.integration.EmailService;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
+import org.dawn.backend.config.web.AppConfig;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.dto.auth.ChangePasswordRequest;
+import org.dawn.backend.dto.auth.ForgotPasswordRequest;
 import org.dawn.backend.dto.auth.LoginRequest;
 import org.dawn.backend.dto.auth.JwtResponse;
+import org.dawn.backend.dto.auth.ResetPasswordTokenRequest;
 import org.dawn.backend.dto.auth.TokenRefreshResponse;
+import org.dawn.backend.entity.PasswordResetToken;
 import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
+import org.dawn.backend.repository.auth.PasswordResetTokenRepository;
 import org.dawn.backend.repository.auth.UserRepository;
 import org.dawn.backend.service.system.AuditLogService;
 import org.dawn.backend.utils.JWTUtils;
 import org.dawn.backend.utils.UserUtils;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -30,6 +40,8 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final AuditLogService auditLogService;
     private final TransactionManager manager;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
 
     public JwtResponse login(LoginRequest req) {
 
@@ -116,6 +128,87 @@ public class AuthService {
         return "Change password success";
     }
 
+
+    public String forgotPassword(ForgotPasswordRequest req) {
+        String email = req.getEmail();
+        if (email == null || email.isBlank()) {
+            throw new RuntimeException("Email không được để trống");
+        }
+
+        User user = userRepository
+                .findByEmail(email.trim())
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với email này"));
+
+        passwordResetTokenRepository.deleteByUserId(user.getId());
+
+        String token = UUID.randomUUID().toString();
+        Instant expiry = Instant.now().plus(15, ChronoUnit.MINUTES);
+        passwordResetTokenRepository.save(PasswordResetToken.builder()
+                .userId(user.getId())
+                .token(token)
+                .expiryDate(expiry)
+                .build());
+
+        String frontendUrl = AppConfig.get("app.frontendUrl");
+        if (frontendUrl == null || frontendUrl.isBlank()) frontendUrl = "http://localhost:5173";
+        String resetLink = frontendUrl + "/reset-password?token=" + token;
+
+        emailService.sendPasswordResetEmail(email.trim(), user.getFullName(), resetLink);
+
+        auditLogService.saveLog(
+                user.getId(),
+                LogConstant.Action.RESET_PASSWORD,
+                LogConstant.Entity.AUTH,
+                user.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "Forgot password email sent");
+
+        return "Email đặt lại mật khẩu đã được gửi";
+    }
+
+    public String resetPasswordByToken(ResetPasswordTokenRequest req) {
+        if (req.getToken() == null || req.getToken().isBlank()) {
+            throw new RuntimeException("Token không hợp lệ");
+        }
+        if (!req.getNewPassword().equals(req.getConfirmPassword())) {
+            throw new RuntimeException("Mật khẩu xác nhận không khớp");
+        }
+        if (req.getNewPassword().length() < 6) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 6 ký tự");
+        }
+
+        PasswordResetToken resetToken = passwordResetTokenRepository
+                .findByToken(req.getToken())
+                .orElseThrow(() -> new ResourceNotFoundException("Token không hợp lệ hoặc đã hết hạn"));
+
+        if (Boolean.TRUE.equals(resetToken.getUsed())) {
+            throw new RuntimeException("Token này đã được sử dụng");
+        }
+        if (resetToken.getExpiryDate().isBefore(Instant.now())) {
+            throw new RuntimeException("Token đã hết hạn (15 phút). Vui lòng yêu cầu lại.");
+        }
+
+        User user = userRepository
+                .findById(resetToken.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
+
+        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        user.setIsPasswordReset(false);
+        userRepository.save(user);
+
+        passwordResetTokenRepository.markUsed(resetToken.getId());
+        refreshTokenService.deleteByUserId(user.getId());
+
+        auditLogService.saveLog(
+                user.getId(),
+                LogConstant.Action.CHANGE_PASSWORD,
+                LogConstant.Entity.AUTH,
+                user.getId().toString(),
+                LogConstant.Status.SUCCESS,
+                "Password reset via token");
+
+        return "Đặt lại mật khẩu thành công";
+    }
 
     public TokenRefreshResponse refreshToken(String refreshToken) {
         if (refreshToken == null || refreshToken.isEmpty()) {

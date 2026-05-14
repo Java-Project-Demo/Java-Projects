@@ -11,6 +11,7 @@ import org.dawn.backend.config.database.DatabaseConfig;
 import org.dawn.backend.config.database.FlywayConfig;
 import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.integration.CloudinaryConfig;
+import org.dawn.backend.config.integration.EmailService;
 import org.dawn.backend.config.integration.LangChainConfig;
 import org.dawn.backend.config.security.AuthTokenFilter;
 import org.dawn.backend.config.security.SecurityHandler;
@@ -30,9 +31,11 @@ import org.dawn.backend.controller.system.AiAgentController;
 import org.dawn.backend.controller.system.AuditLogController;
 import org.dawn.backend.controller.system.CloudinaryController;
 import org.dawn.backend.controller.warranty.WarrantyController;
+import org.dawn.backend.repository.auth.Impl.PasswordResetTokenRepositoryImpl;
 import org.dawn.backend.repository.auth.Impl.RefreshTokenRepositoryImpl;
 import org.dawn.backend.repository.auth.Impl.RoleRepositoryImpl;
 import org.dawn.backend.repository.auth.Impl.UserRepositoryImpl;
+import org.dawn.backend.repository.auth.PasswordResetTokenRepository;
 import org.dawn.backend.repository.auth.RefreshTokenRepository;
 import org.dawn.backend.repository.auth.RoleRepository;
 import org.dawn.backend.repository.auth.UserRepository;
@@ -105,6 +108,7 @@ public class GlobalContextListener implements ServletContextListener {
             WarehouseRepository warehouseRepository = new WarehouseRepositoryImpl(datasource);
             WarehouseLocationRepository warehouseLocationRepository = new WarehouseLocationRepositoryImpl(datasource);
             RefreshTokenRepository refreshTokenRepository = new RefreshTokenRepositoryImpl(datasource);
+            PasswordResetTokenRepository passwordResetTokenRepository = new PasswordResetTokenRepositoryImpl(datasource);
             WarrantyRepository warrantyRepository = new WarrantyRepositoryImpl(datasource);
             CustomerRepository customerRepository = new CustomerRepositoryImpl(datasource);
             CategoryRepository categoryRepository = new CategoryRepositoryImpl(datasource);
@@ -123,15 +127,16 @@ public class GlobalContextListener implements ServletContextListener {
 
             // Service
             PasswordEncoder passwordEncoder = new BCryptPasswordEncoderImpl();
+            EmailService emailService = new EmailService();
             CloudinaryService cloudinaryService = new CloudinaryService(cloudinary);
             AuditLogService auditLogService = new AuditLogService(auditLogRepository, transactionManager);
             SupplierService supplierService = new SupplierService(auditLogService, supplierRepository, transactionManager);
             RefreshTokenService refreshTokenService = new RefreshTokenService(refreshTokenRepository, userRepository, transactionManager);
             DashboardService dashboardService = new DashboardService(productRepository, orderRepository, productItemRepository, auditLogRepository, warrantyRepository, customerRepository);
             UserService userService = new UserService(userRepository, roleRepository, passwordEncoder, auditLogService, transactionManager);
-            AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService, auditLogService, transactionManager);
+            AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService, auditLogService, transactionManager, passwordResetTokenRepository, emailService);
             ProductService productService = new ProductService(auditLogService, productRepository, transactionManager);
-            StockService stockService = new StockService(productRepository, productItemRepository, stockMovementRepository, orderRepository, orderItemRepository, auditLogService, transactionManager);
+            StockService stockService = new StockService(productRepository, productItemRepository, stockMovementRepository, orderRepository, orderItemRepository, auditLogService, transactionManager, warehouseLocationRepository, supplierRepository);
             InventoryService inventoryService = new InventoryService(inventorySessionRepository, inventoryDetailRepository, productItemRepository, transactionManager);
             WarehouseService warehouseService = new WarehouseService(warehouseRepository, warehouseLocationRepository, stockService, auditLogService, productItemRepository, transactionManager);
             OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository, productItemRepository, customerRepository, stockService, auditLogService, transactionManager);
