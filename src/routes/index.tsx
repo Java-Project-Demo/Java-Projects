@@ -8,6 +8,8 @@ import RoleRoute from './RoleRoute'
 import Home from '@/pages/Home'
 import LoginPage from '@/pages/auth/LoginPage'
 import ChangePasswordPage from '@/pages/auth/ChangePasswordPage'
+import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage'
+import ResetPasswordPage from '@/pages/auth/ResetPasswordPage'
 
 // Warehouse pages
 import DanhMucVatTuPage from '@/pages/warehouse/DanhMucVatTuPage'
@@ -65,7 +67,11 @@ const AppRoutes = () => {
       children: [
         {
           element: <AuthLayout />,
-          children: [{ path: '/login', element: <LoginPage /> }],
+          children: [
+            { path: '/login',            element: <LoginPage /> },
+            { path: '/forgot-password',  element: <ForgotPasswordPage /> },
+            { path: '/reset-password',   element: <ResetPasswordPage /> },
+          ],
         },
       ],
     },
