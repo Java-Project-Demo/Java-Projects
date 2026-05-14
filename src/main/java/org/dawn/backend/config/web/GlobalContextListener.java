@@ -73,6 +73,7 @@ import org.dawn.backend.service.sales.OrderService;
 import org.dawn.backend.service.system.AiAgentService;
 import org.dawn.backend.service.system.AuditLogService;
 import org.dawn.backend.service.system.CloudinaryService;
+import org.dawn.backend.service.system.MailService;
 import org.dawn.backend.service.warranty.WarrantyService;
 import org.dawn.backend.utils.JWTUtils;
 
@@ -126,15 +127,15 @@ public class GlobalContextListener implements ServletContextListener {
             CorsConfig corsConfig = new CorsConfig();
 
             // Service
+            MailService mailService = MailService.getInstance();
             PasswordEncoder passwordEncoder = new BCryptPasswordEncoderImpl();
-            EmailService emailService = new EmailService();
             CloudinaryService cloudinaryService = new CloudinaryService(cloudinary);
             AuditLogService auditLogService = new AuditLogService(auditLogRepository, transactionManager);
             SupplierService supplierService = new SupplierService(auditLogService, supplierRepository, transactionManager);
             RefreshTokenService refreshTokenService = new RefreshTokenService(refreshTokenRepository, userRepository, transactionManager);
             DashboardService dashboardService = new DashboardService(productRepository, orderRepository, productItemRepository, auditLogRepository, warrantyRepository, customerRepository);
             UserService userService = new UserService(userRepository, roleRepository, passwordEncoder, auditLogService, transactionManager);
-            AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService, auditLogService, transactionManager, passwordResetTokenRepository, emailService);
+            AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService, auditLogService, transactionManager, passwordResetTokenRepository, mailService);
             ProductService productService = new ProductService(auditLogService, productRepository, transactionManager);
             StockService stockService = new StockService(productRepository, productItemRepository, stockMovementRepository, orderRepository, orderItemRepository, auditLogService, transactionManager, warehouseLocationRepository, supplierRepository);
             InventoryService inventoryService = new InventoryService(inventorySessionRepository, inventoryDetailRepository, productItemRepository, transactionManager);

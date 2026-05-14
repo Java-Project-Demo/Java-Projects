@@ -281,3 +281,14 @@ CREATE TABLE inventory_details
     CONSTRAINT fk_inv_det_actual FOREIGN KEY (actual_loc) REFERENCES warehouse_locations (id),
     CONSTRAINT ck_record_status CHECK (record_status IN ('MATCH', 'MISMATCH', 'MISSING', 'EXTRA'))
 );
+
+CREATE TABLE password_reset_tokens
+(
+    id          NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id     NUMBER              NOT NULL,
+    token       VARCHAR2(255)       NOT NULL UNIQUE,
+    expiry_date TIMESTAMP           NOT NULL,
+    used        NUMBER(1) DEFAULT 0 NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_prt_user FOREIGN KEY (user_id) REFERENCES users (id)
+);
