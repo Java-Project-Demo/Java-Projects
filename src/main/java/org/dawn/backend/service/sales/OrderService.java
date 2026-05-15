@@ -27,6 +27,7 @@ import org.dawn.backend.service.inventory.StockService;
 import org.dawn.backend.service.system.AuditLogService;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -92,7 +93,7 @@ public class OrderService {
 
             for (CartItemRequest item : req.getItems()) {
                 if (item.getQuantity() == null || item.getQuantity() <= 0) {
-                    throw new RuntimeException("Quantity must be greater than 0");
+                    throw new RuntimeException(Message.Exception.QUANTITY_INVALID);
                 }
 
                 Product product = productRepository
@@ -101,7 +102,7 @@ public class OrderService {
                 // Check available stock
                 Integer available = orderRepository.getAvailableStock(item.getProductId());
                 if (available < item.getQuantity()) {
-                    throw new RuntimeException("Product " + product.getName() + " not enough available stock");
+                    throw new RuntimeException(MessageFormat.format(Message.Exception.INSUFFICIENT_STOCK, product.getName()));
                 }
 
                 // Subtrack to keep order
@@ -118,10 +119,10 @@ public class OrderService {
 
                 if (product.getHasImei()) {
                     if (item.getSelectImeis() == null || item.getSelectImeis().isEmpty()) {
-                        throw new RuntimeException("Product " + product.getName() + " requires IMEI selection");
+                        throw new RuntimeException(MessageFormat.format(Message.Exception.IMEI_SELECTION_REQUIRED, product.getName()));
                     }
                     if (item.getSelectImeis().size() != item.getQuantity()) {
-                        throw new RuntimeException("IMEI count must match quantity for product " + product.getName());
+                        throw new RuntimeException(MessageFormat.format(Message.Exception.IMEI_COUNT_MISMATCH, product.getName()));
                     }
                     for (String imei : item.getSelectImeis()) {
                         stockService.exportByImei(saveOrder.getId(), imei);
@@ -163,7 +164,7 @@ public class OrderService {
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
 
             if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.COMPLETED) {
-                throw new RuntimeException("Only cancel order new or complete");
+                throw new RuntimeException(Message.Exception.CANCEL_ORDER_STATUS_INVALID);
             }
 
             List<ProductItem> items = itemRepository.findByOrderId(orderId);
@@ -204,7 +205,7 @@ public class OrderService {
     public void returnOrder(Long orderId, RefundRequest req) {
         manager.execute(() -> {
             if (req.getImeis() == null || req.getImeis().isEmpty()) {
-                throw new RuntimeException("Return IMEI list do not empty");
+                throw new RuntimeException(Message.Exception.RETURN_IMEI_LIST_EMPTY);
             }
 
             for (String imei : req.getImeis()) {
@@ -213,7 +214,7 @@ public class OrderService {
                         .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_ITEM_NOT_FOUND));
                 log.info("Order id: {}", item.getOrderId());
                 if (item.getOrderId() == null || !item.getOrderId().equals(orderId)) {
-                    throw new RuntimeException("Product with IMEI " + imei + " do not belong to order: " + orderId);
+                    throw new RuntimeException(MessageFormat.format(Message.Exception.IMEI_NOT_BELONG_TO_ORDER, imei, orderId));
                 }
                 stockService.returnProduct(imei, req.getReason());
             }

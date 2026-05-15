@@ -6,6 +6,7 @@ import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.constant.inventory.DetailStatus;
 import org.dawn.backend.constant.inventory.SessionStatus;
+import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.entity.InventoryDetail;
 import org.dawn.backend.entity.InventorySession;
 import org.dawn.backend.entity.ProductItem;
@@ -88,7 +89,7 @@ public class InventoryService {
 
             InventorySession session = sessionRepository
                     .findById(sessionId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Session not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.SESSION_NOT_FOUND));
             session.setStatus(SessionStatus.COMPLETED);
             session.setEndDate(Instant.now());
             sessionRepository.save(session);

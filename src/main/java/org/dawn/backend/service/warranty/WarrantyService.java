@@ -21,6 +21,7 @@ import org.dawn.backend.repository.warranty.WarrantyRepository;
 import org.dawn.backend.service.inventory.StockService;
 import org.dawn.backend.service.system.AuditLogService;
 
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class WarrantyService {
     public List<Warranty> createClaim(CreateWarrantyRequest req) {
         return manager.execute(() -> {
             if (req.getImeis() == null || req.getImeis().isEmpty()) {
-                throw new RuntimeException("Return IMEI list do not empty");
+                throw new RuntimeException(Message.Exception.RETURN_IMEI_LIST_EMPTY);
             }
             List<Warranty> savedClaims = new ArrayList<>();
             Long currentUserId = SecurityContext.get().id();
@@ -63,16 +64,16 @@ public class WarrantyService {
                         .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_ITEM_NOT_FOUND));
 
                 if (item.getOrderId() == null || item.getWarrantyExpiryDate() == null) {
-                    throw new RuntimeException("This product is not active (not sold)");
+                    throw new RuntimeException(Message.Exception.PRODUCT_NOT_SOLD);
                 }
 
                 if (item.getWarrantyExpiryDate().isBefore(Instant.now())) {
-                    throw new RuntimeException("This product is out of date warranty in " + item.getWarrantyExpiryDate());
+                    throw new RuntimeException(MessageFormat.format(Message.Exception.WARRANTY_EXPIRED, item.getWarrantyExpiryDate()));
                 }
 
                 Order order = orderRepository
                         .findById(item.getOrderId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Can not find order of product: " + imei));
+                        .orElseThrow(() -> new ResourceNotFoundException(MessageFormat.format(Message.Exception.ORDER_NOT_FOUND_FOR_PRODUCT, imei)));
 
                 Warranty claim = Warranty.builder()
                         .productItemId(item.getId())
@@ -100,12 +101,12 @@ public class WarrantyService {
         return manager.execute(() -> {
             Warranty claim = warrantyRepository
                     .findById(req.getClaimId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Can not find warranty ticket"));
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.WARRANTY_TICKET_NOT_FOUND));
 
             claim.setStatus(req.getStatus());
 
             if (req.getTechnicalNote() != null) {
-                claim.setIssueDescription(claim.getIssueDescription() + "\nTech Note: " + req.getTechnicalNote());
+                claim.setIssueDescription(claim.getIssueDescription() + "Tech Note: " + req.getTechnicalNote());
             }
 
             if (WarrantyStatus.RETURNED.equals(req.getStatus())) {
@@ -115,7 +116,7 @@ public class WarrantyService {
             if (WarrantyStatus.UNFIXABLE.equals(req.getStatus())) {
                 ProductItem item = itemRepository
                         .findById(claim.getProductItemId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_ITEM_NOT_FOUND));
                 stockService.markAsDamaged(item.getImei(), "Unfixable warranty claim: " + req.getTechnicalNote());
             }
 

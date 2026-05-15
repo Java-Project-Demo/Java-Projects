@@ -8,8 +8,8 @@ public class InvalidRequestException extends ApiException {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public InvalidRequestException(String message) {
-        super(400, message);
+    public InvalidRequestException(String message, Object... args) {
+        super(400, message, args);
     }
 
 

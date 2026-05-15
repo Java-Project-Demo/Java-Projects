@@ -48,7 +48,7 @@ public class AuthService {
         log.info("Get username :{}", identifier);
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            throw new PermissionDeniedException("Invalid password");
+            throw new PermissionDeniedException(Message.Exception.INVALID_PASSWORD);
         }
         String jwt = jwtUtils.generateToken(
                 user.getId(),
@@ -127,12 +127,12 @@ public class AuthService {
     public String forgotPassword(ForgotPasswordRequest req) {
         String email = req.getEmail();
         if (email == null || email.isBlank()) {
-            throw new RuntimeException("Email không được để trống");
+            throw new RuntimeException(Message.Exception.EMAIL_NOT_EMPTY);
         }
 
         User user = userRepository
                 .findByEmail(email.trim())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với email này"));
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.EMAIL_NOT_FOUND));
 
         passwordResetTokenRepository.deleteByUserId(user.getId());
 
@@ -163,24 +163,24 @@ public class AuthService {
 
     public String resetPasswordByToken(ResetPasswordTokenRequest req) {
         if (req.getToken() == null || req.getToken().isBlank()) {
-            throw new RuntimeException("Token không hợp lệ");
+            throw new RuntimeException(Message.Exception.INVALID_TOKEN);
         }
         if (!req.getNewPassword().equals(req.getConfirmPassword())) {
-            throw new RuntimeException("Mật khẩu xác nhận không khớp");
+            throw new RuntimeException(Message.Exception.PASSWORD_NOT_MATCH);
         }
         if (req.getNewPassword().length() < 6) {
-            throw new RuntimeException("Mật khẩu phải có ít nhất 6 ký tự");
+            throw new RuntimeException(Message.Exception.PASSWORD_TOO_SHORT);
         }
 
         PasswordResetToken resetToken = passwordResetTokenRepository
                 .findByToken(req.getToken())
-                .orElseThrow(() -> new ResourceNotFoundException("Token không hợp lệ hoặc đã hết hạn"));
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.TOKEN_INVALID_OR_EXPIRED));
 
         if (Boolean.TRUE.equals(resetToken.getUsed())) {
-            throw new RuntimeException("Token này đã được sử dụng");
+            throw new RuntimeException(Message.Exception.TOKEN_USED);
         }
         if (resetToken.getExpiryDate().isBefore(Instant.now())) {
-            throw new RuntimeException("Token đã hết hạn (15 phút). Vui lòng yêu cầu lại.");
+            throw new RuntimeException(Message.Exception.TOKEN_EXPIRED);
         }
 
         User user = userRepository

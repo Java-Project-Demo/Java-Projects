@@ -24,7 +24,8 @@ public class EmailService {
         int parsedPort = 587;
         try {
             if (portStr != null && portStr.matches("\\d+")) parsedPort = Integer.parseInt(portStr);
-        } catch (NumberFormatException ignored) { }
+        } catch (NumberFormatException ignored) {
+        }
         this.port = parsedPort;
         this.username = AppConfig.get("mail.username");
         this.password = AppConfig.get("mail.password");
@@ -67,7 +68,7 @@ public class EmailService {
             log.info("Password reset email sent to {}", to);
         } catch (MessagingException e) {
             log.error("Failed to send password reset email to {}: {}", to, e.getMessage());
-            throw new RuntimeException("Không thể gửi email. Vui lòng liên hệ quản trị viên.");
+            throw new RuntimeException(org.dawn.backend.constant.system.Message.Exception.EMAIL_SENDING_FAILED);
         }
     }
 

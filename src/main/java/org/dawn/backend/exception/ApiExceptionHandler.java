@@ -7,6 +7,7 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.exception.payload.ExceptionMessage;
+import org.dawn.backend.utils.L10nUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -29,7 +30,6 @@ public class ApiExceptionHandler implements Filter {
 
     }
 
-
     public void handleApiRequestException(HttpServletResponse res, Exception e) throws IOException {
         log.info("**ApiExceptionHandler controller, handler API request*\n");
         Throwable cause = e;
@@ -45,12 +45,12 @@ public class ApiExceptionHandler implements Filter {
 
         if (cause instanceof ApiException apiEx) {
             status = apiEx.getStatus();
-            message = apiEx.getMessage();
+            message = L10nUtils.translate(apiEx.getMessage(), apiEx.getArgs());
             log.warn("API Exception handled: {} - {}", status, message);
         } else {
             log.error("Unexcepted error occurred", e);
             status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-            message = cause.getMessage();
+            message = L10nUtils.translate(cause.getMessage());
         }
 
         ExceptionMessage errorBody = buildResponse(status, message);

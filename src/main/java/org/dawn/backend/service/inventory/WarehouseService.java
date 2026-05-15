@@ -21,6 +21,7 @@ import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
 import org.dawn.backend.repository.warehouse.WarehouseRepository;
 import org.dawn.backend.service.system.AuditLogService;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,11 +82,12 @@ public class WarehouseService {
             locationRepository
                     .findById(targetLocId)
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            "Target location " + targetLocId + " does not exist"));
+                            MessageFormat.format(Message.Exception.TARGET_LOCATION_NOT_FOUND, targetLocId)
+                    ));
 
             Long oldLocId = item.getLocationId();
             if (targetLocId.equals(oldLocId)) {
-                throw new RuntimeException("Item is already at location " + targetLocId);
+                throw new RuntimeException(MessageFormat.format(Message.Exception.ITEM_ALREADY_AT_LOCATION, targetLocId));
             }
             item.setLocationId(targetLocId);
             itemRepository.save(item);

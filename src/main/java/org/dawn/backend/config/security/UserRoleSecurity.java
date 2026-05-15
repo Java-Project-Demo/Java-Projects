@@ -1,6 +1,7 @@
 package org.dawn.backend.config.security;
 
 
+import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 
 public class UserRoleSecurity {
@@ -11,7 +12,7 @@ public class UserRoleSecurity {
         boolean isOwner = user.id().equals(targetUserId);
 
         if (!isAdmin && !isOwner) {
-            throw new PermissionDeniedException("You don't have permission");
+            throw new PermissionDeniedException(Message.Exception.PERMISSION_DENIED);
         }
     }
 

@@ -28,6 +28,7 @@ import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
 import org.dawn.backend.service.system.AuditLogService;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -54,23 +55,23 @@ public class StockService {
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
 
             if (!product.getHasImei()) {
-                throw new RuntimeException("This product don't manager by IMEI code");
+                throw new RuntimeException(Message.Exception.PRODUCT_NOT_MANAGED_BY_IMEI);
             }
             if (req.getImeiList() == null || req.getImeiList().isEmpty()) {
-                throw new RuntimeException("IMEI list must not be empty");
+                throw new RuntimeException(Message.Exception.IMEI_LIST_EMPTY);
             }
             if (req.getCostPrice() == null || req.getCostPrice().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new RuntimeException("Cost price must be greater than 0");
+                throw new RuntimeException(Message.Exception.COST_PRICE_INVALID);
             }
             locationRepository.findById(req.getLocationId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Warehouse location not found: " + req.getLocationId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(MessageFormat.format(Message.Exception.WAREHOUSE_LOCATION_NOT_FOUND, req.getLocationId())));
             supplierRepository.findById(req.getSupplierId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Supplier not found: " + req.getSupplierId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(MessageFormat.format(Message.Exception.SUPPLIER_NOT_FOUND_WITH_ID, req.getSupplierId())));
 
             List<ProductItem> itemsSaved = new ArrayList<>();
             for (String imei : req.getImeiList()) {
                 if (itemRepository.existsByImei(imei))
-                    throw new ResourceAlreadyExistedException("ITEM " + imei + " already exists");
+                    throw new ResourceAlreadyExistedException(MessageFormat.format(Message.Exception.ITEM_IMEI_ALREADY_EXISTS, imei));
 
                 itemsSaved.add(ProductItem
                         .builder()
@@ -124,7 +125,7 @@ public class StockService {
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
             // Only export IMEI if order have PENDING or COMPLETE
             if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.COMPLETED) {
-                throw new RuntimeException("Only order have PENDING can be export");
+                throw new RuntimeException(Message.Exception.ORDER_STATUS_NOT_ALLOWED_EXPORT);
             }
 
             ProductItem item = itemRepository
@@ -144,19 +145,19 @@ public class StockService {
                     .sum();
 
             if (totalRequireQty == 0) {
-                throw new RuntimeException("This IMEI do not belong to list product in order");
+                throw new RuntimeException(MessageFormat.format(Message.Exception.ITEM_NOT_IN_ORDER, item.getImei()));
             }
 
             // Check export quantity
             long alreadyShipped = itemRepository.countByProductIdAndOrderId(item.getProductId(), orderId);
 
             if (alreadyShipped >= totalRequireQty) {
-                throw new RuntimeException("This product was export enough quantity in this order");
+                throw new RuntimeException(Message.Exception.PRODUCT_EXPORT_ENOUGH);
             }
 
 
             if (item.getStatus() != ItemStatus.AVAILABLE) {
-                throw new RuntimeException("Status conflict");
+                throw new RuntimeException(Message.Exception.ITEM_STATUS_CONFLICT);
             }
 
             // Update IMEI to SOLD

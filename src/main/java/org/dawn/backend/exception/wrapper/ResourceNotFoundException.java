@@ -8,7 +8,7 @@ public class ResourceNotFoundException extends ApiException {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public ResourceNotFoundException(String message) {
-        super(404, message);
+    public ResourceNotFoundException(String message, Object... args) {
+        super(404, message, args);
     }
 }

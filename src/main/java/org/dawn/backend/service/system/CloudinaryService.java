@@ -5,6 +5,7 @@ import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.web.AppConfig;
+import org.dawn.backend.constant.system.Message;
 
 import java.io.IOException;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class CloudinaryService {
             return this.cloudinary.uploader().upload(fileBytes, params);
         } catch (IOException e) {
             log.error("Cloudinary update failed ", e);
-            throw new RuntimeException("Image upload failed");
+            throw new RuntimeException(Message.Exception.IMAGE_UPLOAD_FAILED);
         }
     }
 

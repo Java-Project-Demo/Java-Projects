@@ -100,7 +100,7 @@ public class UserService {
         return manager.execute(() -> {
 
             if (Objects.equals(id, SecurityContext.get().id())) {
-                throw new PermissionDeniedException("You can not update yourself");
+                throw new PermissionDeniedException(Message.Exception.CAN_NOT_UPDATE_YOURSELF);
             }
 
             User user = userRepository

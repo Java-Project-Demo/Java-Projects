@@ -3,6 +3,7 @@ package org.dawn.backend.repository.base;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.database.TransactionContext;
+import org.dawn.backend.constant.system.Message;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
@@ -19,22 +20,22 @@ public abstract class AbstractRepository<T, ID> implements BaseRepository<T, ID>
 
     @Override
     public Optional<T> findById(ID id) {
-        throw new UnsupportedOperationException("This method is not deploy in this repo");
+        throw new UnsupportedOperationException(Message.Exception.METHOD_NOT_IMPLEMENTED);
     }
 
     @Override
     public List<T> findAll() {
-        throw new UnsupportedOperationException("This method is not deploy in this repo");
+        throw new UnsupportedOperationException(Message.Exception.METHOD_NOT_IMPLEMENTED);
     }
 
     @Override
     public T save(T entity) {
-        throw new UnsupportedOperationException("This method is not deploy in this repo");
+        throw new UnsupportedOperationException(Message.Exception.METHOD_NOT_IMPLEMENTED);
     }
 
     @Override
     public void delete(ID id) {
-        throw new UnsupportedOperationException("This method is not deploy in this repo");
+        throw new UnsupportedOperationException(Message.Exception.METHOD_NOT_IMPLEMENTED);
     }
 
     public interface ResultSetHandler {
@@ -156,7 +157,7 @@ public abstract class AbstractRepository<T, ID> implements BaseRepository<T, ID>
             } catch (SQLException e) {
                 if (!isExternalTransaction) conn.rollback();
                 log.error("Batch execute error: {}", sql, e);
-                throw new RuntimeException("Error saved batch", e);
+                throw new RuntimeException(Message.Exception.BATCH_SAVE_ERROR, e);
             }
         } catch (SQLException e) {
             log.error("Execute error", e);

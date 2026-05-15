@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 
@@ -43,12 +44,12 @@ public class ApiDispatcher extends HttpServlet {
 
         log.info("API Dispatcher received pathInfo: {}", pathInfo);
         if (pathInfo == null || pathInfo.equals("/")) {
-            throw new ResourceNotFoundException("API Endpoint not found");
+            throw new ResourceNotFoundException(Message.Exception.ENDPOINT_NOT_FOUND);
         }
 
         String[] parts = pathInfo.split("/");
         if (parts.length < 2) {
-            throw new RuntimeException("Missing Resource Name");
+            throw new RuntimeException(Message.Exception.MISSING_RESOURCE_NAME);
         }
 
         String prefix = parts[1].toLowerCase();
@@ -60,7 +61,7 @@ public class ApiDispatcher extends HttpServlet {
             controller.service(req, res);
         } else {
             log.warn("No controller found for prefix: {}", prefix);
-            throw new ResourceNotFoundException("Controller not found");
+            throw new ResourceNotFoundException(Message.Exception.CONTROLLER_NOT_FOUND);
         }
 
     }

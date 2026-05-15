@@ -9,8 +9,8 @@ public class ResourceExpiredException extends ApiException {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public ResourceExpiredException(String message) {
-        super(410, message);
+    public ResourceExpiredException(String message, Object... args) {
+        super(410, message, args);
     }
 
 }

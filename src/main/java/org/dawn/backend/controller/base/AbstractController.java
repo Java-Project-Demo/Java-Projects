@@ -17,6 +17,7 @@ import org.dawn.backend.config.web.annotation.Get;
 import org.dawn.backend.config.web.annotation.Post;
 import org.dawn.backend.config.web.annotation.Put;
 import org.dawn.backend.config.web.response.ResponseObject;
+import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.exception.wrapper.AuthorizedDeniedException;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 
@@ -90,7 +91,7 @@ public abstract class AbstractController extends HttpServlet {
             return mapper.readValue(req.getInputStream(), clazz);
         } catch (IOException e) {
             log.error("Body exception: {}", e.getMessage());
-            throw new RuntimeException("Could not read request body");
+            throw new RuntimeException(Message.Exception.COULD_NOT_READ_BODY);
         }
     }
 
@@ -110,10 +111,10 @@ public abstract class AbstractController extends HttpServlet {
 
     protected void checkRole(String... allowedRoles) {
         UserPrincipal user = currentUser();
-        if (user == null) throw new AuthorizedDeniedException("401 Unauthorized");
+        if (user == null) throw new AuthorizedDeniedException(Message.Exception.UNAUTHORIZED);
 
         boolean hasAccess = Arrays.asList(allowedRoles).contains(user.role());
-        if (!hasAccess) throw new PermissionDeniedException("403 Forbidden");
+        if (!hasAccess) throw new PermissionDeniedException(Message.Exception.FORBIDDEN);
     }
 
     protected String query(HttpServletRequest req, String name) {

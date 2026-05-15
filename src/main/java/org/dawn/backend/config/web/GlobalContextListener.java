@@ -11,12 +11,12 @@ import org.dawn.backend.config.database.DatabaseConfig;
 import org.dawn.backend.config.database.FlywayConfig;
 import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.integration.CloudinaryConfig;
-import org.dawn.backend.config.integration.EmailService;
 import org.dawn.backend.config.integration.LangChainConfig;
 import org.dawn.backend.config.security.AuthTokenFilter;
 import org.dawn.backend.config.security.SecurityHandler;
 import org.dawn.backend.config.security.hashing.BCryptPasswordEncoderImpl;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
+import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.controller.auth.AuthController;
 import org.dawn.backend.controller.auth.UserController;
 import org.dawn.backend.controller.catalog.CategoryController;
@@ -184,7 +184,7 @@ public class GlobalContextListener implements ServletContextListener {
             ctx.setAttribute("warrantyController", warrantyController);
         } catch (Exception e) {
             log.error("Error during startup: {}", e.getMessage(), e);
-            throw new RuntimeException("Application failed to start", e);
+            throw new RuntimeException(Message.Exception.APPLICATION_START_FAILED, e);
         }
 
     }

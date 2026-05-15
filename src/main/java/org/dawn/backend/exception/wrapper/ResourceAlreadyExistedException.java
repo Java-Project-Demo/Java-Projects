@@ -9,7 +9,7 @@ public class ResourceAlreadyExistedException extends ApiException {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public ResourceAlreadyExistedException(String message) {
-        super(409, message);
+    public ResourceAlreadyExistedException(String message, Object... args) {
+        super(409, message, args);
     }
 }

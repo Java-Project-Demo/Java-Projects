@@ -8,7 +8,7 @@ public class PermissionDeniedException extends ApiException {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public PermissionDeniedException(String message) {
-        super(403, message);
+    public PermissionDeniedException(String message, Object... args) {
+        super(403, message, args);
     }
 }
