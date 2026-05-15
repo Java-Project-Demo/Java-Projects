@@ -48,7 +48,6 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
     }
 
-
     public ProductResponse create(ProductRequest req) {
         return manager.execute(() -> {
             productRepository.findBySku(req.getSku()).ifPresent(p -> {
@@ -67,20 +66,22 @@ public class ProductService {
         });
     }
 
-
     public ProductResponse updateProduct(Long id, ProductUpdateRequest req) {
         return manager.execute(() -> {
             Product existing = productRepository
                     .findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
-            existing.setName(req.getName());
-            existing.setCategoryId(req.getCategoryId());
-            existing.setPriceImport(req.getPriceImport());
-            existing.setPriceExport(req.getPriceExport());
-            existing.setMinThreshold(req.getMinThreshold());
-            existing.setStatus(req.getStatus());
-            existing.setIsDeleted(req.getIsDeleted());
-            existing.setSpecifications(req.getSpecifications());
+            if (req.getName() != null) existing.setName(req.getName());
+            if (req.getCategoryId() != null) existing.setCategoryId(req.getCategoryId());
+            if (req.getPriceImport() != null) existing.setPriceImport(req.getPriceImport());
+            if (req.getPriceExport() != null) existing.setPriceExport(req.getPriceExport());
+            if (req.getMinThreshold() != null) existing.setMinThreshold(req.getMinThreshold());
+            if (req.getStatus() != null) existing.setStatus(req.getStatus());
+            if (req.getIsDeleted() != null) existing.setIsDeleted(req.getIsDeleted());
+            if (req.getSpecifications() != null) existing.setSpecifications(req.getSpecifications());
+            if (req.getImageUrl() != null) existing.setImageUrl(req.getImageUrl());
+            if (req.getHasImei() != null) existing.setHasImei(req.getHasImei());
+            if (req.getWarrantyPeriod() != null) existing.setWarrantyPeriod(req.getWarrantyPeriod());
             auditLogService.saveLog(
                     LogConstant.Action.UPDATE_PRODUCT,
                     LogConstant.Entity.PRODUCT,
@@ -91,6 +92,5 @@ public class ProductService {
             return ProductMappingHelper.map(existing);
         });
     }
-
 
 }

@@ -22,7 +22,7 @@ public class CategoryController extends AbstractController {
 
     @Get("/")
     public ResponseObject<List<CategoryResponse>> getCategories(HttpServletRequest req, HttpServletResponse res) {
-        checkRole(URole.ADMIN.name());
+        checkRole(URole.ADMIN.name(), URole.STOCK.name());
         int page = Integer.parseInt(req.getParameter("page") != null ? req.getParameter("page") : "0");
         int size = Integer.parseInt(req.getParameter("size") != null ? req.getParameter("size") : "10");
         return ResponseObject.success(categoryService.getAll());

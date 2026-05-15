@@ -34,14 +34,14 @@ public class ProductController extends AbstractController {
 
     @Post("/")
     public ResponseObject<ProductResponse> addProduct(HttpServletRequest req, HttpServletResponse res) {
-        checkRole(URole.ADMIN.name());
+        checkRole(URole.ADMIN.name(), URole.STOCK.name());
         ProductRequest dto = body(req, ProductRequest.class);
         return ResponseObject.success(productService.create(dto));
     }
 
     @Put("/{id}")
     public ResponseObject<ProductResponse> updateProduct(HttpServletRequest req, HttpServletResponse res) {
-        checkRole(URole.ADMIN.name());
+        checkRole(URole.ADMIN.name(), URole.STOCK.name());
         ProductUpdateRequest dto = body(req, ProductUpdateRequest.class);
         return ResponseObject.success(productService.updateProduct(getPathId(req), dto));
     }

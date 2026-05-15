@@ -141,13 +141,13 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                     entity.getImageUrl(),
                     entity.getSpecifications(),
                     entity.getWarrantyPeriod(),
-                    entity.getHasImei() ? 1 : 0,
+                    entity.getHasImei() != null && entity.getHasImei() ? 1 : 0,
                     entity.getPriceImport(),
                     entity.getPriceExport(),
                     entity.getCurrentStock(),
                     entity.getMinThreshold(),
                     ActiveStatus.INACTIVE.name(),
-                    entity.getIsDeleted() ? 1 : 0,
+                    entity.getIsDeleted() != null && entity.getIsDeleted() ? 1 : 0,
                     now,
                     now);
             entity.setStatus(ActiveStatus.INACTIVE);
@@ -169,13 +169,13 @@ public class ProductRepositoryImpl extends AbstractRepository<Product, Long> imp
                     entity.getImageUrl(),
                     entity.getSpecifications(),
                     entity.getWarrantyPeriod(),
-                    entity.getHasImei() ? 1 : 0,
+                    entity.getHasImei() != null && entity.getHasImei() ? 1 : 0,
                     entity.getPriceImport(),
                     entity.getPriceExport(),
                     entity.getCurrentStock(),
                     entity.getMinThreshold(),
                     entity.getStatus().name(),
-                    entity.getIsDeleted() ? 1 : 0,
+                    entity.getIsDeleted() != null && entity.getIsDeleted() ? 1 : 0,
                     now,
                     entity.getId());
         }
