@@ -8,21 +8,66 @@ import { useGetAuditLogsQuery } from '@/features/auditLog/auditLogApi.ts'
 const { Text } = Typography
 const { RangePicker } = DatePicker
 
-const ACTION_COLORS: Record<string, string> = {
-  IMPORT_STOCK: 'blue',
-  CREATE_ORDER: 'green',
-  CANCEL_ORDER: 'red',
-  MARK_DAMAGED: 'volcano',
-  ADJUST_STOCK: 'purple',
-  RETURN_ORDER: 'orange'
+const ACTION_CONFIG: Record<string, { label: string; color: string }> = {
+  // --- AUTH ---
+  LOGIN: { label: 'Đăng nhập', color: 'magenta' },
+  LOGOUT: { label: 'Đăng xuất', color: 'magenta' },
+  REFRESH_TOKEN: { label: 'Làm mới phiên', color: 'purple' },
+
+  // --- USER ---
+  CREATE_USER: { label: 'Tạo người dùng', color: 'green' },
+  UPDATE_USER: { label: 'Cập nhật người dùng', color: 'blue' },
+  UPDATE_USER_INFO: { label: 'Cập nhật thông tin cá nhân', color: 'blue' },
+  UPDATE_USER_STATUS: { label: 'Cập nhật trạng thái người dùng', color: 'cyan' },
+  UPDATE_ROLE: { label: 'Thay đổi quyền hạn', color: 'geekblue' },
+  DELETE_USER: { label: 'Xoá người dùng', color: 'red' },
+  CHANGE_PASSWORD: { label: 'Đổi mật khẩu', color: 'gold' },
+  RESET_PASSWORD: { label: 'Đặt lại mật khẩu', color: 'volcano' },
+
+  // --- SUPPLIER ---
+  CREATE_SUPPLIER: { label: 'Thêm nhà cung cấp', color: 'green' },
+  UPDATE_SUPPLIER: { label: 'Cập nhật nhà cung cấp', color: 'blue' },
+  DELETE_SUPPLIER: { label: 'Xoá nhà cung cấp', color: 'red' },
+
+  // --- CATEGORY ---
+  CREATE_CATEGORY: { label: 'Thêm danh mục', color: 'green' },
+  UPDATE_CATEGORY: { label: 'Cập nhật danh mục', color: 'blue' },
+  DELETE_CATEGORY: { label: 'Xoá danh mục', color: 'red' },
+
+  // --- WAREHOUSE / PRODUCT ---
+  CREATE_PRODUCT: { label: 'Thêm sản phẩm', color: 'green' },
+  UPDATE_PRODUCT: { label: 'Cập nhật sản phẩm', color: 'blue' },
+  DELETE_PRODUCT: { label: 'Xoá sản phẩm', color: 'red' },
+  CREATE_WAREHOUSE: { label: 'Thiết lập kho hàng', color: 'green' },
+  IMPORT_STOCK: { label: 'Nhập kho', color: 'blue' },
+  ADJUST_STOCK: { label: 'Điều chỉnh tồn kho', color: 'purple' },
+  MARK_DAMAGED: { label: 'Báo hàng hỏng', color: 'volcano' },
+
+  // --- ORDER ---
+  CREATE_ORDER: { label: 'Tạo đơn hàng', color: 'green' },
+  CANCEL_ORDER: { label: 'Huỷ đơn hàng', color: 'red' },
+  COMPLETE_ORDER: { label: 'Hoàn thành đơn hàng', color: 'cyan' },
+  RETURN_ORDER: { label: 'Khách trả hàng', color: 'orange' },
+
+  // --- WARRANTY ---
+  RECEIVE_WARRANTY: { label: 'Tiếp nhận bảo hành', color: 'gold' }
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  SUCCESS: 'green',
-  FAILED: 'red',
-  DENIED: 'volcano',
-  UNAUTHORIZED: 'purple',
-  EXPIRED: 'orange'
+const ENTITY_CONFIG: Record<string, string> = {
+  PRODUCT: 'Sản phẩm',
+  PRODUCT_ITEM: 'IMEI',
+  ORDER: 'Đơn hàng',
+  SUPPLIER: 'Nhà cung cấp',
+  WAREHOUSE: 'Kho hàng',
+  AUTH: 'Xác thực hệ thống',
+}
+
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  SUCCESS: { label: 'Thành công', color: 'green' },
+  FAILED: { label: 'Thất bại', color: 'red' },
+  DENIED: { label: 'Bị từ chối', color: 'volcano' },
+  UNAUTHORIZED: { label: 'Không có quyền', color: 'purple' },
+  EXPIRED: { label: 'Hết hạn', color: 'orange' }
 }
 
 const AuditLogPage = () => {
@@ -60,14 +105,17 @@ const AuditLogPage = () => {
       dataIndex: 'action',
       key: 'action',
       width: 180,
-      render: (v: string) => <Tag color={ACTION_COLORS[v] || 'default'}>{v}</Tag>
+      render: (v: string) => {
+        const config = ACTION_CONFIG[v] || { label: v, color: 'default' }
+        return <Tag color={config.color}>{config.label}</Tag>
+      }
     },
     {
       title: 'Đối tượng',
       dataIndex: 'entityName',
       key: 'entity',
       width: 180,
-      render: (v: string) => <Tag>{v}</Tag>
+      render: (v: string) => <Tag>{ENTITY_CONFIG[v] || v}</Tag>
     },
     {
       title: 'ID Tham chiếu',
@@ -81,7 +129,10 @@ const AuditLogPage = () => {
       dataIndex: 'status',
       key: 'status',
       width: 110,
-      render: (v: string) => <Tag color={STATUS_COLORS[v] || 'default'}>{v}</Tag>
+      render: (v: string) => {
+        const config = STATUS_CONFIG[v] || { label: v, color: 'default' }
+        return <Tag color={config.color}>{config.label}</Tag>
+      }
     },
     {
       title: 'Nội dung chi tiết',
@@ -107,12 +158,10 @@ const AuditLogPage = () => {
               allowClear
               placeholder='Tất cả hành động'
               style={{ width: 180 }}
-              options={[
-                { value: 'IMPORT_STOCK', label: 'Nhập kho' },
-                { value: 'CREATE_ORDER', label: 'Tạo đơn hàng' },
-                { value: 'CANCEL_ORDER', label: 'Huỷ đơn' },
-                { value: 'MARK_DAMAGED', label: 'Báo hỏng' }
-              ]}
+              options={Object.keys(ACTION_CONFIG).map((key) => ({
+                value: key,
+                label: ACTION_CONFIG[key].label
+              }))}
               onChange={(v) => setFilters({ ...filters, action: v })}
             />
           </div>
