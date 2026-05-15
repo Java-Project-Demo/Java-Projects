@@ -59,13 +59,38 @@ public abstract class AbstractController extends HttpServlet {
             String cleanPath = path.replaceFirst("^/[^/]+", "");
             if (cleanPath.isEmpty()) cleanPath = "/";
 
-            String routePath = cleanPath.replaceAll("/\\d+", "/{id}");
-            String methodKey = req.getMethod() + ":" + routePath;
-            log.info("Match route: {}", methodKey);
+            Method method = null;
+            String matchedKey = null;
 
-            Method method = routeMap.get(methodKey);
+
+            String exactKey = req.getMethod() + ":" + cleanPath;
+            if (routeMap.containsKey(exactKey)) {
+                method = routeMap.get(exactKey);
+                matchedKey = exactKey;
+            }
+
+            if (method == null) {
+                for (Map.Entry<String, Method> entry : routeMap.entrySet()) {
+                    String key = entry.getKey();
+                    String[] parts = key.split(":", 2);
+                    if (parts.length < 2) continue;
+
+                    String httpMethod = parts[0];
+                    String routePattern = parts[1];
+
+                    if (httpMethod.equals(req.getMethod())) {
+                        String regexPattern = "^" + routePattern.replaceAll("\\{[^/]+\\}", "([^/]+)") + "$";
+                        if (cleanPath.matches(regexPattern)) {
+                            method = entry.getValue();
+                            matchedKey = key;
+                            break;
+                        }
+                    }
+                }
+            }
 
             if (method != null) {
+                log.info("Match route: {} | Path: {}", matchedKey, cleanPath);
                 Object result;
                 if (method.getParameterCount() == 2) {
                     result = method.invoke(this, req, res);
@@ -75,7 +100,7 @@ public abstract class AbstractController extends HttpServlet {
                 }
                 render(res, result);
             } else {
-                log.warn("No method found for key: {}", methodKey);
+                log.warn("No method found for: {} {}", req.getMethod(), cleanPath);
                 res.setStatus(404);
             }
         } catch (Exception e) {
@@ -103,6 +128,13 @@ public abstract class AbstractController extends HttpServlet {
         if (matcher.find()) return Long.valueOf(matcher.group(1));
 
         return null;
+    }
+
+    protected String getPath(HttpServletRequest req) {
+        String pathInfo = req.getPathInfo();
+        if (pathInfo == null || pathInfo.isEmpty()) return null;
+        String[] parts = pathInfo.split("/");
+        return parts[parts.length - 1];
     }
 
     protected UserPrincipal currentUser() {
