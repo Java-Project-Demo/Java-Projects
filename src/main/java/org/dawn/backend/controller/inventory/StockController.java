@@ -10,6 +10,7 @@ import org.dawn.backend.dto.inventory.ImportImeiRequest;
 import org.dawn.backend.dto.catalog.ProductItemResponse;
 import org.dawn.backend.dto.catalog.ProductResponse;
 import org.dawn.backend.dto.catalog.ProductMappingHelper;
+import org.dawn.backend.dto.inventory.MarkDamagedRequest;
 import org.dawn.backend.service.inventory.StockService;
 
 @RequiredArgsConstructor
@@ -32,9 +33,8 @@ public class StockController extends AbstractController {
 
     @Post("/mark-damaged")
     public ResponseObject<ProductItemResponse> markDamaged(HttpServletRequest req, HttpServletResponse res) {
-        String imei = req.getParameter("imei");
-        String reason = req.getParameter("reason");
-        return ResponseObject.success(ProductMappingHelper.mapItem(stockService.markAsDamaged(imei, reason)));
+        MarkDamagedRequest dto = body(req, MarkDamagedRequest.class);
+        return ResponseObject.success(ProductMappingHelper.mapItem(stockService.markAsDamaged(dto.getImei(), dto.getReason())));
     }
 
     @Post("/return-product")
