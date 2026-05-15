@@ -29,6 +29,7 @@ import TraCuuImeiPage from '@/pages/imei/TraCuuImeiPage'
 import TonKhoCuPage from '@/pages/report/TonKhoCuPage'
 import KiemKePage from '@/pages/inventory/KiemKePage'
 import QuanLyKhoPage from '@/pages/warehouse-mgmt/QuanLyKhoPage'
+import AuditLogPage from '@/pages/report/AuditLogPage.tsx'
 
 const AppRoutes = () => {
   return useRoutes([
@@ -58,6 +59,7 @@ const AppRoutes = () => {
             { path: '/in-barcode',        element: <InBarcodePage /> },
             { path: '/kiem-ke',           element: <RoleRoute allowedRoles={['ADMIN', 'STOCK']}><KiemKePage /></RoleRoute> },
             { path: '/quan-ly-kho',       element: <RoleRoute allowedRoles={['ADMIN', 'STOCK']}><QuanLyKhoPage /></RoleRoute> },
+            { path: '/logs',              element: <RoleRoute allowedRoles={['ADMIN']}><AuditLogPage/></RoleRoute>}
           ],
         },
       ],

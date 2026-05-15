@@ -19,11 +19,11 @@ export const auditLogApi = createApi({
       query: ({ page = 0, size = 20, ...rest } = {}) => ({
         url: '/logs/',
         method: 'GET',
-        params: { page, size, ...rest },
+        params: { page, size, ...rest }
       }),
-      providesTags: ['AuditLog'],
-    }),
-  }),
+      providesTags: ['AuditLog']
+    })
+  })
 })
 
 export const { useGetAuditLogsQuery } = auditLogApi
