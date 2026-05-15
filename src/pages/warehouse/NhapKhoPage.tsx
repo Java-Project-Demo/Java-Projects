@@ -197,7 +197,9 @@ const NhapKhoPage = () => {
                 <Col span={12}>
                   <Form.Item label='Giá nhập' name='costPrice' rules={[{ required: true, message: 'Nhập giá nhập' }, { type: 'number', min: 1, message: 'Giá nhập phải > 0' }]}>
                     <InputNumber style={{ width: '100%' }} min={0} addonAfter='₫'
-                      formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')} placeholder='0' />
+                      formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+                      parser={(v) => v?.replace(/\./g, '') as any}
+                      placeholder='0' />
                   </Form.Item>
                 </Col>
                 <Col span={12}>

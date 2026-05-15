@@ -13,6 +13,7 @@ import authReducer from '@/features/auth/authSlice'
 import { aiAgentApi } from '@/features/aiAgent/aiAgentApi.ts'
 import { inventoryApi } from '@/features/inventory/inventoryApi'
 import { warehouseApi } from '@/features/warehouse/warehouseApi'
+import { systemApi } from '@/features/system/systemApi'
 
 export const store = configureStore({
   reducer: {
@@ -29,7 +30,8 @@ export const store = configureStore({
     [auditLogApi.reducerPath]: auditLogApi.reducer,
     [aiAgentApi.reducerPath]: aiAgentApi.reducer,
     [inventoryApi.reducerPath]: inventoryApi.reducer,
-    [warehouseApi.reducerPath]: warehouseApi.reducer
+    [warehouseApi.reducerPath]: warehouseApi.reducer,
+    [systemApi.reducerPath]: systemApi.reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -46,6 +48,7 @@ export const store = configureStore({
       .concat(aiAgentApi.middleware)
       .concat(inventoryApi.middleware)
       .concat(warehouseApi.middleware)
+      .concat(systemApi.middleware)
 })
 
 export type RootState = ReturnType<typeof store.getState>

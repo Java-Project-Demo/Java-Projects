@@ -22,8 +22,10 @@ import {
   Tabs,
   Tag,
   Tooltip,
-  Typography
+  Typography,
+  Upload
 } from 'antd'
+import type { UploadFile } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
   PlusOutlined,
@@ -35,7 +37,8 @@ import {
   ExportOutlined,
   DownloadOutlined,
   DeleteOutlined,
-  UndoOutlined
+  UndoOutlined,
+  LoadingOutlined
 } from '@ant-design/icons'
 import {
   useGetProductsQuery,
@@ -45,6 +48,7 @@ import {
 } from '@/features/product/productApi'
 import { useGetCategoriesQuery } from '@/features/category/categoryApi'
 import { useGetAuditLogsQuery } from '@/features/auditLog/auditLogApi'
+import { useUploadImageMutation } from '@/features/system/systemApi'
 import type { Product, ProductStatus } from '@/types/api'
 import PageHeader from '@/components/shared/PageHeader'
 import CurrencyDisplay from '@/components/shared/CurrencyDisplay'
@@ -74,6 +78,7 @@ interface FormValues {
   hasImei: boolean
   status: ProductStatus
   specifications?: string
+  imageUrl?: string
 }
 
 const KhoHangPage = () => {
@@ -86,6 +91,8 @@ const KhoHangPage = () => {
   const [drawerItem, setDrawerItem] = useState<Product | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [editItem, setEditItem] = useState<Product | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewImage, setPreviewImage] = useState('')
   const [form] = Form.useForm<FormValues>()
 
   const { data: products = [], isLoading } = useGetProductsQuery()
@@ -93,6 +100,8 @@ const KhoHangPage = () => {
   const [createProduct, { isLoading: creating }] = useCreateProductMutation()
   const [updateProduct, { isLoading: updating }] = useUpdateProductMutation()
   const [setProductDeleted] = useSetProductDeletedMutation()
+  const [uploadImage, { isLoading: uploading }] = useUploadImageMutation()
+  const [fileList, setFileList] = useState<UploadFile[]>([])
 
   // Audit logs cho drawer detail (lọc theo entityId)
   const { data: allLogs = [] } = useGetAuditLogsQuery({ page: 0, size: 100 })
@@ -128,10 +137,19 @@ const KhoHangPage = () => {
     [products]
   )
 
+  const getBase64 = (file: any): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = (error) => reject(error)
+    })
+
   const openAdd = () => {
     setEditItem(null)
     form.resetFields()
-    form.setFieldsValue({ status: 'ACTIVE', hasImei: false, minThreshold: 10, warrantyPeriod: 12, currentStock: 0 })
+    form.setFieldsValue({ status: 'ACTIVE', hasImei: false, minThreshold: 10, warrantyPeriod: 12, currentStock: 0, imageUrl: '' })
+    setFileList([])
     setModalOpen(true)
   }
 
@@ -151,6 +169,7 @@ const KhoHangPage = () => {
       status: r.status,
       specifications: r.specifications ?? ''
     })
+    setFileList(r.imageUrl ? [{ uid: '-1', name: 'image.png', status: 'done', url: r.imageUrl }] : [])
     setModalOpen(true)
   }
 
@@ -717,6 +736,7 @@ const KhoHangPage = () => {
                   min={0}
                   addonAfter='₫'
                   formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+                  parser={(v) => v!.replace(/\./g, '')}
                   placeholder='0'
                 />
               </Form.Item>
@@ -728,6 +748,7 @@ const KhoHangPage = () => {
                   min={0}
                   addonAfter='₫'
                   formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+                  parser={(v) => v!.replace(/\./g, '')}
                   placeholder='0'
                 />
               </Form.Item>
@@ -768,7 +789,64 @@ const KhoHangPage = () => {
           <Form.Item label='Thông số kỹ thuật' name='specifications'>
             <Input.TextArea rows={3} placeholder='Mô tả thông số (không bắt buộc)' />
           </Form.Item>
+
+          <Form.Item name='imageUrl' noStyle>
+            <Input type='hidden' />
+          </Form.Item>
+
+          <Form.Item label='Hình ảnh sản phẩm'>
+            <Upload
+              listType='picture-card'
+              fileList={fileList}
+              maxCount={1}
+              onPreview={async (file) => {
+                if (!file.url && !file.preview) {
+                  file.preview = await getBase64(file.originFileObj)
+                }
+                setPreviewImage(file.url || (file.preview as string))
+                setPreviewOpen(true)
+              }}
+              onRemove={() => {
+                setFileList([])
+                form.setFieldValue('imageUrl', '')
+              }}
+              onChange={({ fileList: newFileList }) => {
+                // Cập nhật trạng thái fileList để Ant Design hiển thị preview
+                setFileList(newFileList)
+              }}
+              customRequest={async ({ file, onSuccess, onError }) => {
+                const formData = new FormData()
+                formData.append('image', file as File)
+                try {
+                  const url = await uploadImage(formData).unwrap()
+                  form.setFieldValue('imageUrl', url)
+                  setFileList([{
+                    uid: (file as any).uid || '-1',
+                    name: (file as any).name || 'image.png',
+                    status: 'done',
+                    url
+                  }])
+                  onSuccess?.('ok')
+                  void message.success('Tải ảnh lên thành công')
+                } catch (err) {
+                  onError?.(err as Error)
+                  void message.error('Upload ảnh thất bại')
+                }
+              }}
+            >
+              {fileList.length < 1 && (
+                <div>
+                  {uploading ? <LoadingOutlined /> : <PlusOutlined />}
+                  <div style={{ marginTop: 8 }}>{uploading ? 'Đang tải...' : 'Tải ảnh'}</div>
+                </div>
+              )}
+            </Upload>
+          </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal open={previewOpen} title='Xem ảnh sản phẩm' footer={null} onCancel={() => setPreviewOpen(false)}>
+        <Image preview={false} alt='preview' style={{ width: '100%' }} src={previewImage} />
       </Modal>
     </div>
   )
