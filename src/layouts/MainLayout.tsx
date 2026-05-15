@@ -74,7 +74,6 @@ const ALL_MENU: MenuItem[] = [
     key: 'baocao',
     label: 'Báo cáo',
     icon: <BarChartOutlined />,
-    roles: ['ADMIN'],
     children: [
       { key: '/thong-ke', label: 'Thống kê', icon: <BarChartOutlined />, roles: ['ADMIN'] },
       { key: '/ton-kho-cu', label: 'Tồn kho cũ', icon: <WarningOutlined />, roles: ['ADMIN', 'STOCK'] }

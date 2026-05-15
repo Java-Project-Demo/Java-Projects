@@ -1,17 +1,30 @@
 import { useMemo, useState } from 'react'
 import { App, Breadcrumb, Button, Card, Form, Input, Modal, Space, Table, Tag, Tooltip, Typography } from 'antd'
-import { HomeOutlined, PlusOutlined, EditOutlined, AppstoreOutlined, DeleteOutlined, UndoOutlined } from '@ant-design/icons'
+import {
+  HomeOutlined,
+  PlusOutlined,
+  EditOutlined,
+  AppstoreOutlined,
+  DeleteOutlined,
+  UndoOutlined
+} from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
 import {
-  useGetCategoriesQuery, useCreateCategoryMutation, useUpdateCategoryMutation,
-  useSetCategoryDeletedMutation,
+  useGetCategoriesQuery,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useSetCategoryDeletedMutation
 } from '@/features/category/categoryApi'
 import type { Category } from '@/types/api'
+import { useAppSelector } from '@/app/hooks.ts'
 
 const { Text } = Typography
 const PRIMARY = '#E8603C'
 
-interface FormValues { name: string; description?: string }
+interface FormValues {
+  name: string
+  description?: string
+}
 
 const DanhMucVatTuPage = () => {
   const { message, modal } = App.useApp()
@@ -19,6 +32,8 @@ const DanhMucVatTuPage = () => {
   const [showDeleted, setShowDeleted] = useState(false)
   const [editItem, setEditItem] = useState<Category | null>(null)
   const [form] = Form.useForm<FormValues>()
+  const user = useAppSelector((s) => s.auth.user)
+  const isAdmin = user?.role === 'ADMIN'
 
   const { data: categories = [], isLoading } = useGetCategoriesQuery()
   const [createCategory, { isLoading: creating }] = useCreateCategoryMutation()
@@ -27,7 +42,7 @@ const DanhMucVatTuPage = () => {
 
   const visibleCategories = useMemo(
     () => categories.filter((c) => showDeleted || !c.isDeleted),
-    [categories, showDeleted],
+    [categories, showDeleted]
   )
 
   const handleSoftDelete = (record: Category) => {
@@ -47,7 +62,7 @@ const DanhMucVatTuPage = () => {
           const e = err as { data?: { message?: string } }
           void message.error(e?.data?.message ?? 'Lỗi hệ thống')
         }
-      },
+      }
     })
   }
 
@@ -83,91 +98,156 @@ const DanhMucVatTuPage = () => {
 
   const columns: ColumnsType<Category> = [
     {
-      title: 'STT', key: 'stt', width: 60,
-      render: (_, __, i) => <Text type='secondary'>{i + 1}</Text>,
+      title: 'STT',
+      key: 'stt',
+      width: 60,
+      render: (_, __, i) => <Text type='secondary'>{i + 1}</Text>
     },
     {
-      title: 'Tên danh mục', dataIndex: 'name', key: 'name',
+      title: 'Tên danh mục',
+      dataIndex: 'name',
+      key: 'name',
       render: (v: string) => (
         <Space>
-          <div style={{ width: 28, height: 28, borderRadius: 6, background: `${PRIMARY}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              background: `${PRIMARY}18`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
             <AppstoreOutlined style={{ color: PRIMARY, fontSize: 14 }} />
           </div>
           <Text strong>{v}</Text>
         </Space>
-      ),
+      )
     },
     {
-      title: 'Mô tả', dataIndex: 'description', key: 'description', ellipsis: true,
-      render: (v: string | null) => <Text type='secondary'>{v ?? '—'}</Text>,
+      title: 'Mô tả',
+      dataIndex: 'description',
+      key: 'description',
+      ellipsis: true,
+      render: (v: string | null) => <Text type='secondary'>{v ?? '—'}</Text>
     },
     {
-      title: 'Số sản phẩm', key: 'count', width: 120, align: 'center' as const,
-      render: (_, r: Category) => <Tag color='blue'>{r.items?.length ?? 0} SP</Tag>,
+      title: 'Số sản phẩm',
+      key: 'count',
+      width: 120,
+      align: 'center' as const,
+      render: (_, r: Category) => <Tag color='blue'>{r.items?.length ?? 0} SP</Tag>
     },
     {
-      title: 'Ngày tạo', dataIndex: 'createdAt', key: 'createdAt', width: 150,
-      render: (v: string) => <Text type='secondary' style={{ fontSize: 12 }}>{v ? new Date(v).toLocaleDateString('vi-VN') : '—'}</Text>,
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 150,
+      render: (v: string) => (
+        <Text type='secondary' style={{ fontSize: 12 }}>
+          {v ? new Date(v).toLocaleDateString('vi-VN') : '—'}
+        </Text>
+      )
     },
     {
-      title: 'Hành động', key: 'action', width: 110,
-      render: (_, record) => (
-        <Space size={2}>
-          <Tooltip title='Chỉnh sửa'>
-            <Button type='text' size='small' icon={<EditOutlined style={{ color: '#1677ff' }} />}
-              onClick={() => openEdit(record)} disabled={record.isDeleted} />
-          </Tooltip>
-          <Tooltip title={record.isDeleted ? 'Khôi phục' : 'Ẩn danh mục'}>
-            <Button
-              type='text' size='small'
-              icon={record.isDeleted
-                ? <UndoOutlined style={{ color: '#52c41a' }} />
-                : <DeleteOutlined style={{ color: '#ff4d4f' }} />}
-              onClick={() => handleSoftDelete(record)} />
-          </Tooltip>
-        </Space>
-      ),
-    },
+      title: 'Hành động',
+      key: 'action',
+      width: 110,
+      render: (_, record) =>
+        isAdmin ? (
+          <Space size={2}>
+            <Tooltip title='Chỉnh sửa'>
+              <Button
+                type='text'
+                size='small'
+                icon={<EditOutlined style={{ color: '#1677ff' }} />}
+                onClick={() => openEdit(record)}
+                disabled={record.isDeleted}
+              />
+            </Tooltip>
+            <Tooltip title={record.isDeleted ? 'Khôi phục' : 'Ẩn danh mục'}>
+              <Button
+                type='text'
+                size='small'
+                icon={
+                  record.isDeleted ? (
+                    <UndoOutlined style={{ color: '#52c41a' }} />
+                  ) : (
+                    <DeleteOutlined style={{ color: '#ff4d4f' }} />
+                  )
+                }
+                onClick={() => handleSoftDelete(record)}
+              />
+            </Tooltip>
+          </Space>
+        ) : null
+    }
   ]
 
   return (
     <div>
-      <Breadcrumb style={{ marginBottom: 16 }}
-        items={[{ href: '/', title: <HomeOutlined /> }, { title: 'Danh mục vật tư' }]} />
+      <Breadcrumb
+        style={{ marginBottom: 16 }}
+        items={[{ href: '/', title: <HomeOutlined /> }, { title: 'Danh mục vật tư' }]}
+      />
 
       <Card
         style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}
-        title={<Space><AppstoreOutlined style={{ color: PRIMARY }} /><span>Danh mục vật tư</span></Space>}
+        title={
+          <Space>
+            <AppstoreOutlined style={{ color: PRIMARY }} />
+            <span>Danh mục vật tư</span>
+          </Space>
+        }
         extra={
           <Space>
             <Button
-              type={showDeleted ? 'primary' : 'default'} ghost={showDeleted}
-              icon={<DeleteOutlined />} onClick={() => setShowDeleted((v) => !v)}>
+              type={showDeleted ? 'primary' : 'default'}
+              ghost={showDeleted}
+              icon={<DeleteOutlined />}
+              onClick={() => setShowDeleted((v) => !v)}
+            >
               {showDeleted ? 'Đang xem đã ẩn' : 'Hiện đã ẩn'}
             </Button>
-            <Button type='primary' icon={<PlusOutlined />} onClick={openAdd}>Thêm danh mục</Button>
+            <Button type='primary' icon={<PlusOutlined />} onClick={openAdd}>
+              Thêm danh mục
+            </Button>
           </Space>
         }
       >
         <Table
-          rowKey='id' loading={isLoading} columns={columns} dataSource={visibleCategories}
-          size='middle' bordered
+          rowKey='id'
+          loading={isLoading}
+          columns={columns}
+          dataSource={visibleCategories}
+          size='middle'
+          bordered
           pagination={{ pageSize: 10, showTotal: (t) => `Tổng ${t} danh mục` }}
         />
       </Card>
 
       <Modal
         title={editItem ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
-        open={modalOpen} onCancel={() => setModalOpen(false)} width={480}
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        width={480}
         footer={[
-          <Button key='cancel' onClick={() => setModalOpen(false)}>Huỷ</Button>,
+          <Button key='cancel' onClick={() => setModalOpen(false)}>
+            Huỷ
+          </Button>,
           <Button key='save' type='primary' loading={creating || updating} onClick={handleSave}>
             {editItem ? 'Cập nhật' : 'Thêm mới'}
-          </Button>,
+          </Button>
         ]}
       >
         <Form form={form} layout='vertical' style={{ marginTop: 16 }}>
-          <Form.Item label='Tên danh mục' name='name' rules={[{ required: true, message: 'Vui lòng nhập tên danh mục' }]}>
+          <Form.Item
+            label='Tên danh mục'
+            name='name'
+            rules={[{ required: true, message: 'Vui lòng nhập tên danh mục' }]}
+          >
             <Input placeholder='Nhập tên danh mục' />
           </Form.Item>
           <Form.Item label='Mô tả' name='description'>

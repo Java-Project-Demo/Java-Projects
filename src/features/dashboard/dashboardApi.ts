@@ -9,23 +9,23 @@ export const dashboardApi = createApi({
   endpoints: (builder) => ({
     getDashboardSummary: builder.query<DashboardSummary, void>({
       query: () => ({ url: '/dashboard/summary', method: 'GET' }),
-      providesTags: ['Dashboard'],
+      providesTags: ['Dashboard']
     }),
     getLowStock: builder.query<Product[], void>({
       query: () => ({ url: '/dashboard/low-stock', method: 'GET' }),
-      providesTags: ['Dashboard'],
+      providesTags: ['Dashboard']
     }),
     traceImei: builder.query<Record<string, unknown>, string>({
-      query: (imei) => ({ url: '/dashboard/trace', method: 'GET', params: { imei } }),
+      query: (imei) => ({ url: '/dashboard/trace', method: 'GET', params: { imei } })
     }),
     getAgingReport: builder.query<ProductItem[], { daysThreshold: number }>({
       query: ({ daysThreshold }) => ({
         url: '/dashboard/aging-report',
         method: 'GET',
-        params: { daysThreshold },
-      }),
-    }),
-  }),
+        params: { days: daysThreshold }
+      })
+    })
+  })
 })
 
 export const {
@@ -34,5 +34,5 @@ export const {
   useTraceImeiQuery,
   useLazyTraceImeiQuery,
   useGetAgingReportQuery,
-  useLazyGetAgingReportQuery,
+  useLazyGetAgingReportQuery
 } = dashboardApi
