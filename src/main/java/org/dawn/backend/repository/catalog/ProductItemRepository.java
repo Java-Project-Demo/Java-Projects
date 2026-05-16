@@ -13,6 +13,8 @@ public interface ProductItemRepository extends BaseRepository<ProductItem, Long>
 
     List<String> findMissingImeis(Long sessionId);
 
+    List<String> findMissingImeisByWarehouse(Long sessionId, Long warehouseId);
+
     List<ProductItem> findAgingStock(int days);
 
     void saveAll(List<ProductItem> entities);

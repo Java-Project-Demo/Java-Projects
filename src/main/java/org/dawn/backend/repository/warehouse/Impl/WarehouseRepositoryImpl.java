@@ -1,6 +1,9 @@
 package org.dawn.backend.repository.warehouse.Impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.constant.catalog.ItemStatus;
+import org.dawn.backend.entity.Product;
+import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.entity.Warehouse;
 import org.dawn.backend.entity.WarehouseLocation;
 import org.dawn.backend.repository.base.AbstractRepository;
@@ -24,16 +27,21 @@ public class WarehouseRepositoryImpl extends AbstractRepository<Warehouse, Long>
         String sql = """
                 SELECT w.id AS w_id, w.name AS w_name, w.address AS w_address,
                 w.created_at, w.updated_at,
-                l.id AS loc_id, l.zone_name, l.row_num, l.shelf_num, l.bin_num
+                l.id AS loc_id, l.zone_name, l.row_num, l.shelf_num, l.bin_num,
+                pi.id AS pi_id, pi.product_id AS pi_product_id, pi.imei AS pi_imei, pi.status AS pi_status,
+                p.name AS p_name, p.sku AS p_sku
                 FROM warehouses w
                 LEFT JOIN warehouse_locations l ON w.id = l.warehouse_id
-                ORDER BY w.id ASC
+                LEFT JOIN product_items pi ON pi.location_id = l.id AND pi.status = 'AVAILABLE'
+                LEFT JOIN products p ON pi.product_id = p.id
+                ORDER BY w.id ASC, l.id ASC
                 """;
-        Map<Long, Warehouse> map = new LinkedHashMap<>();
+        Map<Long, Warehouse> warehouseMap = new LinkedHashMap<>();
+        Map<Long, WarehouseLocation> locationMap = new HashMap<>();
         super.query(sql, rs -> {
             while (rs.next()) {
-                Long id = rs.getLong("w_id");
-                Warehouse warehouse = map.computeIfAbsent(id, k -> {
+                Long warehouseId = rs.getLong("w_id");
+                Warehouse warehouse = warehouseMap.computeIfAbsent(warehouseId, k -> {
                     try {
                         Warehouse w = mapResultSet(rs);
                         w.setLocations(new ArrayList<>());
@@ -42,30 +50,53 @@ public class WarehouseRepositoryImpl extends AbstractRepository<Warehouse, Long>
                         throw new RuntimeException(e);
                     }
                 });
-//
+
                 long locId = rs.getLong("loc_id");
-                if (!rs.wasNull() && locId > 0) {
-                    WarehouseLocation item = WarehouseLocation
+                if (rs.wasNull() || locId <= 0) continue;
+
+                WarehouseLocation location = locationMap.get(locId);
+                if (location == null) {
+                    location = WarehouseLocation
                             .builder()
                             .id(locId)
-                            .warehouseId(id)
+                            .warehouseId(warehouseId)
                             .zoneName(rs.getString("zone_name"))
                             .rowNum(rs.getString("row_num"))
                             .shelfNum(rs.getString("shelf_num"))
                             .binNum(rs.getString("bin_num"))
+                            .items(new ArrayList<>())
                             .build();
-                    warehouse.getLocations().add(item);
+                    locationMap.put(locId, location);
+                    warehouse.getLocations().add(location);
+                }
+
+                long piId = rs.getLong("pi_id");
+                if (!rs.wasNull() && piId > 0) {
+                    Product product = Product.builder()
+                            .id(rs.getLong("pi_product_id"))
+                            .name(rs.getString("p_name"))
+                            .sku(rs.getString("p_sku"))
+                            .build();
+                    ProductItem item = ProductItem.builder()
+                            .id(piId)
+                            .productId(rs.getLong("pi_product_id"))
+                            .imei(rs.getString("pi_imei"))
+                            .status(ItemStatus.valueOf(rs.getString("pi_status")))
+                            .product(product)
+                            .build();
+                    location.getItems().add(item);
                 }
             }
         });
 
-        return new ArrayList<>(map.values());
+        return new ArrayList<>(warehouseMap.values());
     }
 
     @Override
     public Optional<Warehouse> findById(Long id) {
         String sql = """
                 SELECT w.id AS w_id, w.name AS w_name, w.address AS w_address,
+                w.created_at, w.updated_at,
                 l.id AS loc_id, l.zone_name, l.row_num, l.shelf_num, l.bin_num
                 FROM warehouses w
                 LEFT JOIN warehouse_locations l ON w.id = l.warehouse_id

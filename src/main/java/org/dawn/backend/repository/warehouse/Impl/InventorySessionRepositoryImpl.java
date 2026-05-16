@@ -37,10 +37,11 @@ public class InventorySessionRepositoryImpl extends AbstractRepository<Inventory
     public InventorySession save(InventorySession entity) {
         if (entity.getId() == null) {
             String sql = """
-                    INSERT INTO inventory_sessions (created_by, status, start_date)
-                    VALUES (?, ?, ?)
+                    INSERT INTO inventory_sessions (warehouse_id, created_by, status, start_date)
+                    VALUES (?, ?, ?, ?)
                     """;
             Long id = insert(sql,
+                    entity.getWarehouseId(),
                     entity.getCreatedBy(),
                     entity.getStatus().name(),
                     entity.getStartDate() != null ? Timestamp.from(entity.getStartDate()) : Timestamp.from(Instant.now())
@@ -62,8 +63,11 @@ public class InventorySessionRepositoryImpl extends AbstractRepository<Inventory
     }
 
     private InventorySession mapResultSet(ResultSet rs) throws SQLException {
+        long w = rs.getLong("warehouse_id");
+        Long warehouseId = rs.wasNull() ? null : w;
         return InventorySession.builder()
                 .id(rs.getLong("id"))
+                .warehouseId(warehouseId)
                 .createdBy(rs.getLong("created_by"))
                 .status(SessionStatus.valueOf(rs.getString("status")))
                 .startDate(getInstant(rs, "start_date"))

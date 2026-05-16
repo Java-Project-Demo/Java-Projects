@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,4 +24,7 @@ public class WarehouseLocationResponse {
     private String shelfNum;
 
     private String binNum;
+
+    @lombok.Builder.Default
+    private List<LocationItemMini> items = new ArrayList<>();
 }

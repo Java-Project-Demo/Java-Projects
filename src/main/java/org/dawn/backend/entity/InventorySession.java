@@ -15,6 +15,8 @@ import java.time.Instant;
 public class InventorySession {
     private Long id;
 
+    private Long warehouseId;
+
     private Long createdBy;
 
     private SessionStatus status;
@@ -24,4 +26,6 @@ public class InventorySession {
     private Instant endDate;
 
     private User staff;
+
+    private Warehouse warehouse;
 }

@@ -1,4 +1,4 @@
-package org.dawn.backend.dto.auth;
+package org.dawn.backend.dto.inventory;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +9,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class RegisterRequest {
-    private String fullName;
-    private String email;
-    private String roleName;
-    private String status;
+public class StartSessionRequest {
+    private Long warehouseId;
 }

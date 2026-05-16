@@ -26,4 +26,8 @@ public class AuditLogResponse extends BaseResponse {
     private String status;
 
     private String details;
+
+    private String staffName;
+
+    private String staffUsername;
 }

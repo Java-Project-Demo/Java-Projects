@@ -25,5 +25,9 @@ public class AuditLog extends AbstractMappedEntity {
 
     private String details;
 
+    private String staffName;
+
+    private String staffUsername;
+
     private User user;
 }

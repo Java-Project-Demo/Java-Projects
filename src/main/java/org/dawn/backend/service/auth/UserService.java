@@ -11,12 +11,15 @@ import org.dawn.backend.constant.system.ActiveStatus;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.constant.auth.URole;
+import org.dawn.backend.dto.auth.CreateUserResponse;
 import org.dawn.backend.dto.auth.RegisterRequest;
 import org.dawn.backend.dto.auth.UpdateInfoRequest;
 import org.dawn.backend.dto.auth.UserResponse;
 import org.dawn.backend.entity.Role;
 import org.dawn.backend.entity.User;
+import org.dawn.backend.exception.wrapper.InvalidRequestException;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
+import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.dto.auth.UserMappingHelper;
 import org.dawn.backend.repository.auth.RoleRepository;
@@ -56,8 +59,27 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
     }
 
-    public UserResponse createUser(RegisterRequest request) {
+    public CreateUserResponse createUser(RegisterRequest request) {
         return manager.execute(() -> {
+            if (URole.ADMIN.name().equalsIgnoreCase(request.getRoleName())) {
+                throw new PermissionDeniedException(Message.Exception.CAN_NOT_ASSIGN_ADMIN_ROLE);
+            }
+
+            String email = request.getEmail();
+            if (email != null) {
+                email = email.trim();
+                if (email.isEmpty()) {
+                    email = null;
+                } else {
+                    if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+                        throw new InvalidRequestException(Message.Exception.EMAIL_INVALID_FORMAT);
+                    }
+                    if (userRepository.findByEmail(email).isPresent()) {
+                        throw new ResourceAlreadyExistedException(Message.Exception.EMAIL_ALREADY_USED);
+                    }
+                }
+            }
+
             String baseUsername = UserUtils.getBaseUsername(request.getFullName());
 
             String finalUsername = baseUsername;
@@ -79,6 +101,7 @@ public class UserService {
             User user = User.builder()
                     .username(finalUsername)
                     .fullName(request.getFullName())
+                    .email(email)
                     .password(passwordEncoder.encode(tempPass))
                     .status(request.getStatus() != null ? request.getStatus() : "NEW")
                     .role(role)
@@ -92,7 +115,24 @@ public class UserService {
                     savedUser.getId().toString(),
                     LogConstant.Status.SUCCESS,
                     "Create new user");
-            return UserMappingHelper.map(savedUser);
+
+            UserResponse base = UserMappingHelper.map(savedUser);
+            return CreateUserResponse.builder()
+                    .id(base.getId())
+                    .username(base.getUsername())
+                    .fullName(base.getFullName())
+                    .email(base.getEmail())
+                    .role(base.getRole())
+                    .status(base.getStatus())
+                    .gender(base.getGender())
+                    .dob(base.getDob())
+                    .phoneNumber(base.getPhoneNumber())
+                    .isPasswordReset(base.getIsPasswordReset())
+                    .isDeleted(base.getIsDeleted())
+                    .createdAt(base.getCreatedAt())
+                    .updatedAt(base.getUpdatedAt())
+                    .tempPassword(tempPass)
+                    .build();
         });
     }
 
@@ -125,10 +165,19 @@ public class UserService {
                     .findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));
 
-            user.setFullName(request.getFullName());
-            user.setGender(request.getGender());
-            user.setDob(request.getDob());
-            user.setPhoneNumber(request.getPhoneNumber());
+            if (request.getFullName() != null) {
+                user.setFullName(request.getFullName());
+            }
+            if (request.getGender() != null) {
+                user.setGender(request.getGender());
+            }
+            if (request.getDob() != null) {
+                user.setDob(request.getDob());
+            }
+            if (request.getPhoneNumber() != null) {
+                String phone = request.getPhoneNumber().trim();
+                user.setPhoneNumber(phone.isEmpty() ? null : phone);
+            }
 
             User savedUser = userRepository.save(user);
             auditLogService.saveLog(
@@ -143,6 +192,15 @@ public class UserService {
 
     public UserResponse updateRole(Long id, URole roleName) {
         return manager.execute(() -> {
+
+            if (Objects.equals(id, SecurityContext.get().id())) {
+                throw new PermissionDeniedException(Message.Exception.CAN_NOT_CHANGE_OWN_ROLE);
+            }
+
+            if (URole.ADMIN.equals(roleName)) {
+                throw new PermissionDeniedException(Message.Exception.CAN_NOT_ASSIGN_ADMIN_ROLE);
+            }
+
             User user = userRepository
                     .findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USERNAME_NOT_FOUND));

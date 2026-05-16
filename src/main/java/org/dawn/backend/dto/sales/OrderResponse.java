@@ -9,6 +9,7 @@ import org.dawn.backend.constant.sales.PaymentMethod;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,4 +24,5 @@ public class OrderResponse {
     private PaymentMethod paymentMethod;
     private OrderStatus status;
     private Instant createdAt;
+    private List<OrderItemResponse> items;
 }

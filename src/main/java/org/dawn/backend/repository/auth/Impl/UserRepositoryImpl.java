@@ -105,7 +105,7 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                     UPDATE users
                     SET username = ?, password = ?, full_name = ?, email = ?, role_id = ?,
                         status = ?, gender = ?, date_of_birth = ?, phone_number = ?,
-                        is_password_reset = ?, updated_at = ?
+                        is_password_reset = ?, is_deleted = ?, updated_at = ?
                     WHERE id = ?
                     """;
             executeQuery(sql,
@@ -119,6 +119,7 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                     dob,
                     entity.getPhoneNumber(),
                     entity.getIsPasswordReset() ? 1 : 0,
+                    Boolean.TRUE.equals(entity.getIsDeleted()) ? 1 : 0,
                     now,
                     entity.getId());
         }
@@ -196,6 +197,9 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                 .description(rs.getString("r_description"))
                 .build();
 
+        int genderRaw = rs.getInt("gender");
+        Integer gender = rs.wasNull() ? null : genderRaw;
+
         return User.builder()
                 .id(rs.getLong("id"))
                 .username(rs.getString("username"))
@@ -205,7 +209,7 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                 .lastLogin(getInstant(rs, "last_login"))
                 .role(role)
                 .status(rs.getString("status"))
-                .gender(rs.getInt("gender"))
+                .gender(gender)
                 .dob(getInstant(rs, "date_of_birth"))
                 .phoneNumber(rs.getString("phone_number"))
                 .isPasswordReset(rs.getBoolean("is_password_reset"))

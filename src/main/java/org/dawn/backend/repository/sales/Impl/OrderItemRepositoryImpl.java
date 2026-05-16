@@ -2,6 +2,7 @@ package org.dawn.backend.repository.sales.Impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.entity.OrderItem;
+import org.dawn.backend.entity.Product;
 import org.dawn.backend.repository.sales.OrderItemRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
 
@@ -39,8 +40,30 @@ public class OrderItemRepositoryImpl extends AbstractRepository<OrderItem, Long>
 
     @Override
     public List<OrderItem> findByOrderId(Long orderId) {
-        String sql = "SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC";
-        return queryList(sql, this::mapResultSet, orderId);
+        String sql = """
+                SELECT oi.*, p.name AS product_name, p.sku AS product_sku
+                FROM order_items oi
+                LEFT JOIN products p ON oi.product_id = p.id
+                WHERE oi.order_id = ?
+                ORDER BY oi.id ASC
+                """;
+        return queryList(sql, this::mapResultSetWithProduct, orderId);
+    }
+
+    private OrderItem mapResultSetWithProduct(ResultSet rs) throws SQLException {
+        Product product = Product.builder()
+                .id(rs.getLong("product_id"))
+                .name(rs.getString("product_name"))
+                .sku(rs.getString("product_sku"))
+                .build();
+        return OrderItem.builder()
+                .id(rs.getLong("id"))
+                .orderId(rs.getLong("order_id"))
+                .productId(rs.getLong("product_id"))
+                .quantity(rs.getInt("quantity"))
+                .unitPrice(rs.getBigDecimal("unit_price"))
+                .product(product)
+                .build();
     }
 
     @Override

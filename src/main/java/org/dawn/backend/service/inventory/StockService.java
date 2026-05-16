@@ -247,8 +247,9 @@ public class StockService {
             Long oldOrderId = item.getOrderId();
             item.setStatus(ItemStatus.AVAILABLE);
             item.setSoldDate(null);
-            item.setOrderId(null);
-            item.setWarrantyExpiryDate(null);
+            // Giữ orderId + warrantyExpiryDate để cho phép tạo bảo hành sau refund
+            // (khách mua → trả → vẫn còn quyền bảo hành trong thời hạn).
+            // Phân biệt "đang bán" vs "đã refund" dựa trên status (SOLD vs AVAILABLE).
 
             productRepository.addStock(item.getProductId(), 1);
 

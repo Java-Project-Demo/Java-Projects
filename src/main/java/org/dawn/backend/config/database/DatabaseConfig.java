@@ -23,7 +23,10 @@ public class DatabaseConfig {
             config.setMaximumPoolSize(10);
             config.setMinimumIdle(2);
             config.setIdleTimeout(30000);
-            config.setConnectionTimeout(20000);
+            config.setConnectionTimeout(30000);
+            config.setValidationTimeout(5000);
+            config.setInitializationFailTimeout(120_000);
+            config.setConnectionTestQuery("SELECT 1 FROM DUAL");
 
             dataSource = new HikariDataSource(config);
             log.info("Hikari initialized successfully");

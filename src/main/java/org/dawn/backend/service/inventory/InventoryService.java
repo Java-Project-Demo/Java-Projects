@@ -4,20 +4,33 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.security.SecurityContext;
+import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.constant.inventory.DetailStatus;
 import org.dawn.backend.constant.inventory.SessionStatus;
 import org.dawn.backend.constant.system.Message;
+import org.dawn.backend.dto.inventory.InventorySessionResponse;
+import org.dawn.backend.dto.inventory.ScanResultResponse;
+import org.dawn.backend.dto.inventory.SessionSummaryResponse;
 import org.dawn.backend.entity.InventoryDetail;
 import org.dawn.backend.entity.InventorySession;
 import org.dawn.backend.entity.ProductItem;
+import org.dawn.backend.entity.Warehouse;
+import org.dawn.backend.entity.WarehouseLocation;
+import org.dawn.backend.exception.wrapper.InvalidRequestException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
+import org.dawn.backend.repository.auth.UserRepository;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.warehouse.InventoryDetailRepository;
 import org.dawn.backend.repository.warehouse.InventorySessionRepository;
+import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
+import org.dawn.backend.repository.warehouse.WarehouseRepository;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -26,75 +39,212 @@ public class InventoryService {
     private final InventorySessionRepository sessionRepository;
     private final InventoryDetailRepository detailRepository;
     private final ProductItemRepository itemRepository;
+    private final WarehouseRepository warehouseRepository;
+    private final WarehouseLocationRepository locationRepository;
+    private final UserRepository userRepository;
     private final TransactionManager manager;
 
-    public Long startSession() {
+    public InventorySessionResponse startSession(Long warehouseId) {
         return manager.execute(() -> {
+            if (warehouseId == null) {
+                throw new InvalidRequestException("Phải chọn kho trước khi mở phiên kiểm kê");
+            }
+            Warehouse warehouse = warehouseRepository
+                    .findById(warehouseId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy kho id=" + warehouseId));
+
+            UserPrincipal principal = SecurityContext.get();
             InventorySession session = InventorySession.builder()
-                    .createdBy(SecurityContext.get().id())
+                    .warehouseId(warehouseId)
+                    .createdBy(principal.id())
                     .status(SessionStatus.IN_PROGRESS)
                     .startDate(Instant.now())
                     .build();
+            InventorySession saved = sessionRepository.save(session);
 
-            return sessionRepository.save(session).getId();
+            return toSessionResponse(saved, warehouse, principal.username());
         });
     }
 
-    public void recordScan(Long sessionId, String imei, Long actualLocId) {
-        manager.execute(() -> {
+    public ScanResultResponse recordScan(Long sessionId, String imei, Long actualLocId) {
+        return manager.execute(() -> {
+            InventorySession session = sessionRepository
+                    .findById(sessionId)
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.SESSION_NOT_FOUND));
+
+            if (session.getStatus() == SessionStatus.COMPLETED) {
+                throw new InvalidRequestException("Phiên kiểm kê đã đóng, không thể scan thêm");
+            }
+
+            WarehouseLocation actualLoc = locationRepository
+                    .findById(actualLocId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy vị trí id=" + actualLocId));
+
+            if (session.getWarehouseId() != null && !session.getWarehouseId().equals(actualLoc.getWarehouseId())) {
+                throw new InvalidRequestException("Vị trí scan không thuộc kho của phiên kiểm kê");
+            }
+
             Optional<ProductItem> itemOpt = itemRepository.findByImei(imei);
-            DetailStatus status = DetailStatus.MATCH;
-            Long expectedLoc = null;
+            DetailStatus status;
+            Long expectedLocId = null;
+            String expectedLocLabel = null;
 
             if (itemOpt.isEmpty()) {
                 status = DetailStatus.EXTRA;
             } else {
                 ProductItem item = itemOpt.get();
-                expectedLoc = item.getLocationId();
-                if (!actualLocId.equals(expectedLoc)) {
+                expectedLocId = item.getLocationId();
+                if (expectedLocId == null) {
+                    status = DetailStatus.EXTRA;
+                } else if (Objects.equals(actualLocId, expectedLocId)) {
+                    status = DetailStatus.MATCH;
+                } else {
                     status = DetailStatus.MISMATCH;
+                    expectedLocLabel = locationRepository.findById(expectedLocId)
+                            .map(this::labelOf)
+                            .orElse(null);
                 }
             }
 
             InventoryDetail detail = InventoryDetail.builder()
                     .sessionId(sessionId)
                     .imei(imei)
-                    .expectedLoc(expectedLoc)
+                    .expectedLoc(expectedLocId)
                     .actualLoc(actualLocId)
                     .recordStatus(status)
                     .build();
-            detailRepository.save(detail);
-            return null;
+            InventoryDetail savedDetail = detailRepository.save(detail);
+
+            return ScanResultResponse.builder()
+                    .detailId(savedDetail.getId())
+                    .imei(imei)
+                    .status(status.name())
+                    .expectedLocId(expectedLocId)
+                    .expectedLocLabel(expectedLocLabel)
+                    .actualLocId(actualLocId)
+                    .actualLocLabel(labelOf(actualLoc))
+                    .build();
         });
     }
 
-    public void completeSession(Long sessionId) {
-        manager.execute(() -> {
-            List<String> missingImeis = itemRepository.findMissingImeis(sessionId);
-            List<InventoryDetail> missingDetails = new ArrayList<>();
-            for (String imei : missingImeis) {
-                ProductItem item = itemRepository.findByImei(imei).get();
-                missingDetails.add(InventoryDetail
-                        .builder()
-                        .sessionId(sessionId)
-                        .imei(imei)
-                        .expectedLoc(item.getLocationId())
-                        .recordStatus(DetailStatus.MISSING)
-                        .build());
-            }
-
-            if (!missingDetails.isEmpty()) {
-                detailRepository.saveAll(missingDetails);
-            }
-
+    public SessionSummaryResponse completeSession(Long sessionId) {
+        return manager.execute(() -> {
             InventorySession session = sessionRepository
                     .findById(sessionId)
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.SESSION_NOT_FOUND));
+
+            // Find missing IMEIs scoped by warehouse, then persist as MISSING details
+            if (session.getWarehouseId() != null) {
+                List<String> missingImeis = itemRepository
+                        .findMissingImeisByWarehouse(sessionId, session.getWarehouseId());
+                List<InventoryDetail> missingDetails = new ArrayList<>();
+                for (String imei : missingImeis) {
+                    ProductItem item = itemRepository.findByImei(imei).orElse(null);
+                    if (item == null) continue;
+                    missingDetails.add(InventoryDetail
+                            .builder()
+                            .sessionId(sessionId)
+                            .imei(imei)
+                            .expectedLoc(item.getLocationId())
+                            .recordStatus(DetailStatus.MISSING)
+                            .build());
+                }
+                if (!missingDetails.isEmpty()) {
+                    detailRepository.saveAll(missingDetails);
+                }
+            }
+
             session.setStatus(SessionStatus.COMPLETED);
             session.setEndDate(Instant.now());
-            sessionRepository.save(session);
-            return null;
+            InventorySession saved = sessionRepository.save(session);
+
+            return buildSummary(saved);
         });
     }
 
+    public SessionSummaryResponse getSummary(Long sessionId) {
+        InventorySession session = sessionRepository
+                .findById(sessionId)
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.SESSION_NOT_FOUND));
+        return buildSummary(session);
+    }
+
+    private SessionSummaryResponse buildSummary(InventorySession session) {
+        List<InventoryDetail> details = detailRepository.findBySessionId(session.getId());
+
+        // Preload location labels in one pass
+        Map<Long, String> locLabels = new HashMap<>();
+        if (session.getWarehouseId() != null) {
+            for (WarehouseLocation l : locationRepository.findByWarehouseId(session.getWarehouseId())) {
+                locLabels.put(l.getId(), labelOf(l));
+            }
+        }
+
+        int match = 0, mismatch = 0, missing = 0, extra = 0;
+        List<ScanResultResponse> rows = new ArrayList<>();
+        for (InventoryDetail d : details) {
+            switch (d.getRecordStatus()) {
+                case MATCH -> match++;
+                case MISMATCH -> mismatch++;
+                case MISSING -> missing++;
+                case EXTRA -> extra++;
+            }
+            rows.add(ScanResultResponse.builder()
+                    .detailId(d.getId())
+                    .imei(d.getImei())
+                    .status(d.getRecordStatus().name())
+                    .expectedLocId(d.getExpectedLoc())
+                    .expectedLocLabel(d.getExpectedLoc() != null ? locLabels.get(d.getExpectedLoc()) : null)
+                    .actualLocId(d.getActualLoc())
+                    .actualLocLabel(d.getActualLoc() != null ? locLabels.get(d.getActualLoc()) : null)
+                    .note(d.getNote())
+                    .build());
+        }
+
+        Warehouse warehouse = session.getWarehouseId() == null ? null
+                : warehouseRepository.findById(session.getWarehouseId()).orElse(null);
+        String createdByUsername = userRepository
+                .findById(session.getCreatedBy())
+                .map(u -> u.getUsername())
+                .orElse(null);
+
+        return SessionSummaryResponse.builder()
+                .session(toSessionResponse(session, warehouse, createdByUsername))
+                .matchCount(match)
+                .mismatchCount(mismatch)
+                .missingCount(missing)
+                .extraCount(extra)
+                .details(rows)
+                .build();
+    }
+
+    private InventorySessionResponse toSessionResponse(InventorySession session, Warehouse warehouse, String createdByUsername) {
+        return InventorySessionResponse.builder()
+                .id(session.getId())
+                .warehouseId(session.getWarehouseId())
+                .warehouseName(warehouse != null ? warehouse.getName() : null)
+                .warehouseAddress(warehouse != null ? warehouse.getAddress() : null)
+                .createdBy(session.getCreatedBy())
+                .createdByUsername(createdByUsername)
+                .status(session.getStatus() != null ? session.getStatus().name() : null)
+                .startDate(session.getStartDate())
+                .endDate(session.getEndDate())
+                .build();
+    }
+
+    private String labelOf(WarehouseLocation loc) {
+        StringBuilder sb = new StringBuilder();
+        appendPart(sb, loc.getZoneName());
+        appendPart(sb, loc.getRowNum());
+        appendPart(sb, loc.getShelfNum());
+        appendPart(sb, loc.getBinNum());
+        if (sb.length() == 0) return "#" + loc.getId();
+        return sb.toString();
+    }
+
+    private void appendPart(StringBuilder sb, String part) {
+        if (part == null || part.isBlank()) return;
+        if (sb.length() > 0) sb.append(" · ");
+        sb.append(part);
+    }
 }

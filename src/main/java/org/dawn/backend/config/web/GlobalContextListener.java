@@ -26,6 +26,7 @@ import org.dawn.backend.controller.inventory.CustomerController;
 import org.dawn.backend.controller.inventory.InventoryController;
 import org.dawn.backend.controller.inventory.StockController;
 import org.dawn.backend.controller.inventory.WarehouseController;
+import org.dawn.backend.controller.sales.CustomerController;
 import org.dawn.backend.controller.sales.DashboardController;
 import org.dawn.backend.controller.sales.OrderController;
 import org.dawn.backend.controller.system.AiAgentController;
@@ -140,9 +141,10 @@ public class GlobalContextListener implements ServletContextListener {
             AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService, auditLogService, transactionManager, passwordResetTokenRepository, mailService);
             ProductService productService = new ProductService(auditLogService, productRepository, transactionManager);
             StockService stockService = new StockService(productRepository, productItemRepository, stockMovementRepository, orderRepository, orderItemRepository, auditLogService, transactionManager, warehouseLocationRepository, supplierRepository);
-            InventoryService inventoryService = new InventoryService(inventorySessionRepository, inventoryDetailRepository, productItemRepository, transactionManager);
+            InventoryService inventoryService = new InventoryService(inventorySessionRepository, inventoryDetailRepository, productItemRepository, warehouseRepository, warehouseLocationRepository, userRepository, transactionManager);
             WarehouseService warehouseService = new WarehouseService(warehouseRepository, warehouseLocationRepository, stockService, auditLogService, productItemRepository, transactionManager);
             OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository, productItemRepository, customerRepository, stockService, auditLogService, transactionManager);
+            CustomerService customerService = new CustomerService(customerRepository);
             CategoryService categoryService = new CategoryService(categoryRepository, auditLogService, transactionManager);
             CustomerService customerService = new CustomerService(customerRepository);
             WarrantyService warrantyService = new WarrantyService(warrantyRepository, productItemRepository, orderRepository, auditLogService, stockService, transactionManager);
@@ -155,6 +157,7 @@ public class GlobalContextListener implements ServletContextListener {
             CustomerController customerController = new CustomerController(customerService);
             DashboardController dashboardController = new DashboardController(dashboardService);
             OrderController orderController = new OrderController(orderService);
+            CustomerController customerController = new CustomerController(customerService);
             WarehouseController warehouseController = new WarehouseController(warehouseService);
             AuthController authController = new AuthController(authService, jwtUtils);
             CloudinaryController cloudinaryController = new CloudinaryController(cloudinaryService);
@@ -183,6 +186,7 @@ public class GlobalContextListener implements ServletContextListener {
             ctx.setAttribute("stockController", stockController);
             ctx.setAttribute("supplierController", supplierController);
             ctx.setAttribute("orderController", orderController);
+            ctx.setAttribute("customerController", customerController);
             ctx.setAttribute("productController", productController);
             ctx.setAttribute("userController", userController);
             ctx.setAttribute("warehouseController", warehouseController);
