@@ -11,31 +11,31 @@ export const orderApi = createApi({
       query: ({ page = 0, size = 20, status } = {}) => ({
         url: '/order/',
         method: 'GET',
-        params: { page, size, ...(status ? { status } : {}) },
+        params: { page, size, ...(status ? { status } : {}) }
       }),
-      providesTags: ['Order'],
+      providesTags: ['Order']
     }),
     getOrder: builder.query<OrderResponse, number>({
       query: (id) => ({ url: `/order/${id}`, method: 'GET' }),
-      providesTags: ['Order'],
+      providesTags: ['Order']
     }),
     createOrder: builder.mutation<OrderResponse, OrderRequest>({
       query: (data) => ({ url: '/order/create', method: 'POST', data }),
-      invalidatesTags: ['Order'],
+      invalidatesTags: ['Order']
     }),
     cancelOrder: builder.mutation<OrderResponse, number>({
       query: (id) => ({ url: `/order/cancel/${id}`, method: 'POST' }),
-      invalidatesTags: ['Order'],
+      invalidatesTags: ['Order']
     }),
     returnOrder: builder.mutation<string, { id: number; imeis: string[]; reason: string }>({
       query: ({ id, imeis, reason }) => ({
         url: `/order/return/${id}`,
         method: 'POST',
-        data: { imeis, reason },
+        data: { imeis, reason }
       }),
-      invalidatesTags: ['Order'],
-    }),
-  }),
+      invalidatesTags: ['Order']
+    })
+  })
 })
 
 export const {
@@ -43,5 +43,5 @@ export const {
   useGetOrderQuery,
   useCreateOrderMutation,
   useCancelOrderMutation,
-  useReturnOrderMutation,
+  useReturnOrderMutation
 } = orderApi
