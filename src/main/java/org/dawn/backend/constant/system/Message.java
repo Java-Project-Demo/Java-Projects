@@ -45,6 +45,7 @@ public class Message {
         public static final String CONTROLLER_NOT_FOUND = "Controller not found";
         public static final String ENDPOINT_NOT_FOUND = "API Endpoint not found";
         public static final String EMAIL_SENDING_FAILED = "Could not send email. Please contact administrator.";
+        public static final String LOCATION_NOT_FOUND = "Location not found";
 
         //     Refresh Token
         public static final String REFRESH_TOKEN_NOT_FOUND = "Refresh token not found";

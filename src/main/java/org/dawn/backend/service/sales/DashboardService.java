@@ -13,6 +13,7 @@ import org.dawn.backend.repository.catalog.ProductRepository;
 import org.dawn.backend.repository.sales.CustomerRepository;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.system.AuditLogRepository;
+import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
 import org.dawn.backend.repository.warranty.WarrantyRepository;
 
 import java.util.HashMap;
@@ -32,6 +33,8 @@ public class DashboardService {
     private final WarrantyRepository warrantyRepository;
 
     private final CustomerRepository customerRepository;
+
+    private final WarehouseLocationRepository locationRepository;
 
     public Map<String, Object> getAdminDashboard() {
         Map<String, Object> data = new HashMap<>();
@@ -76,12 +79,21 @@ public class DashboardService {
             }
         }
 
+        Map<String, Object> locationInfo = new HashMap<>();
+        if (item.getLocationId() != null) {
+            WarehouseLocation location = locationRepository
+                    .findById(item.getLocationId())
+                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.LOCATION_NOT_FOUND));
+            locationInfo.put("location", location);
+        }
+
         List<Warranty> warranties = warrantyRepository.findByProductItemId(item.getId());
 
         Map<String, Object> result = new HashMap<>();
         result.put("itemInfo", item);
         result.put("productInfo", product);
         result.put("saleInfo", saleInfo);
+        result.put("locationInfo", locationInfo);
         result.put("warrantyHistory", warranties);
         return result;
     }

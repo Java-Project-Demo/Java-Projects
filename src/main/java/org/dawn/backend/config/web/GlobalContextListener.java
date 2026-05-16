@@ -135,7 +135,7 @@ public class GlobalContextListener implements ServletContextListener {
             AuditLogService auditLogService = new AuditLogService(auditLogRepository, transactionManager);
             SupplierService supplierService = new SupplierService(auditLogService, supplierRepository, transactionManager);
             RefreshTokenService refreshTokenService = new RefreshTokenService(refreshTokenRepository, userRepository, transactionManager);
-            DashboardService dashboardService = new DashboardService(productRepository, orderRepository, productItemRepository, auditLogRepository, warrantyRepository, customerRepository);
+            DashboardService dashboardService = new DashboardService(productRepository, orderRepository, productItemRepository, auditLogRepository, warrantyRepository, customerRepository, warehouseLocationRepository);
             UserService userService = new UserService(userRepository, roleRepository, passwordEncoder, auditLogService, transactionManager);
             AuthService authService = new AuthService(userRepository, passwordEncoder, jwtUtils, refreshTokenService, auditLogService, transactionManager, passwordResetTokenRepository, mailService);
             ProductService productService = new ProductService(auditLogService, productRepository, transactionManager);
