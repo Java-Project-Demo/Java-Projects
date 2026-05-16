@@ -12,7 +12,7 @@ services:
       APP_USER: ${DB_USER}
       APP_USER_PASSWORD: ${DB_PASS}
     ports:
-      - '1521:1521'
+      - '1522:1521'
     networks:
       - base-net
     volumes:
