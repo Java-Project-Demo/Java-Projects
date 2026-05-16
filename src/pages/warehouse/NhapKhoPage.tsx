@@ -51,7 +51,7 @@ const NhapKhoPage = () => {
   const [result, setResult] = useState<{ name: string; count: number; imeis: string[] } | null>(null)
   const [quickAddOpen, setQuickAddOpen] = useState(false)
 
-  const { data: products = [], isLoading: loadingProducts } = useGetProductsQuery()
+  const { data: products = [], isLoading: loadingProducts, refetch } = useGetProductsQuery()
   const { data: suppliers = [], isLoading: loadingSuppliers } = useGetSuppliersQuery()
   const { data: warehouses = [], isLoading: loadingWarehouses } = useGetMapQuery()
   const { data: availableBins = [], isLoading: loadingBins } = useGetAvailableBinsQuery(selectedWarehouseId ?? 0, {
@@ -148,6 +148,7 @@ const NhapKhoPage = () => {
           count: product?.hasImei ? imeiList.length : 1,
           imeis: product?.hasImei ? [...imeiList] : []
         })
+        void refetch()
         void message.success(t('import.success'))
         form.resetFields()
         setImeiList([])
@@ -205,7 +206,11 @@ const NhapKhoPage = () => {
         <Col xs={24} lg={14}>
           <Card title={t('import.formTitle')} style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
             <Form form={form} layout='vertical'>
-              <Form.Item label={t('import.productLabel')} name='productId' rules={[{ required: true, message: t('import.productRequired') }]}>
+              <Form.Item
+                label={t('import.productLabel')}
+                name='productId'
+                rules={[{ required: true, message: t('import.productRequired') }]}
+              >
                 <Select
                   showSearch
                   loading={loadingProducts}
@@ -222,8 +227,12 @@ const NhapKhoPage = () => {
                 <Card size='small' style={{ marginBottom: 16, background: '#fafafa' }}>
                   <Descriptions size='small' column={2}>
                     <Descriptions.Item label={t('import.infoSku')}>{selectedProduct.sku}</Descriptions.Item>
-                    <Descriptions.Item label={t('import.infoCurrentStock')}>{selectedProduct.currentStock}</Descriptions.Item>
-                    <Descriptions.Item label={t('import.infoThreshold')}>{selectedProduct.minThreshold}</Descriptions.Item>
+                    <Descriptions.Item label={t('import.infoCurrentStock')}>
+                      {selectedProduct.currentStock}
+                    </Descriptions.Item>
+                    <Descriptions.Item label={t('import.infoThreshold')}>
+                      {selectedProduct.minThreshold}
+                    </Descriptions.Item>
                     <Descriptions.Item label={t('import.infoHasImei')}>
                       <Tag color={selectedProduct.hasImei ? 'blue' : 'default'}>
                         {selectedProduct.hasImei ? t('common:common.yes') : t('common:common.no')}
@@ -265,7 +274,9 @@ const NhapKhoPage = () => {
                       loading={loadingSuppliers}
                       placeholder={t('import.supplierPlaceholder')}
                       filterOption={(input, opt) =>
-                        String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                        String(opt?.label ?? '')
+                          .toLowerCase()
+                          .includes(input.toLowerCase())
                       }
                       onChange={handleSupplierChange}
                       options={supplierOptions}
@@ -283,13 +294,19 @@ const NhapKhoPage = () => {
                 </Col>
               </Row>
 
-              <Form.Item label={t('import.warehouseLabel')} name='warehouseId' rules={[{ required: true, message: t('import.warehouseRequired') }]}>
+              <Form.Item
+                label={t('import.warehouseLabel')}
+                name='warehouseId'
+                rules={[{ required: true, message: t('import.warehouseRequired') }]}
+              >
                 <Select
                   showSearch
                   loading={loadingWarehouses}
                   placeholder={t('import.warehousePlaceholder')}
                   filterOption={(input, opt) =>
-                    String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                    String(opt?.label ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
                   }
                   onChange={handleWarehouseChange}
                   options={warehouseOptions}
@@ -301,17 +318,17 @@ const NhapKhoPage = () => {
                   <Space>
                     <EnvironmentOutlined />
                     <span>{t('import.locationLabel')}</span>
-                    {loadingBins && <Text type='secondary' style={{ fontSize: 11 }}>{t('import.locationLoading')}</Text>}
+                    {loadingBins && (
+                      <Text type='secondary' style={{ fontSize: 11 }}>
+                        {t('import.locationLoading')}
+                      </Text>
+                    )}
                   </Space>
                 }
                 name='locationId'
                 rules={[{ required: true, message: t('import.locationRequired') }]}
               >
-                <BinPickerGrid
-                  warehouse={selectedWarehouse}
-                  availableIds={availableBinIds}
-                  compact
-                />
+                <BinPickerGrid warehouse={selectedWarehouse} availableIds={availableBinIds} compact />
               </Form.Item>
 
               {selectedProduct?.hasImei && (
@@ -375,7 +392,8 @@ const NhapKhoPage = () => {
                 icon={<ImportOutlined />}
                 disabled={selectedProduct?.hasImei ? imeiList.length === 0 : false}
               >
-                {t('import.submit')} {selectedProduct?.hasImei ? t('import.submitSuffix', { count: imeiList.length }) : ''}
+                {t('import.submit')}{' '}
+                {selectedProduct?.hasImei ? t('import.submitSuffix', { count: imeiList.length }) : ''}
               </Button>
             </Form>
           </Card>
@@ -400,7 +418,9 @@ const NhapKhoPage = () => {
                   render: (v: string, r: Product) => (
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 12 }}>{v}</div>
-                      <Text type='secondary' style={{ fontSize: 11 }}>{r.sku}</Text>
+                      <Text type='secondary' style={{ fontSize: 11 }}>
+                        {r.sku}
+                      </Text>
                     </div>
                   )
                 },
@@ -432,14 +452,20 @@ const NhapKhoPage = () => {
         onCancel={() => setQuickAddOpen(false)}
         width={480}
         footer={[
-          <Button key='c' onClick={() => setQuickAddOpen(false)}>{t('common:button.cancel')}</Button>,
+          <Button key='c' onClick={() => setQuickAddOpen(false)}>
+            {t('common:button.cancel')}
+          </Button>,
           <Button key='s' type='primary' loading={creatingSupplier} onClick={handleQuickAddSupplier}>
             {t('import.quickAddSubmit')}
           </Button>
         ]}
       >
         <Form form={quickAddForm} layout='vertical' style={{ marginTop: 16 }}>
-          <Form.Item label={t('import.quickAddNameLabel')} name='name' rules={[{ required: true, message: t('import.quickAddNameRequired') }]}>
+          <Form.Item
+            label={t('import.quickAddNameLabel')}
+            name='name'
+            rules={[{ required: true, message: t('import.quickAddNameRequired') }]}
+          >
             <Input autoFocus placeholder={t('import.quickAddNamePlaceholder')} />
           </Form.Item>
           <Row gutter={16}>
