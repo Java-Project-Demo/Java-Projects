@@ -22,6 +22,7 @@ import org.dawn.backend.controller.auth.UserController;
 import org.dawn.backend.controller.catalog.CategoryController;
 import org.dawn.backend.controller.catalog.ProductController;
 import org.dawn.backend.controller.catalog.SupplierController;
+import org.dawn.backend.controller.inventory.CustomerController;
 import org.dawn.backend.controller.inventory.InventoryController;
 import org.dawn.backend.controller.inventory.StockController;
 import org.dawn.backend.controller.inventory.WarehouseController;
@@ -145,6 +146,7 @@ public class GlobalContextListener implements ServletContextListener {
             OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository, productItemRepository, customerRepository, stockService, auditLogService, transactionManager);
             CustomerService customerService = new CustomerService(customerRepository);
             CategoryService categoryService = new CategoryService(categoryRepository, auditLogService, transactionManager);
+            CustomerService customerService = new CustomerService(customerRepository);
             WarrantyService warrantyService = new WarrantyService(warrantyRepository, productItemRepository, orderRepository, auditLogService, stockService, transactionManager);
             AiAgentService aiAgentService = LangChainConfig.getAssistant();
             // Controller
@@ -152,6 +154,7 @@ public class GlobalContextListener implements ServletContextListener {
             AuditLogController auditLogController = new AuditLogController(auditLogService);
             SupplierController supplierController = new SupplierController(supplierService);
             CategoryController categoryController = new CategoryController(categoryService);
+            CustomerController customerController = new CustomerController(customerService);
             DashboardController dashboardController = new DashboardController(dashboardService);
             OrderController orderController = new OrderController(orderService);
             CustomerController customerController = new CustomerController(customerService);
@@ -176,6 +179,7 @@ public class GlobalContextListener implements ServletContextListener {
             ctx.setAttribute("logsController", auditLogController);
             ctx.setAttribute("authController", authController);
             ctx.setAttribute("categoryController", categoryController);
+            ctx.setAttribute("customerController", customerController);
             ctx.setAttribute("cloudinaryController", cloudinaryController);
             ctx.setAttribute("dashboardController", dashboardController);
             ctx.setAttribute("inventoryController", inventoryController);
