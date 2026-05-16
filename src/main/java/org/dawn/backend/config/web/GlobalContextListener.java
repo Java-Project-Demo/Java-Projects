@@ -26,7 +26,6 @@ import org.dawn.backend.controller.inventory.CustomerController;
 import org.dawn.backend.controller.inventory.InventoryController;
 import org.dawn.backend.controller.inventory.StockController;
 import org.dawn.backend.controller.inventory.WarehouseController;
-import org.dawn.backend.controller.sales.CustomerController;
 import org.dawn.backend.controller.sales.DashboardController;
 import org.dawn.backend.controller.sales.OrderController;
 import org.dawn.backend.controller.system.AiAgentController;
@@ -146,7 +145,6 @@ public class GlobalContextListener implements ServletContextListener {
             OrderService orderService = new OrderService(orderRepository, orderItemRepository, productRepository, productItemRepository, customerRepository, stockService, auditLogService, transactionManager);
             CustomerService customerService = new CustomerService(customerRepository);
             CategoryService categoryService = new CategoryService(categoryRepository, auditLogService, transactionManager);
-            CustomerService customerService = new CustomerService(customerRepository);
             WarrantyService warrantyService = new WarrantyService(warrantyRepository, productItemRepository, orderRepository, auditLogService, stockService, transactionManager);
             AiAgentService aiAgentService = LangChainConfig.getAssistant();
             // Controller
@@ -157,7 +155,6 @@ public class GlobalContextListener implements ServletContextListener {
             CustomerController customerController = new CustomerController(customerService);
             DashboardController dashboardController = new DashboardController(dashboardService);
             OrderController orderController = new OrderController(orderService);
-            CustomerController customerController = new CustomerController(customerService);
             WarehouseController warehouseController = new WarehouseController(warehouseService);
             AuthController authController = new AuthController(authService, jwtUtils);
             CloudinaryController cloudinaryController = new CloudinaryController(cloudinaryService);
