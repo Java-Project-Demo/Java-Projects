@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { App, Avatar, Button, Dropdown, Form, Input, Layout, Menu, Modal, theme, Typography } from 'antd'
 import {
@@ -22,10 +22,13 @@ import {
   UserOutlined,
   WarningOutlined
 } from '@ant-design/icons'
+import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { clearCredentials } from '@/features/auth/authSlice'
 import { useChangePasswordMutation, useLogoutMutation } from '@/features/auth/authApi'
 import ChatPopup from '@/components/shared/ChatPopup.tsx'
+import LanguageSwitcher from '@/components/shared/LanguageSwitcher'
+import { ROUTE_ROLES, type URole } from '@/config/rolePermissions'
 
 const { Header, Content, Footer, Sider } = Layout
 const { Text } = Typography
@@ -33,66 +36,73 @@ const { Text } = Typography
 interface MenuItem {
   key: string
   icon?: React.ReactNode
-  label: string
-  roles?: string[]
+  labelKey: string
+  roles?: URole[]
   children?: MenuItem[]
 }
+
+const rolesFor = (path: string): URole[] | undefined => ROUTE_ROLES[path]
 
 const ALL_MENU: MenuItem[] = [
   {
     key: 'kho',
-    label: 'Kho hàng',
+    labelKey: 'menu:group.warehouse',
     icon: <InboxOutlined />,
     children: [
-      { key: '/', label: 'Tổng quan', icon: <DashboardOutlined /> },
-      { key: '/vat-tu', label: 'Vật tư', icon: <InboxOutlined />, roles: ['ADMIN', 'STOCK'] },
-      { key: '/nhap-kho', label: 'Nhập kho', icon: <ImportOutlined />, roles: ['ADMIN', 'STOCK'] },
-      { key: '/xuat-kho', label: 'Xuất kho', icon: <ExportOutlined />, roles: ['ADMIN', 'SALES'] },
-      { key: '/quan-ly-kho', label: 'Quản lý kho vật lý', icon: <EnvironmentOutlined />, roles: ['ADMIN', 'STOCK'] },
-      { key: '/kiem-ke', label: 'Kiểm kê', icon: <ScanOutlined />, roles: ['ADMIN', 'STOCK'] }
+      { key: '/', labelKey: 'menu:item.dashboard', icon: <DashboardOutlined />, roles: rolesFor('/') },
+      { key: '/vat-tu', labelKey: 'menu:item.products', icon: <InboxOutlined />, roles: rolesFor('/vat-tu') },
+      { key: '/nhap-kho', labelKey: 'menu:item.import', icon: <ImportOutlined />, roles: rolesFor('/nhap-kho') },
+      { key: '/xuat-kho', labelKey: 'menu:item.export', icon: <ExportOutlined />, roles: rolesFor('/xuat-kho') },
+      {
+        key: '/quan-ly-kho',
+        labelKey: 'menu:item.warehouseLayout',
+        icon: <EnvironmentOutlined />,
+        roles: rolesFor('/quan-ly-kho')
+      },
+      { key: '/kiem-ke', labelKey: 'menu:item.inventory', icon: <ScanOutlined />, roles: rolesFor('/kiem-ke') }
     ]
   },
   {
     key: 'danhmuc',
-    label: 'Danh mục',
+    labelKey: 'menu:group.category',
     icon: <AppstoreOutlined />,
     children: [
-      { key: '/danh-muc-vat-tu', label: 'Danh mục vật tư', icon: <AppstoreOutlined /> },
-      { key: '/nha-cung-cap', label: 'Nhà cung cấp', icon: <ShopOutlined /> }
+      { key: '/danh-muc-vat-tu', labelKey: 'menu:item.categories', icon: <AppstoreOutlined />, roles: rolesFor('/danh-muc-vat-tu') },
+      { key: '/nha-cung-cap', labelKey: 'menu:item.suppliers', icon: <ShopOutlined />, roles: rolesFor('/nha-cung-cap') }
     ]
   },
   {
     key: 'banhang',
-    label: 'Bán hàng',
+    labelKey: 'menu:group.sales',
     icon: <ShoppingCartOutlined />,
     children: [
-      { key: '/lich-su-don-hang', label: 'Lịch sử đơn hàng', icon: <ShoppingCartOutlined /> },
-      { key: '/bao-hanh', label: 'Bảo hành', icon: <SafetyCertificateOutlined /> },
-      { key: '/tra-cuu-imei', label: 'Tra cứu IMEI', icon: <SearchOutlined /> }
+      { key: '/lich-su-don-hang', labelKey: 'menu:item.orderHistory', icon: <ShoppingCartOutlined />, roles: rolesFor('/lich-su-don-hang') },
+      { key: '/bao-hanh', labelKey: 'menu:item.warranty', icon: <SafetyCertificateOutlined />, roles: rolesFor('/bao-hanh') },
+      { key: '/tra-cuu-imei', labelKey: 'menu:item.imeiLookup', icon: <SearchOutlined />, roles: rolesFor('/tra-cuu-imei') }
     ]
   },
   {
     key: 'baocao',
-    label: 'Báo cáo',
+    labelKey: 'menu:group.report',
     icon: <BarChartOutlined />,
     children: [
-      { key: '/thong-ke', label: 'Thống kê', icon: <BarChartOutlined />, roles: ['ADMIN'] },
-      { key: '/ton-kho-cu', label: 'Tồn kho cũ', icon: <WarningOutlined />, roles: ['ADMIN', 'STOCK'] }
+      { key: '/thong-ke', labelKey: 'menu:item.statistics', icon: <BarChartOutlined />, roles: rolesFor('/thong-ke') },
+      { key: '/ton-kho-cu', labelKey: 'menu:item.oldStock', icon: <WarningOutlined />, roles: rolesFor('/ton-kho-cu') }
     ]
   },
   {
     key: 'hethong',
-    label: 'Hệ thống',
+    labelKey: 'menu:group.system',
     icon: <TeamOutlined />,
     children: [
-      { key: '/nhan-vien', label: 'Nhân viên', icon: <TeamOutlined />, roles: ['ADMIN'] },
-      { key: '/in-barcode', label: 'In Barcode', icon: <BarcodeOutlined /> },
-      { key: '/logs', label: 'Logs', icon: <HistoryOutlined />, roles: ['ADMIN'] }
+      { key: '/nhan-vien', labelKey: 'menu:item.employees', icon: <TeamOutlined />, roles: rolesFor('/nhan-vien') },
+      { key: '/in-barcode', labelKey: 'menu:item.printBarcode', icon: <BarcodeOutlined />, roles: rolesFor('/in-barcode') },
+      { key: '/logs', labelKey: 'menu:item.logs', icon: <HistoryOutlined />, roles: rolesFor('/logs') }
     ]
   }
 ]
 
-const filterMenuByRole = (items: MenuItem[], role: string): MenuItem[] => {
+const filterMenuByRole = (items: MenuItem[], role: URole): MenuItem[] => {
   return items
     .filter((item) => !item.roles || item.roles.includes(role))
     .map((item) => ({
@@ -103,17 +113,18 @@ const filterMenuByRole = (items: MenuItem[], role: string): MenuItem[] => {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const buildAntdItems = (items: MenuItem[]): any[] =>
+const buildAntdItems = (items: MenuItem[], t: (key: string) => string): any[] =>
   items.map((item) => ({
     key: item.key,
     icon: item.icon,
-    label: item.label,
-    children: item.children ? buildAntdItems(item.children) : undefined
+    label: t(item.labelKey),
+    children: item.children ? buildAntdItems(item.children, t) : undefined
   }))
 
 const MainLayout = () => {
   const { token } = theme.useToken()
   const { message } = App.useApp()
+  const { t } = useTranslation(['common', 'menu', 'auth'])
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
@@ -125,11 +136,10 @@ const MainLayout = () => {
   const [changePassword, { isLoading: changingPwd }] = useChangePasswordMutation()
   const [logout] = useLogoutMutation()
 
-  const role = user?.role ?? 'SALES'
-  const filteredMenu = filterMenuByRole(ALL_MENU, role)
-  const antdMenuItems = buildAntdItems(filteredMenu)
+  const role = (user?.role ?? 'SALES') as URole
+  const filteredMenu = useMemo(() => filterMenuByRole(ALL_MENU, role), [role])
+  const antdMenuItems = useMemo(() => buildAntdItems(filteredMenu, t), [filteredMenu, t])
 
-  // Find which submenu keys should be open based on current path
   const openKeys = filteredMenu.filter((g) => g.children?.some((c) => c.key === location.pathname)).map((g) => g.key)
 
   const handleLogout = async () => {
@@ -150,17 +160,17 @@ const MainLayout = () => {
         confirmPassword: string
       }
       if (newPassword !== confirmPassword) {
-        void message.error('Mật khẩu mới và xác nhận không khớp')
+        void message.error(t('auth:changePassword.mismatch'))
         return
       }
       try {
         await changePassword({ oldPassword, newPassword, confirmPassword }).unwrap()
-        void message.success('Đổi mật khẩu thành công!')
+        void message.success(t('auth:changePassword.success'))
         pwdForm.resetFields()
         setPwdOpen(false)
       } catch (err: unknown) {
         const e = err as { data?: { message?: string } }
-        void message.error(e?.data?.message ?? 'Mật khẩu cũ không đúng')
+        void message.error(e?.data?.message ?? t('auth:changePassword.fail'))
       }
     })
   }
@@ -169,7 +179,7 @@ const MainLayout = () => {
     {
       key: 'change-pwd',
       icon: <KeyOutlined />,
-      label: 'Đổi mật khẩu',
+      label: t('user.menu.changePassword'),
       onClick: () => {
         pwdForm.resetFields()
         setPwdOpen(true)
@@ -179,7 +189,7 @@ const MainLayout = () => {
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: 'Đăng xuất',
+      label: t('user.menu.logout'),
       danger: true,
       onClick: handleLogout
     }
@@ -200,15 +210,19 @@ const MainLayout = () => {
         }}
       >
         <Text strong style={{ fontSize: 18, color: '#fff' }}>
-          Warehouse Management System
+          {t('appTitle')}
         </Text>
 
-        <Dropdown menu={{ items: userMenuItems }} placement='bottomRight'>
-          <div className='flex items-center gap-2 cursor-pointer select-none'>
-            <Avatar size='small' icon={<UserOutlined />} style={{ background: 'rgba(255,255,255,0.3)' }} />
-            <Text style={{ color: '#fff' }}>{user?.username ?? 'User'}</Text>
-          </div>
-        </Dropdown>
+        <div className='flex items-center gap-3'>
+          <LanguageSwitcher />
+
+          <Dropdown menu={{ items: userMenuItems }} placement='bottomRight'>
+            <div className='flex items-center gap-2 cursor-pointer select-none'>
+              <Avatar size='small' icon={<UserOutlined />} style={{ background: 'rgba(255,255,255,0.3)' }} />
+              <Text style={{ color: '#fff' }}>{user?.username ?? t('user.defaultName')}</Text>
+            </div>
+          </Dropdown>
+        </div>
       </Header>
 
       <Layout style={{ minHeight: 'calc(100vh - 64px)' }}>
@@ -235,7 +249,7 @@ const MainLayout = () => {
             <Outlet />
           </Content>
           <Footer style={{ textAlign: 'center', color: token.colorTextTertiary, background: '#f5f5f5' }}>
-            UTC System ©{new Date().getFullYear()}
+            {t('footer', { year: new Date().getFullYear() })}
           </Footer>
         </Layout>
       </Layout>
@@ -247,7 +261,7 @@ const MainLayout = () => {
         title={
           <>
             <KeyOutlined style={{ color: '#1677ff', marginRight: 8 }} />
-            Đổi mật khẩu
+            {t('auth:changePassword.title')}
           </>
         }
         open={pwdOpen}
@@ -255,45 +269,45 @@ const MainLayout = () => {
         width={440}
         footer={[
           <Button key='c' onClick={() => setPwdOpen(false)}>
-            Huỷ
+            {t('button.cancel')}
           </Button>,
           <Button key='s' type='primary' loading={changingPwd} onClick={handleChangePwd}>
-            Xác nhận
+            {t('button.confirm')}
           </Button>
         ]}
       >
         <Form form={pwdForm} layout='vertical' style={{ marginTop: 16 }}>
           <Form.Item
-            label='Mật khẩu hiện tại'
+            label={t('auth:changePassword.oldPassword')}
             name='oldPassword'
-            rules={[{ required: true, message: 'Nhập mật khẩu hiện tại' }]}
+            rules={[{ required: true, message: t('auth:changePassword.oldPasswordRequired') }]}
           >
-            <Input.Password autoFocus placeholder='Mật khẩu hiện tại' />
+            <Input.Password autoFocus placeholder={t('auth:changePassword.oldPasswordPlaceholder')} />
           </Form.Item>
           <Form.Item
-            label='Mật khẩu mới'
+            label={t('auth:changePassword.newPassword')}
             name='newPassword'
             rules={[
-              { required: true, message: 'Nhập mật khẩu mới' },
-              { min: 6, message: 'Tối thiểu 6 ký tự' }
+              { required: true, message: t('auth:changePassword.newPasswordRequired') },
+              { min: 6, message: t('auth:changePassword.minLength') }
             ]}
           >
-            <Input.Password placeholder='Mật khẩu mới' />
+            <Input.Password placeholder={t('auth:changePassword.newPasswordPlaceholder')} />
           </Form.Item>
           <Form.Item
-            label='Xác nhận mật khẩu mới'
+            label={t('auth:changePassword.confirmPassword')}
             name='confirmPassword'
             rules={[
-              { required: true, message: 'Xác nhận mật khẩu mới' },
+              { required: true, message: t('auth:changePassword.confirmPasswordRequired') },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   if (!value || getFieldValue('newPassword') === value) return Promise.resolve()
-                  return Promise.reject(new Error('Mật khẩu xác nhận không khớp'))
+                  return Promise.reject(new Error(t('auth:changePassword.mismatch')))
                 }
               })
             ]}
           >
-            <Input.Password placeholder='Nhập lại mật khẩu mới' />
+            <Input.Password placeholder={t('auth:changePassword.confirmPasswordPlaceholder')} />
           </Form.Item>
         </Form>
       </Modal>

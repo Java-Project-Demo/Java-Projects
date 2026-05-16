@@ -1,9 +1,11 @@
+import type { ReactElement } from 'react'
 import { useRoutes } from 'react-router-dom'
 import MainLayout from '@/layouts/MainLayout'
 import AuthLayout from '@/layouts/AuthLayout'
 import PrivateRoute from './PrivateRoute'
 import PublicRoute from './PublicRoute'
 import RoleRoute from './RoleRoute'
+import { ROUTE_ROLES } from '@/config/rolePermissions'
 
 import Home from '@/pages/Home'
 import LoginPage from '@/pages/auth/LoginPage'
@@ -21,7 +23,7 @@ import YeuCauPage from '@/pages/warehouse/YeuCauPage'
 import KhoHangPage from '@/pages/warehouse/KhoHangPage'
 import InBarcodePage from '@/pages/warehouse/InBarcodePage'
 
-// New pages
+// Other domain pages
 import BaoHanhPage from '@/pages/warranty/BaoHanhPage'
 import NhaCungCapPage from '@/pages/supplier/NhaCungCapPage'
 import LichSuDonHangPage from '@/pages/order/LichSuDonHangPage'
@@ -30,6 +32,10 @@ import TonKhoCuPage from '@/pages/report/TonKhoCuPage'
 import KiemKePage from '@/pages/inventory/KiemKePage'
 import QuanLyKhoPage from '@/pages/warehouse-mgmt/QuanLyKhoPage'
 import AuditLogPage from '@/pages/report/AuditLogPage.tsx'
+
+const guard = (path: keyof typeof ROUTE_ROLES, element: ReactElement) => (
+  <RoleRoute allowedRoles={ROUTE_ROLES[path]}>{element}</RoleRoute>
+)
 
 const AppRoutes = () => {
   return useRoutes([
@@ -43,23 +49,23 @@ const AppRoutes = () => {
         {
           element: <MainLayout />,
           children: [
-            { path: '/',                  element: <Home /> },
-            { path: '/vat-tu',            element: <KhoHangPage /> },
-            { path: '/nhap-kho',          element: <RoleRoute allowedRoles={['ADMIN', 'STOCK']}><NhapKhoPage /></RoleRoute> },
-            { path: '/xuat-kho',          element: <RoleRoute allowedRoles={['ADMIN', 'SALES']}><XuatKhoPage /></RoleRoute> },
-            { path: '/danh-muc-vat-tu',   element: <DanhMucVatTuPage /> },
-            { path: '/nha-cung-cap',      element: <NhaCungCapPage /> },
-            { path: '/lich-su-don-hang',  element: <LichSuDonHangPage /> },
-            { path: '/bao-hanh',          element: <BaoHanhPage /> },
-            { path: '/yeu-cau',           element: <YeuCauPage /> },
-            { path: '/tra-cuu-imei',      element: <TraCuuImeiPage /> },
-            { path: '/thong-ke',          element: <RoleRoute allowedRoles={['ADMIN']}><ThongKePage /></RoleRoute> },
-            { path: '/ton-kho-cu',        element: <RoleRoute allowedRoles={['ADMIN', 'STOCK']}><TonKhoCuPage /></RoleRoute> },
-            { path: '/nhan-vien',         element: <RoleRoute allowedRoles={['ADMIN']}><NhanVienPage /></RoleRoute> },
-            { path: '/in-barcode',        element: <InBarcodePage /> },
-            { path: '/kiem-ke',           element: <RoleRoute allowedRoles={['ADMIN', 'STOCK']}><KiemKePage /></RoleRoute> },
-            { path: '/quan-ly-kho',       element: <RoleRoute allowedRoles={['ADMIN', 'STOCK']}><QuanLyKhoPage /></RoleRoute> },
-            { path: '/logs',              element: <RoleRoute allowedRoles={['ADMIN']}><AuditLogPage/></RoleRoute>}
+            { path: '/',                  element: guard('/', <Home />) },
+            { path: '/vat-tu',            element: guard('/vat-tu', <KhoHangPage />) },
+            { path: '/nhap-kho',          element: guard('/nhap-kho', <NhapKhoPage />) },
+            { path: '/xuat-kho',          element: guard('/xuat-kho', <XuatKhoPage />) },
+            { path: '/danh-muc-vat-tu',   element: guard('/danh-muc-vat-tu', <DanhMucVatTuPage />) },
+            { path: '/nha-cung-cap',      element: guard('/nha-cung-cap', <NhaCungCapPage />) },
+            { path: '/lich-su-don-hang',  element: guard('/lich-su-don-hang', <LichSuDonHangPage />) },
+            { path: '/bao-hanh',          element: guard('/bao-hanh', <BaoHanhPage />) },
+            { path: '/yeu-cau',           element: guard('/yeu-cau', <YeuCauPage />) },
+            { path: '/tra-cuu-imei',      element: guard('/tra-cuu-imei', <TraCuuImeiPage />) },
+            { path: '/thong-ke',          element: guard('/thong-ke', <ThongKePage />) },
+            { path: '/ton-kho-cu',        element: guard('/ton-kho-cu', <TonKhoCuPage />) },
+            { path: '/nhan-vien',         element: guard('/nhan-vien', <NhanVienPage />) },
+            { path: '/in-barcode',        element: guard('/in-barcode', <InBarcodePage />) },
+            { path: '/kiem-ke',           element: guard('/kiem-ke', <KiemKePage />) },
+            { path: '/quan-ly-kho',       element: guard('/quan-ly-kho', <QuanLyKhoPage />) },
+            { path: '/logs',              element: guard('/logs', <AuditLogPage />) },
           ],
         },
       ],

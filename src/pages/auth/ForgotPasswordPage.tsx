@@ -1,6 +1,7 @@
 import { App, Button, Card, Form, Input, Typography } from 'antd'
 import { ArrowLeftOutlined, MailOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
 import { useForgotPasswordMutation } from '@/features/auth/authApi'
 import { useState } from 'react'
 
@@ -8,6 +9,7 @@ const { Title, Text } = Typography
 
 const ForgotPasswordPage = () => {
   const { message } = App.useApp()
+  const { t } = useTranslation('auth')
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation()
   const [sent, setSent] = useState(false)
   const [sentEmail, setSentEmail] = useState('')
@@ -18,7 +20,7 @@ const ForgotPasswordPage = () => {
       setSentEmail(values.email)
       setSent(true)
     } catch {
-      void message.error('Không tìm thấy tài khoản với email này')
+      void message.error(t('forgot.notFound'))
     }
   }
 
@@ -28,15 +30,15 @@ const ForgotPasswordPage = () => {
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <MailOutlined style={{ fontSize: 48, color: '#E8603C', marginBottom: 16 }} />
           <Title level={4} style={{ margin: 0 }}>
-            Kiểm tra hộp thư
+            {t('forgot.sentTitle')}
           </Title>
           <Text type='secondary'>
-            Đã gửi link đặt lại mật khẩu đến <strong>{sentEmail}</strong>. Link có hiệu lực trong 15 phút.
+            <Trans i18nKey='forgot.sentSubtitle' ns='auth' values={{ email: sentEmail }} components={[<strong key='0' />]} />
           </Text>
         </div>
         <Link to='/login'>
           <Button icon={<ArrowLeftOutlined />} block>
-            Quay lại đăng nhập
+            {t('forgot.backToLogin')}
           </Button>
         </Link>
       </Card>
@@ -47,32 +49,32 @@ const ForgotPasswordPage = () => {
     <Card style={{ width: 400 }} styles={{ body: { padding: '40px 32px' } }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <Title level={3} style={{ margin: 0 }}>
-          Quên mật khẩu
+          {t('forgot.title')}
         </Title>
-        <Text type='secondary'>Nhập email để nhận link đặt lại mật khẩu</Text>
+        <Text type='secondary'>{t('forgot.subtitle')}</Text>
       </div>
 
       <Form layout='vertical' onFinish={onFinish} autoComplete='off' size='large'>
         <Form.Item
           name='email'
           rules={[
-            { required: true, message: 'Vui lòng nhập email' },
-            { type: 'email', message: 'Email không hợp lệ' },
+            { required: true, message: t('forgot.emailRequired') },
+            { type: 'email', message: t('forgot.emailInvalid') }
           ]}
         >
-          <Input prefix={<MailOutlined />} placeholder='Email của bạn' />
+          <Input prefix={<MailOutlined />} placeholder={t('forgot.emailPlaceholder')} />
         </Form.Item>
 
         <Form.Item style={{ marginBottom: 12 }}>
           <Button type='primary' htmlType='submit' block loading={isLoading}>
-            Gửi link đặt lại mật khẩu
+            {t('forgot.submit')}
           </Button>
         </Form.Item>
 
         <div style={{ textAlign: 'center' }}>
           <Link to='/login'>
             <Button type='link' icon={<ArrowLeftOutlined />} size='small'>
-              Quay lại đăng nhập
+              {t('forgot.backToLogin')}
             </Button>
           </Link>
         </div>

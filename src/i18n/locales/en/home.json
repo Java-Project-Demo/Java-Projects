@@ -1,0 +1,46 @@
+{
+  "kpi": {
+    "totalProducts": "Total products",
+    "totalProductsSub": "items",
+    "lowStock": "Low / Out of stock",
+    "lowStockSub": "need restock",
+    "pendingOrders": "Pending orders",
+    "pendingOrdersSub": "orders",
+    "totalInventoryValue": "Inventory value",
+    "latestUpdate": "Latest update"
+  },
+  "charts": {
+    "pieTitle": "Product distribution by category",
+    "pieTooltipLabel": "Count",
+    "pieTooltipUnit": "{{count}} products",
+    "barTitle": "Top products by inventory value",
+    "barLegend": "Value (million)",
+    "barTooltipLabel": "Inventory value",
+    "barTooltipUnit": "{{count}} million ₫"
+  },
+  "lowStock": {
+    "title": "Low stock alert",
+    "empty": "All products are in good stock 🎉",
+    "colProduct": "Product",
+    "colStock": "Stock / Threshold",
+    "actionImport": "Restock"
+  },
+  "recent": {
+    "title": "Recent activities",
+    "empty": "No activities yet",
+    "userId": "ID {{id}}"
+  },
+  "summary": {
+    "title": "Warehouse summary",
+    "inventoryValue": "Inventory value",
+    "todayProfit": "Today's profit",
+    "activeWarranty": "Active warranty cases",
+    "activeWarrantySuffix": "cases",
+    "pendingOrders": "Pending orders",
+    "pendingOrdersSuffix": "orders"
+  },
+  "actions": {
+    "import": "Stock in",
+    "export": "Stock out"
+  }
+}

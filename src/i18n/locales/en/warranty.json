@@ -1,0 +1,66 @@
+{
+  "title": "Warranty management",
+  "subtitle": "Track and process warranty claims",
+  "createButton": "Create warranty",
+  "stats": {
+    "total": "Total claims",
+    "active": "In progress",
+    "fixed": "Fixed",
+    "unfixable": "Unfixable"
+  },
+  "listTitle": "Warranty list",
+  "filter": "Filter status",
+  "col": {
+    "id": "ID",
+    "productItemId": "Item ID",
+    "product": "Product",
+    "customer": "Customer",
+    "issue": "Issue description",
+    "status": "Status",
+    "receivedDate": "Received date",
+    "returnDate": "Return date",
+    "technicalNote": "Tech note",
+    "staff": "Staff",
+    "actions": "Actions"
+  },
+  "tooltip": {
+    "update": "Update status"
+  },
+  "create": {
+    "title": "Create warranty",
+    "imeiHeader": "IMEIs for warranty",
+    "imeiPlaceholder": "Enter IMEI and press Add or Enter — the system will look up info",
+    "imeiAdd": "Add",
+    "imeiDuplicate": "IMEI already added",
+    "imeiNotFound": "IMEI \"{{imei}}\" not found in system",
+    "imeiTraceFail": "Could not look up IMEI \"{{imei}}\"",
+    "imeiEmpty": "No IMEIs. The system will look up product + customer when you add one.",
+    "imeiNeedOne": "Enter at least 1 IMEI",
+    "imeiBlocked": "{{count}} IMEIs are invalid. Please remove them before creating.",
+    "warningNotSold": "Not sold yet — cannot warranty",
+    "warningExpired": "Warranty expired ({{date}})",
+    "customerLabel": "Customer:",
+    "expiryLabel": "Expiry: {{date}}",
+    "issue": "Issue description",
+    "issueRequired": "Enter issue description",
+    "issuePlaceholder": "Describe the issue in detail...",
+    "submit": "Create",
+    "submitWithCount": "Create ({{count}})",
+    "success": "{{count}} warranty claims created successfully!"
+  },
+  "update": {
+    "title": "Update warranty status",
+    "status": "New status",
+    "statusRequired": "Select status",
+    "note": "Technical note",
+    "notePlaceholder": "Notes about the repair process...",
+    "submit": "Update",
+    "success": "Warranty updated successfully!"
+  },
+  "totalSuffix": "Total {{count}} claims",
+  "empty": {
+    "title": "No warranty claims yet",
+    "description": "Create a new claim when a device needs repair",
+    "action": "Create claim"
+  }
+}

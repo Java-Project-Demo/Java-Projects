@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons'
 import { Badge, Button, Card, FloatButton, Input, Space, Spin, theme, Tooltip, Typography } from 'antd'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAskAgentMutation } from '@/features/aiAgent/aiAgentApi.ts'
 import { useSpeechRecognition } from '@/app/hooks.ts'
 
@@ -24,17 +25,19 @@ interface Message {
 interface ChatPopupProps {
   username?: string
 }
-const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
+const ChatPopup = ({ username }: ChatPopupProps) => {
   const { token } = theme.useToken()
+  const { t } = useTranslation('chat')
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
-  const baseTextRef = useRef('') // Lưu trữ đoạn text gốc trước khi nói cụm mới
+  const baseTextRef = useRef('')
+  const displayUsername = username ?? 'User'
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      sender: 'Hệ thống',
-      text: 'Xin chào! Tôi là trợ lý UTC. Bạn cần hỗ trợ gì về kho hàng không?',
+      sender: t('systemSender'),
+      text: t('welcome'),
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: false
     }
@@ -43,36 +46,31 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
   const [askAgent, { isLoading }] = useAskAgentMutation()
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // 1. Khi gõ tay: Cập nhật state và Ref đồng bộ
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
     setInputValue(val)
     baseTextRef.current = val
   }
 
-  // 2. Khi đang nói (Chữ nhảy liên tục - Interim)
   const handleInterim = useCallback((interim: string) => {
     const base = baseTextRef.current.trim()
-    // Hiển thị text cũ + text đang nghe dở
     setInputValue(base ? `${base} ${interim}` : interim)
   }, [])
 
-  // 3. Khi nói xong cụm (Chốt hạ - Final)
   const handleFinal = useCallback((final: string) => {
     const base = baseTextRef.current.trim()
     const updated = base ? `${base} ${final}` : final
     setInputValue(updated)
-    baseTextRef.current = updated // Lưu lại mốc mới vào Ref
+    baseTextRef.current = updated
   }, [])
 
   const { isListening, toggleListening } = useSpeechRecognition(handleFinal, handleInterim)
 
-  // Tự động cuộn xuống cuối
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [messages, open, isLoading, inputValue]) // Cuộn khi inputValue thay đổi (đang nói)
+  }, [messages, open, isLoading, inputValue])
 
   const handleSendMessage = async () => {
     const messageText = inputValue.trim()
@@ -80,7 +78,7 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
 
     const userMsg: Message = {
       id: Date.now(),
-      sender: username,
+      sender: displayUsername,
       text: messageText,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isMe: true
@@ -88,13 +86,13 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
 
     setMessages((prev) => [...prev, userMsg])
     setInputValue('')
-    baseTextRef.current = '' // Reset Ref sau khi gửi
+    baseTextRef.current = ''
 
     try {
       const aiResponseText = await askAgent({ message: messageText }).unwrap()
       const botReply: Message = {
         id: Date.now() + 1,
-        sender: 'AI Assistant',
+        sender: t('aiSender'),
         text: aiResponseText,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isMe: false
@@ -102,11 +100,10 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
       setMessages((prev) => [...prev, botReply])
     } catch (err) {
       console.error('Chi tiết lỗi:', err)
-      // Xử lý lỗi khi API fail
       const errorMsg: Message = {
         id: Date.now() + 2,
-        sender: 'Hệ thống',
-        text: 'Xin lỗi, tôi gặp sự cố kết nối. Vui lòng thử lại sau.',
+        sender: t('systemSender'),
+        text: t('error'),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isMe: false
       }
@@ -122,7 +119,7 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
         badge={{ dot: true }}
         onClick={() => setOpen(!open)}
         style={{ right: 24, bottom: 24 }}
-        tooltip={<div>Chat với AI hỗ trợ</div>}
+        tooltip={<div>{t('tooltip')}</div>}
       />
 
       {open && (
@@ -131,7 +128,7 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Space>
                 <Badge status='processing' color={isListening ? 'red' : isLoading ? 'blue' : 'green'} />
-                <Text strong>Trợ lý AI Kho hàng</Text>
+                <Text strong>{t('title')}</Text>
               </Space>
               <Button type='text' size='small' icon={<CloseOutlined />} onClick={() => setOpen(false)} />
             </div>
@@ -148,7 +145,6 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
           }}
           styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', height: 450 } }}
         >
-          {/* Khu vực tin nhắn */}
           <div
             ref={scrollRef}
             style={{
@@ -199,30 +195,29 @@ const ChatPopup = ({ username = 'User' }: ChatPopupProps) => {
                 <Space>
                   <Spin size='small' />
                   <Text type='secondary' italic style={{ fontSize: '12px' }}>
-                    AI đang suy nghĩ...
+                    {t('thinking')}
                   </Text>
                 </Space>
               </div>
             )}
           </div>
 
-          {/* Ô nhập liệu */}
           <div style={{ padding: '12px', background: '#fff', borderTop: '1px solid #f0f0f0' }}>
             {isListening && (
               <div className='text-[10px] text-red-500 mb-1 animate-pulse flex items-center gap-1'>
                 <span className='w-1.5 h-1.5 bg-red-500 rounded-full'></span>
-                Hệ thống đang nghe...
+                {t('listening')}
               </div>
             )}
             <Input
-              placeholder={isListening ? 'Đang nghe...' : 'Nhập nội dung...'}
+              placeholder={isListening ? t('listeningPlaceholder') : t('inputPlaceholder')}
               value={inputValue}
               disabled={isLoading}
               onChange={handleInputChange}
               onPressEnter={handleSendMessage}
               suffix={
                 <Space size={4}>
-                  <Tooltip title={isListening ? 'Dừng nghe' : 'Nói để nhập liệu'}>
+                  <Tooltip title={isListening ? t('voiceTooltip.stop') : t('voiceTooltip.start')}>
                     <Button
                       type='text'
                       size='small'

@@ -1,0 +1,87 @@
+{
+  "title": "Quản lý kho vật lý",
+  "subtitle": "Tạo kho, cấu hình layout zone/row/shelf/bin và di chuyển sản phẩm",
+  "createButton": "Tạo kho mới",
+  "stats": {
+    "totalWarehouses": "Tổng kho",
+    "totalBins": "Tổng bin"
+  },
+  "col": {
+    "warehouse": "Kho",
+    "bins": "Số bin",
+    "zones": "Zones",
+    "actions": "Hành động"
+  },
+  "tooltip": {
+    "map": "Xem chi tiết bin"
+  },
+  "actions": {
+    "map": "Bản đồ",
+    "setupLayout": "Setup layout",
+    "moveImei": "Move IMEI"
+  },
+  "empty": {
+    "title": "Chưa có kho nào",
+    "action": "Tạo kho mới",
+    "noBin": "Chưa có bin. Bấm Setup layout để tạo."
+  },
+  "create": {
+    "title": "Tạo kho mới",
+    "name": "Tên kho",
+    "nameRequired": "Nhập tên kho",
+    "namePlaceholder": "Kho trung tâm Hà Nội",
+    "address": "Địa chỉ",
+    "addressPlaceholder": "Số 1, ABC Street...",
+    "submit": "Tạo kho",
+    "success": "Đã tạo kho \"{{name}}\""
+  },
+  "layout": {
+    "title": "Cấu hình layout — {{name}}",
+    "zone": "Zone",
+    "zoneRequired": "Nhập tên zone",
+    "row": "Row",
+    "rowRequired": "Nhập số row",
+    "shelfCount": "Số kệ (shelves)",
+    "shelfCountRequired": "Nhập số kệ",
+    "binCount": "Số ô / kệ (bins)",
+    "binCountRequired": "Nhập số bin",
+    "hint": "Hệ thống sẽ tạo <0>shelves × bins</0> bin trong zone-row chỉ định.",
+    "preview": "Preview · Zone <0>{{zone}}</0> · Row <1>{{row}}</1>",
+    "previewBin": "{{count}} bin",
+    "previewHint": "Nhập số kệ và số ô để xem preview",
+    "submit": "Tạo bin",
+    "success": "Đã tạo {{count}} bin cho zone {{zone}} - row {{row}}"
+  },
+  "move": {
+    "title": "Di chuyển IMEI — {{name}}",
+    "imei": "IMEI",
+    "imeiRequired": "Nhập IMEI cần move",
+    "imeiPlaceholder": "Quét hoặc nhập IMEI",
+    "target": "Vị trí đích (click vào ô trống)",
+    "targetRequired": "Chọn vị trí đích",
+    "submit": "Di chuyển",
+    "success": "Đã di chuyển IMEI sang vị trí mới"
+  },
+  "drawer": {
+    "title": "Bản đồ — {{name}}",
+    "binCount": "{{count}} bin",
+    "zoneTab": "Zone {{zone}}",
+    "rowLabel": "Row {{row}}",
+    "legendEmpty": "Trống",
+    "legendOccupied": "Đã có hàng (số = sản phẩm)",
+    "legendHint": "· Hover để xem chi tiết",
+    "binPopoverTitle": "Bin S{{shelf}}-B{{bin}} · {{count}} sản phẩm"
+  },
+  "binPicker": {
+    "selectWarehouse": "Chọn kho trước",
+    "noBin": "Kho chưa có bin nào",
+    "rowLabel": "Row {{row}}",
+    "zoneTab": "Zone {{zone}}",
+    "legendAvailable": "Trống",
+    "legendOccupied": "Đã có hàng",
+    "legendSelected": "Đã chọn",
+    "binTooltipAvailable": "{{label}} — Trống",
+    "binTooltipOccupied": "{{label}} — {{count}} sản phẩm",
+    "binPopoverTitle": "Bin {{label}}"
+  }
+}

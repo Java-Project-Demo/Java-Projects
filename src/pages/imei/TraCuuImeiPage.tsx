@@ -6,19 +6,21 @@ import {
   SearchOutlined, BarcodeOutlined, ShoppingOutlined,
   SafetyCertificateOutlined, UserOutlined, InboxOutlined,
 } from '@ant-design/icons'
+import { Trans, useTranslation } from 'react-i18next'
 import PageHeader from '@/components/shared/PageHeader'
 import CurrencyDisplay from '@/components/shared/CurrencyDisplay'
 import { useLazyTraceImeiQuery } from '@/features/dashboard/dashboardApi'
+import { useLocaleFormat } from '@/utils/useLocaleFormat'
 import type { ItemStatus } from '@/types/api'
 
 const { Title, Text } = Typography
 const PRIMARY = '#E8603C'
 
-const ITEM_STATUS_CONFIG: Record<ItemStatus, { label: string; color: string }> = {
-  AVAILABLE: { label: 'Còn trong kho', color: 'green' },
-  SOLD:      { label: 'Đã bán',         color: 'blue' },
-  DAMAGED:   { label: 'Hỏng',           color: 'red' },
-  RETURNED:  { label: 'Đã trả lại',     color: 'orange' },
+const STATUS_COLORS: Record<ItemStatus, string> = {
+  AVAILABLE: 'green',
+  SOLD: 'blue',
+  DAMAGED: 'red',
+  RETURNED: 'orange',
 }
 
 interface TraceResult {
@@ -29,6 +31,8 @@ interface TraceResult {
 }
 
 const TraCuuImeiPage = () => {
+  const { t } = useTranslation(['imei', 'common'])
+  const { date } = useLocaleFormat()
   const [imeiQuery, setImeiQuery] = useState('')
   const [submitted, setSubmitted] = useState('')
   const [triggerTrace, { data, isLoading, isError, isFetching }] = useLazyTraceImeiQuery()
@@ -43,22 +47,23 @@ const TraCuuImeiPage = () => {
   }
 
   const itemStatus = result?.itemInfo?.status
-  const statusCfg = itemStatus ? ITEM_STATUS_CONFIG[itemStatus] : undefined
+  const statusColor = itemStatus ? STATUS_COLORS[itemStatus] : undefined
+  const statusLabel = itemStatus ? t(`common:status.item.${itemStatus}`, { defaultValue: itemStatus }) : ''
 
   return (
     <div>
-      <PageHeader title='Tra cứu IMEI' subtitle='Theo dõi toàn bộ lịch sử của một thiết bị theo mã IMEI' />
+      <PageHeader title={t('title')} subtitle={t('subtitle')} />
 
       <Card style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 12, maxWidth: 600 }}>
           <Input
             size='large' prefix={<BarcodeOutlined style={{ color: '#ccc' }} />}
-            placeholder='Nhập mã IMEI để tra cứu...'
+            placeholder={t('input.placeholder')}
             value={imeiQuery} onChange={(e) => setImeiQuery(e.target.value)}
             onPressEnter={handleSearch} allowClear
           />
           <Button type='primary' size='large' icon={<SearchOutlined />} loading={isLoading || isFetching} onClick={handleSearch}>
-            Tra cứu
+            {t('input.submit')}
           </Button>
         </div>
       </Card>
@@ -66,37 +71,36 @@ const TraCuuImeiPage = () => {
       {!submitted && (
         <div style={{ textAlign: 'center', padding: '64px 0', color: '#ccc' }}>
           <BarcodeOutlined style={{ fontSize: 64, display: 'block', marginBottom: 16 }} />
-          <Text type='secondary' style={{ fontSize: 16 }}>Nhập IMEI để xem thông tin thiết bị</Text>
+          <Text type='secondary' style={{ fontSize: 16 }}>{t('intro')}</Text>
         </div>
       )}
 
       {submitted && isError && (
         <Card style={{ borderRadius: 12, textAlign: 'center', padding: 40 }}>
           <InboxOutlined style={{ fontSize: 48, color: '#faad14', display: 'block', marginBottom: 12 }} />
-          <Title level={5}>Không tìm thấy IMEI: <code>{submitted}</code></Title>
-          <Text type='secondary'>IMEI này chưa được đăng ký trong hệ thống</Text>
+          <Title level={5}><Trans i18nKey='notFound.title' ns='imei' values={{ imei: submitted }} components={[<code key='0' />]} /></Title>
+          <Text type='secondary'>{t('notFound.description')}</Text>
         </Card>
       )}
 
       {submitted && result && !isError && (
         <Row gutter={[16, 16]}>
-          {/* Trạng thái tổng quan */}
           <Col xs={24}>
-            <Card style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', background: statusCfg ? `${statusCfg.color === 'green' ? '#f6ffed' : statusCfg.color === 'blue' ? '#e6f4ff' : '#fff7e6'}` : '#fafafa' }}>
+            <Card style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', background: statusColor ? `${statusColor === 'green' ? '#f6ffed' : statusColor === 'blue' ? '#e6f4ff' : '#fff7e6'}` : '#fafafa' }}>
               <Space size={24} wrap>
                 <div>
-                  <Text type='secondary' style={{ fontSize: 12 }}>IMEI</Text>
+                  <Text type='secondary' style={{ fontSize: 12 }}>{t('overview.imei')}</Text>
                   <div style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 700 }}>{result.itemInfo?.imei ?? submitted}</div>
                 </div>
-                {statusCfg && (
+                {statusColor && (
                   <div>
-                    <Text type='secondary' style={{ fontSize: 12 }}>Trạng thái</Text>
-                    <div><Tag color={statusCfg.color} style={{ fontSize: 14, padding: '2px 12px' }}>{statusCfg.label}</Tag></div>
+                    <Text type='secondary' style={{ fontSize: 12 }}>{t('overview.status')}</Text>
+                    <div><Tag color={statusColor} style={{ fontSize: 14, padding: '2px 12px' }}>{statusLabel}</Tag></div>
                   </div>
                 )}
                 {result.productInfo && (
                   <div>
-                    <Text type='secondary' style={{ fontSize: 12 }}>Sản phẩm</Text>
+                    <Text type='secondary' style={{ fontSize: 12 }}>{t('overview.product')}</Text>
                     <div style={{ fontWeight: 600 }}>{result.productInfo.name}</div>
                     <Text type='secondary' style={{ fontSize: 12 }}>{result.productInfo.sku}</Text>
                   </div>
@@ -105,55 +109,54 @@ const TraCuuImeiPage = () => {
             </Card>
           </Col>
 
-          {/* Thông tin sản phẩm & item */}
           <Col xs={24} lg={12}>
-            <Card title={<Space><ShoppingOutlined style={{ color: PRIMARY }} /><span>Thông tin sản phẩm</span></Space>}
+            <Card title={<Space><ShoppingOutlined style={{ color: PRIMARY }} /><span>{t('product.title')}</span></Space>}
               style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
               {result.productInfo ? (
                 <Descriptions column={1} size='small'>
-                  <Descriptions.Item label='Tên sản phẩm'>{result.productInfo.name}</Descriptions.Item>
-                  <Descriptions.Item label='SKU'>{result.productInfo.sku}</Descriptions.Item>
-                  <Descriptions.Item label='Thời hạn BH'>{result.productInfo.warrantyPeriod ?? '—'} tháng</Descriptions.Item>
-                  <Descriptions.Item label='Ngày nhập kho'>
-                    {result.itemInfo?.importDate ? new Date(result.itemInfo.importDate).toLocaleDateString('vi-VN') : '—'}
+                  <Descriptions.Item label={t('product.name')}>{result.productInfo.name}</Descriptions.Item>
+                  <Descriptions.Item label={t('product.sku')}>{result.productInfo.sku}</Descriptions.Item>
+                  <Descriptions.Item label={t('product.warrantyPeriod')}>{result.productInfo.warrantyPeriod ?? '—'} {t('common:common.months')}</Descriptions.Item>
+                  <Descriptions.Item label={t('product.importDate')}>
+                    {date(result.itemInfo?.importDate)}
                   </Descriptions.Item>
                 </Descriptions>
-              ) : <Text type='secondary'>Không có thông tin sản phẩm</Text>}
+              ) : <Text type='secondary'>{t('product.empty')}</Text>}
             </Card>
           </Col>
 
-          {/* Thông tin bán hàng */}
           <Col xs={24} lg={12}>
-            <Card title={<Space><UserOutlined style={{ color: '#1677ff' }} /><span>Thông tin bán hàng</span></Space>}
+            <Card title={<Space><UserOutlined style={{ color: '#1677ff' }} /><span>{t('sale.title')}</span></Space>}
               style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
               {result.saleInfo && Object.keys(result.saleInfo).length > 0 ? (
                 <Descriptions column={1} size='small'>
                   {result.saleInfo.customer && (
                     <>
-                      <Descriptions.Item label='Khách hàng'>{result.saleInfo.customer.fullName}</Descriptions.Item>
-                      <Descriptions.Item label='SĐT'>{result.saleInfo.customer.phoneNumber}</Descriptions.Item>
+                      <Descriptions.Item label={t('sale.customer')}>{result.saleInfo.customer.fullName}</Descriptions.Item>
+                      <Descriptions.Item label={t('sale.phone')}>{result.saleInfo.customer.phoneNumber}</Descriptions.Item>
                     </>
                   )}
-                  <Descriptions.Item label='Ngày bán'>
-                    {result.saleInfo.saleDate ? new Date(result.saleInfo.saleDate).toLocaleDateString('vi-VN') : '—'}
+                  <Descriptions.Item label={t('sale.saleDate')}>
+                    {date(result.saleInfo.saleDate)}
                   </Descriptions.Item>
-                  <Descriptions.Item label='Giá bán'>
+                  <Descriptions.Item label={t('sale.salePrice')}>
                     <CurrencyDisplay value={result.saleInfo.salePrice} color={PRIMARY} />
                   </Descriptions.Item>
-                  <Descriptions.Item label='Thanh toán'>{result.saleInfo.paymentMethod}</Descriptions.Item>
+                  <Descriptions.Item label={t('sale.paymentMethod')}>
+                    {t(`common:status.payment.${result.saleInfo.paymentMethod}`, { defaultValue: result.saleInfo.paymentMethod })}
+                  </Descriptions.Item>
                 </Descriptions>
               ) : (
                 <div style={{ textAlign: 'center', padding: '24px 0', color: '#ccc' }}>
                   <InboxOutlined style={{ fontSize: 32, display: 'block', marginBottom: 8 }} />
-                  <Text type='secondary'>Chưa được bán</Text>
+                  <Text type='secondary'>{t('sale.empty')}</Text>
                 </div>
               )}
             </Card>
           </Col>
 
-          {/* Lịch sử bảo hành */}
           <Col xs={24}>
-            <Card title={<Space><SafetyCertificateOutlined style={{ color: '#52c41a' }} /><span>Lịch sử bảo hành</span></Space>}
+            <Card title={<Space><SafetyCertificateOutlined style={{ color: '#52c41a' }} /><span>{t('warranty.title')}</span></Space>}
               style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
               {result.warrantyHistory && result.warrantyHistory.length > 0 ? (
                 <Timeline
@@ -163,13 +166,13 @@ const TraCuuImeiPage = () => {
                       <div>
                         <div style={{ fontWeight: 600 }}>{w.issueDescription}</div>
                         <Space size={12}>
-                          <Tag>{w.status}</Tag>
+                          <Tag>{t(`common:status.warranty.${w.status}`, { defaultValue: w.status })}</Tag>
                           <Text type='secondary' style={{ fontSize: 12 }}>
-                            Nhận: {new Date(w.receivedDate).toLocaleDateString('vi-VN')}
+                            {t('warranty.received')}: {date(w.receivedDate)}
                           </Text>
                           {w.returnDate && (
                             <Text type='secondary' style={{ fontSize: 12 }}>
-                              Trả: {new Date(w.returnDate).toLocaleDateString('vi-VN')}
+                              {t('warranty.returned')}: {date(w.returnDate)}
                             </Text>
                           )}
                         </Space>
@@ -178,7 +181,7 @@ const TraCuuImeiPage = () => {
                   }))}
                 />
               ) : (
-                <Text type='secondary'>Chưa có lịch sử bảo hành</Text>
+                <Text type='secondary'>{t('warranty.empty')}</Text>
               )}
             </Card>
           </Col>

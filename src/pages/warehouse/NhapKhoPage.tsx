@@ -18,12 +18,14 @@ import {
   Typography
 } from 'antd'
 import { PlusOutlined, ImportOutlined, DeleteOutlined, ShopOutlined, EnvironmentOutlined } from '@ant-design/icons'
+import { useTranslation } from 'react-i18next'
 import { useGetProductsQuery } from '@/features/product/productApi'
 import { useImportImeiMutation } from '@/features/stock/stockApi'
 import { useGetSuppliersQuery, useCreateSupplierMutation } from '@/features/supplier/supplierApi'
 import { useGetMapQuery, useGetAvailableBinsQuery } from '@/features/warehouse/warehouseApi'
-import type { Product, SupplierRequest, WarehouseLocationResponse } from '@/types/api'
+import type { Product, SupplierRequest } from '@/types/api'
 import PageHeader from '@/components/shared/PageHeader'
+import BinPickerGrid from '@/components/shared/BinPickerGrid'
 
 const { Text } = Typography
 const PRIMARY = '#E8603C'
@@ -37,13 +39,9 @@ interface FormValues {
   imeiList: string[]
 }
 
-const formatBin = (loc: WarehouseLocationResponse) => {
-  const parts = [loc.zoneName, loc.rowNum, loc.shelfNum, loc.binNum].filter(Boolean)
-  return parts.length > 0 ? `${parts.join('-')} (#${loc.id})` : `#${loc.id}`
-}
-
 const NhapKhoPage = () => {
   const { message } = App.useApp()
+  const { t } = useTranslation(['stock', 'common'])
   const [form] = Form.useForm<FormValues>()
   const [quickAddForm] = Form.useForm<SupplierRequest>()
   const [imeiInput, setImeiInput] = useState('')
@@ -66,9 +64,9 @@ const NhapKhoPage = () => {
   const supplierOptions = useMemo(
     () => [
       ...suppliers.filter((s) => !s.isDeleted).map((s) => ({ value: s.id, label: s.name })),
-      { value: -1, label: '+ Thêm nhà cung cấp mới...' }
+      { value: -1, label: t('import.supplierAddNew') }
     ],
-    [suppliers]
+    [suppliers, t]
   )
 
   const warehouseOptions = useMemo(
@@ -76,13 +74,17 @@ const NhapKhoPage = () => {
     [warehouses]
   )
 
-  const binOptions = useMemo(() => availableBins.map((b) => ({ value: b.id, label: formatBin(b) })), [availableBins])
+  const selectedWarehouse = useMemo(
+    () => warehouses.find((w) => w.id === selectedWarehouseId) ?? null,
+    [warehouses, selectedWarehouseId]
+  )
+  const availableBinIds = useMemo(() => new Set(availableBins.map((b) => b.id)), [availableBins])
 
   const handleAddImei = () => {
     const trimmed = imeiInput.trim()
     if (!trimmed) return
     if (imeiList.includes(trimmed)) {
-      void message.warning('IMEI này đã được thêm')
+      void message.warning(t('import.imeiDuplicate'))
       return
     }
     setImeiList((prev) => [...prev, trimmed])
@@ -90,9 +92,7 @@ const NhapKhoPage = () => {
   }
 
   const handleProductChange = (id: number) => {
-    console.log(id)
     const p = allProducts.find((p) => p.id === id) ?? null
-    console.log(p)
     setSelectedProduct(p)
     if (!p?.hasImei) setImeiList([])
   }
@@ -107,7 +107,6 @@ const NhapKhoPage = () => {
 
   const handleWarehouseChange = (v: number) => {
     setSelectedWarehouseId(v)
-    // reset bin selection when warehouse changes
     form.setFieldValue('locationId', undefined)
   }
 
@@ -115,12 +114,12 @@ const NhapKhoPage = () => {
     quickAddForm.validateFields().then(async (values) => {
       try {
         const created = await createSupplier(values).unwrap()
-        void message.success('Thêm nhà cung cấp thành công!')
+        void message.success(t('import.quickAddSuccess'))
         form.setFieldValue('supplierId', created.id)
         setQuickAddOpen(false)
       } catch (err: unknown) {
         const e = err as { data?: { message?: string } }
-        void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+        void message.error(e?.data?.message ?? t('common:error.system'))
       }
     })
   }
@@ -128,12 +127,12 @@ const NhapKhoPage = () => {
   const handleSubmit = () => {
     form.validateFields().then(async (values) => {
       if (Number(values.costPrice) <= 0) {
-        void message.error('Giá nhập phải lớn hơn 0')
+        void message.error(t('import.costPricePositiveAlt'))
         return
       }
       const product = allProducts.find((p) => p.id === values.productId)
       if (product?.hasImei && imeiList.length === 0) {
-        void message.error('Sản phẩm có IMEI cần nhập ít nhất 1 IMEI')
+        void message.error(t('import.imeiRequired'))
         return
       }
       try {
@@ -149,21 +148,21 @@ const NhapKhoPage = () => {
           count: product?.hasImei ? imeiList.length : 1,
           imeis: product?.hasImei ? [...imeiList] : []
         })
-        void message.success('Nhập kho thành công!')
+        void message.success(t('import.success'))
         form.resetFields()
         setImeiList([])
         setSelectedProduct(null)
         setSelectedWarehouseId(undefined)
       } catch (err: unknown) {
         const e = err as { data?: { message?: string } }
-        void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+        void message.error(e?.data?.message ?? t('common:error.system'))
       }
     })
   }
 
   return (
     <div>
-      <PageHeader title='Nhập kho' breadcrumb={[{ title: 'Nhập kho', href: '/nhap-kho' }]} />
+      <PageHeader title={t('import.title')} breadcrumb={[{ title: t('import.breadcrumb'), href: '/nhap-kho' }]} />
 
       {result && (
         <Card style={{ borderRadius: 12, background: '#f6ffed', border: '1px solid #b7eb8f', marginBottom: 20 }}>
@@ -178,12 +177,12 @@ const NhapKhoPage = () => {
           >
             <div>
               <Text strong style={{ color: '#52c41a', fontSize: 15 }}>
-                ✓ Nhập kho thành công: <strong>{result.name}</strong> — {result.count} đơn vị
+                {t('import.successHeader', { name: result.name, count: result.count })}
               </Text>
               {result.imeis.length > 0 && (
                 <div style={{ marginTop: 8 }}>
                   <Text type='secondary' style={{ fontSize: 12 }}>
-                    Danh sách IMEI đã nhập:
+                    {t('import.imeiListLabel')}
                   </Text>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
                     {result.imeis.map((imei) => (
@@ -196,7 +195,7 @@ const NhapKhoPage = () => {
               )}
             </div>
             <Button type='text' size='small' onClick={() => setResult(null)}>
-              Đóng
+              {t('common:button.close')}
             </Button>
           </div>
         </Card>
@@ -204,13 +203,13 @@ const NhapKhoPage = () => {
 
       <Row gutter={[20, 20]}>
         <Col xs={24} lg={14}>
-          <Card title='Thông tin nhập kho' style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
+          <Card title={t('import.formTitle')} style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}>
             <Form form={form} layout='vertical'>
-              <Form.Item label='Sản phẩm' name='productId' rules={[{ required: true, message: 'Chọn sản phẩm' }]}>
+              <Form.Item label={t('import.productLabel')} name='productId' rules={[{ required: true, message: t('import.productRequired') }]}>
                 <Select
                   showSearch
                   loading={loadingProducts}
-                  placeholder='Chọn sản phẩm cần nhập'
+                  placeholder={t('import.productPlaceholder')}
                   filterOption={(input, opt) =>
                     ((opt?.label as string) ?? '').toLowerCase().includes(input.toLowerCase())
                   }
@@ -222,12 +221,12 @@ const NhapKhoPage = () => {
               {selectedProduct && (
                 <Card size='small' style={{ marginBottom: 16, background: '#fafafa' }}>
                   <Descriptions size='small' column={2}>
-                    <Descriptions.Item label='SKU'>{selectedProduct.sku}</Descriptions.Item>
-                    <Descriptions.Item label='Tồn kho hiện tại'>{selectedProduct.currentStock}</Descriptions.Item>
-                    <Descriptions.Item label='Ngưỡng cảnh báo'>{selectedProduct.minThreshold}</Descriptions.Item>
-                    <Descriptions.Item label='Theo IMEI'>
+                    <Descriptions.Item label={t('import.infoSku')}>{selectedProduct.sku}</Descriptions.Item>
+                    <Descriptions.Item label={t('import.infoCurrentStock')}>{selectedProduct.currentStock}</Descriptions.Item>
+                    <Descriptions.Item label={t('import.infoThreshold')}>{selectedProduct.minThreshold}</Descriptions.Item>
+                    <Descriptions.Item label={t('import.infoHasImei')}>
                       <Tag color={selectedProduct.hasImei ? 'blue' : 'default'}>
-                        {selectedProduct.hasImei ? 'Có' : 'Không'}
+                        {selectedProduct.hasImei ? t('common:common.yes') : t('common:common.no')}
                       </Tag>
                     </Descriptions.Item>
                   </Descriptions>
@@ -237,36 +236,36 @@ const NhapKhoPage = () => {
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
-                    label='Giá nhập'
+                    label={t('import.costPrice')}
                     name='costPrice'
                     rules={[
-                      { required: true, message: 'Nhập giá nhập' },
-                      { type: 'number', min: 1, message: 'Giá nhập phải > 0' }
+                      { required: true, message: t('import.costPriceRequired') },
+                      { type: 'number', min: 1, message: t('import.costPricePositive') }
                     ]}
                   >
-                    <InputNumber
+                    <InputNumber<number>
                       style={{ width: '100%' }}
                       min={0}
+                      max={9999999999}
                       addonAfter='₫'
                       formatter={(v) => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+                      parser={(s) => (Number((s ?? '').replace(/[^0-9]/g, '')) || 0) as number}
                       placeholder='0'
                     />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    label='Nhà cung cấp'
+                    label={t('import.supplierLabel')}
                     name='supplierId'
-                    rules={[{ required: true, message: 'Chọn nhà cung cấp' }]}
+                    rules={[{ required: true, message: t('import.supplierRequired') }]}
                   >
                     <Select
                       showSearch
                       loading={loadingSuppliers}
-                      placeholder='Chọn nhà cung cấp'
+                      placeholder={t('import.supplierPlaceholder')}
                       filterOption={(input, opt) =>
-                        String(opt?.label ?? '')
-                          .toLowerCase()
-                          .includes(input.toLowerCase())
+                        String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())
                       }
                       onChange={handleSupplierChange}
                       options={supplierOptions}
@@ -284,67 +283,52 @@ const NhapKhoPage = () => {
                 </Col>
               </Row>
 
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item label='Kho lưu' name='warehouseId' rules={[{ required: true, message: 'Chọn kho lưu' }]}>
-                    <Select
-                      showSearch
-                      loading={loadingWarehouses}
-                      placeholder='Chọn kho'
-                      filterOption={(input, opt) =>
-                        String(opt?.label ?? '')
-                          .toLowerCase()
-                          .includes(input.toLowerCase())
-                      }
-                      onChange={handleWarehouseChange}
-                      options={warehouseOptions}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    label='Vị trí (bin trống)'
-                    name='locationId'
-                    rules={[{ required: true, message: 'Chọn vị trí lưu' }]}
-                  >
-                    <Select
-                      showSearch
-                      loading={loadingBins}
-                      placeholder={selectedWarehouseId ? 'Chọn bin trống' : 'Chọn kho trước'}
-                      disabled={!selectedWarehouseId}
-                      filterOption={(input, opt) =>
-                        String(opt?.label ?? '')
-                          .toLowerCase()
-                          .includes(input.toLowerCase())
-                      }
-                      options={binOptions}
-                      notFoundContent={
-                        selectedWarehouseId ? (
-                          <span style={{ color: '#999' }}>
-                            <EnvironmentOutlined /> Không còn bin trống ở kho này
-                          </span>
-                        ) : null
-                      }
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
+              <Form.Item label={t('import.warehouseLabel')} name='warehouseId' rules={[{ required: true, message: t('import.warehouseRequired') }]}>
+                <Select
+                  showSearch
+                  loading={loadingWarehouses}
+                  placeholder={t('import.warehousePlaceholder')}
+                  filterOption={(input, opt) =>
+                    String(opt?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                  }
+                  onChange={handleWarehouseChange}
+                  options={warehouseOptions}
+                />
+              </Form.Item>
+
+              <Form.Item
+                label={
+                  <Space>
+                    <EnvironmentOutlined />
+                    <span>{t('import.locationLabel')}</span>
+                    {loadingBins && <Text type='secondary' style={{ fontSize: 11 }}>{t('import.locationLoading')}</Text>}
+                  </Space>
+                }
+                name='locationId'
+                rules={[{ required: true, message: t('import.locationRequired') }]}
+              >
+                <BinPickerGrid
+                  warehouse={selectedWarehouse}
+                  availableIds={availableBinIds}
+                  compact
+                />
+              </Form.Item>
 
               {selectedProduct?.hasImei && (
                 <>
                   <Divider orientation='left' style={{ fontSize: 13 }}>
-                    Danh sách IMEI
+                    {t('import.imeiHeader')}
                   </Divider>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                     <Input
-                      placeholder='Nhập IMEI và nhấn Thêm (hoặc Enter)'
+                      placeholder={t('import.imeiInputPlaceholder')}
                       value={imeiInput}
                       onChange={(e) => setImeiInput(e.target.value)}
                       onPressEnter={handleAddImei}
                       style={{ flex: 1 }}
                     />
                     <Button icon={<PlusOutlined />} onClick={handleAddImei}>
-                      Thêm
+                      {t('import.imeiAddButton')}
                     </Button>
                   </div>
                   {imeiList.length > 0 ? (
@@ -355,7 +339,7 @@ const NhapKhoPage = () => {
                       pagination={false}
                       columns={[
                         {
-                          title: `IMEI (${imeiList.length})`,
+                          title: t('import.imeiColumn', { count: imeiList.length }),
                           key: 'imei',
                           render: (_: unknown, r: string) => <Text code>{r}</Text>
                         },
@@ -376,7 +360,7 @@ const NhapKhoPage = () => {
                       ]}
                     />
                   ) : (
-                    <Text type='secondary'>Chưa có IMEI nào. Nhập IMEI ở trên để thêm.</Text>
+                    <Text type='secondary'>{t('import.imeiEmpty')}</Text>
                   )}
                 </>
               )}
@@ -391,7 +375,7 @@ const NhapKhoPage = () => {
                 icon={<ImportOutlined />}
                 disabled={selectedProduct?.hasImei ? imeiList.length === 0 : false}
               >
-                Xác nhận nhập kho {selectedProduct?.hasImei ? `(${imeiList.length} IMEI)` : ''}
+                {t('import.submit')} {selectedProduct?.hasImei ? t('import.submitSuffix', { count: imeiList.length }) : ''}
               </Button>
             </Form>
           </Card>
@@ -399,7 +383,7 @@ const NhapKhoPage = () => {
 
         <Col xs={24} lg={10}>
           <Card
-            title='Sản phẩm cần nhập (sắp hết)'
+            title={t('import.needRestockTitle')}
             style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}
           >
             <Table
@@ -409,21 +393,19 @@ const NhapKhoPage = () => {
               pagination={false}
               columns={[
                 {
-                  title: 'Sản phẩm',
+                  title: t('import.needRestockColProduct'),
                   dataIndex: 'name',
                   key: 'name',
                   ellipsis: true,
                   render: (v: string, r: Product) => (
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 12 }}>{v}</div>
-                      <Text type='secondary' style={{ fontSize: 11 }}>
-                        {r.sku}
-                      </Text>
+                      <Text type='secondary' style={{ fontSize: 11 }}>{r.sku}</Text>
                     </div>
                   )
                 },
                 {
-                  title: 'Tồn / Ngưỡng',
+                  title: t('import.needRestockColStock'),
                   key: 'stock',
                   width: 100,
                   render: (_, r: Product) => (
@@ -433,44 +415,41 @@ const NhapKhoPage = () => {
                   )
                 }
               ]}
-              locale={{ emptyText: 'Tất cả sản phẩm đều đủ hàng' }}
+              locale={{ emptyText: t('import.needRestockEmpty') }}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* Quick-add supplier modal */}
       <Modal
         title={
           <Space>
             <ShopOutlined style={{ color: PRIMARY }} />
-            <span>Thêm nhà cung cấp nhanh</span>
+            <span>{t('import.quickAddTitle')}</span>
           </Space>
         }
         open={quickAddOpen}
         onCancel={() => setQuickAddOpen(false)}
         width={480}
         footer={[
-          <Button key='c' onClick={() => setQuickAddOpen(false)}>
-            Huỷ
-          </Button>,
+          <Button key='c' onClick={() => setQuickAddOpen(false)}>{t('common:button.cancel')}</Button>,
           <Button key='s' type='primary' loading={creatingSupplier} onClick={handleQuickAddSupplier}>
-            Thêm
+            {t('import.quickAddSubmit')}
           </Button>
         ]}
       >
         <Form form={quickAddForm} layout='vertical' style={{ marginTop: 16 }}>
-          <Form.Item label='Tên nhà cung cấp' name='name' rules={[{ required: true, message: 'Nhập tên' }]}>
-            <Input autoFocus placeholder='Công ty TNHH...' />
+          <Form.Item label={t('import.quickAddNameLabel')} name='name' rules={[{ required: true, message: t('import.quickAddNameRequired') }]}>
+            <Input autoFocus placeholder={t('import.quickAddNamePlaceholder')} />
           </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label='Người liên hệ' name='contactPerson'>
+              <Form.Item label={t('import.quickAddContact')} name='contactPerson'>
                 <Input />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label='Số điện thoại' name='phoneNumber'>
+              <Form.Item label={t('import.quickAddPhone')} name='phoneNumber'>
                 <Input />
               </Form.Item>
             </Col>

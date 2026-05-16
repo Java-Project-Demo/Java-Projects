@@ -13,11 +13,14 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
 } from 'recharts'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '@/app/hooks'
 import { useGetDashboardSummaryQuery, useGetLowStockQuery } from '@/features/dashboard/dashboardApi'
 import { useGetCategoriesQuery } from '@/features/category/categoryApi'
 import { useGetProductsQuery } from '@/features/product/productApi'
 import CurrencyDisplay from '@/components/shared/CurrencyDisplay'
+import { useLocaleFormat } from '@/utils/useLocaleFormat'
+import { useCan } from '@/utils/permissions'
 import type { AuditLog, Product } from '@/types/api'
 
 const { Title, Text } = Typography
@@ -55,16 +58,27 @@ const PieLabel = (props: any) => {
 const Home = () => {
   const navigate = useNavigate()
   const user = useAppSelector((s) => s.auth.user)
+  const { t } = useTranslation(['home', 'common'])
+  const { localeTag, dateTime } = useLocaleFormat()
+  const canViewRevenue = useCan('REVENUE_VIEW')
+  const canViewLogs = useCan('AUDIT_LOG_VIEW')
+  const canViewLowStock = useCan('LOW_STOCK_VIEW')
+  const canViewTopSelling = useCan('TOP_SELLING_VIEW')
+  const canImport = useCan('STOCK_IMPORT')
+  const canExport = useCan('STOCK_EXPORT')
   const now = new Date()
-  const greeting = now.getHours() < 12 ? 'Chào buổi sáng' : now.getHours() < 18 ? 'Chào buổi chiều' : 'Chào buổi tối'
+  const greeting =
+    now.getHours() < 12
+      ? t('common:user.greeting.morning')
+      : now.getHours() < 18
+      ? t('common:user.greeting.afternoon')
+      : t('common:user.greeting.evening')
 
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummaryQuery()
   const { data: lowStock = [], isLoading: loadingLowStock } = useGetLowStockQuery()
   const { data: categories = [] } = useGetCategoriesQuery()
   const { data: products = [] } = useGetProductsQuery()
 
-  // ─── Chart data ───────────────────────────────────────────
-  // Pie: Số sản phẩm theo danh mục
   const catMap = useMemo(() => Object.fromEntries(categories.map((c) => [c.id, c.name])), [categories])
   const pieData = useMemo(() => {
     const counts: Record<number, { name: string; value: number; stockValue: number }> = {}
@@ -76,7 +90,6 @@ const Home = () => {
     return Object.values(counts).filter((c) => c.value > 0)
   }, [products, catMap])
 
-  // Bar: Top 8 sản phẩm theo giá trị tồn kho (currentStock * priceExport)
   const barData = useMemo(() =>
     [...products]
       .filter((p) => p.currentStock > 0)
@@ -84,24 +97,24 @@ const Home = () => {
       .slice(0, 8)
       .map((p) => ({
         name: p.name.length > 18 ? p.name.substring(0, 16) + '…' : p.name,
-        'Giá trị (triệu)': Math.round((p.currentStock * p.priceExport) / 1_000_000),
+        value: Math.round((p.currentStock * p.priceExport) / 1_000_000),
         stock: p.currentStock,
       })),
     [products],
   )
 
   const kpis = [
-    { title: 'Tổng sản phẩm', value: summary?.totalProducts ?? 0, icon: <ShoppingOutlined />, color: PRIMARY, sub: 'mặt hàng', currency: false },
-    { title: 'Sắp / Hết hàng', value: summary?.lowStockCount ?? 0, icon: <WarningOutlined />, color: '#faad14', sub: 'cần nhập', currency: false },
-    { title: 'Đơn chờ xử lý', value: summary?.pendingOrders ?? 0, icon: <ExportOutlined />, color: '#1677ff', sub: 'đơn hàng', currency: false },
-    { title: 'Giá trị tồn kho', value: summary?.totalInventoryValue ?? 0, icon: <DollarOutlined />, color: '#52c41a', sub: '', currency: true },
-  ]
+    { title: t('kpi.totalProducts'), value: summary?.totalProducts ?? 0, icon: <ShoppingOutlined />, color: PRIMARY, sub: t('kpi.totalProductsSub'), currency: false, visible: true },
+    { title: t('kpi.lowStock'), value: summary?.lowStockCount ?? 0, icon: <WarningOutlined />, color: '#faad14', sub: t('kpi.lowStockSub'), currency: false, visible: canViewLowStock },
+    { title: t('kpi.pendingOrders'), value: summary?.pendingOrders ?? 0, icon: <ExportOutlined />, color: '#1677ff', sub: t('kpi.pendingOrdersSub'), currency: false, visible: true },
+    { title: t('kpi.totalInventoryValue'), value: summary?.totalInventoryValue ?? 0, icon: <DollarOutlined />, color: '#52c41a', sub: '', currency: true, visible: canViewRevenue },
+  ].filter((k) => k.visible)
 
   const recentActivities: AuditLog[] = summary?.recentActivities ?? []
 
   const lowStockCols = [
     {
-      title: 'Sản phẩm', dataIndex: 'name', key: 'name', ellipsis: true,
+      title: t('lowStock.colProduct'), dataIndex: 'name', key: 'name', ellipsis: true,
       render: (v: string, r: Product) => (
         <div>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{v}</div>
@@ -110,7 +123,7 @@ const Home = () => {
       ),
     },
     {
-      title: 'Tồn / Ngưỡng', key: 'stock', width: 110,
+      title: t('lowStock.colStock'), key: 'stock', width: 110,
       render: (_: unknown, r: Product) => (
         <span style={{ fontWeight: 700, color: r.currentStock === 0 ? '#ff4d4f' : '#faad14' }}>
           {r.currentStock} / {r.minThreshold}
@@ -119,29 +132,31 @@ const Home = () => {
     },
     {
       title: '', key: 'act', width: 90,
-      render: () => <Button size='small' type='primary' ghost onClick={() => navigate('/nhap-kho')}>Nhập kho</Button>,
+      render: () => <Button size='small' type='primary' ghost onClick={() => navigate('/nhap-kho')}>{t('lowStock.actionImport')}</Button>,
     },
   ]
 
   return (
     <div>
-      {/* Welcome */}
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={4} style={{ margin: 0 }}>
             {greeting}, <span style={{ color: PRIMARY }}>{user?.username ?? 'Admin'}</span> 👋
           </Title>
           <Text type='secondary'>
-            {now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {now.toLocaleDateString(localeTag, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </Text>
         </div>
         <Space>
-          <Button type='primary' icon={<ImportOutlined />} onClick={() => navigate('/nhap-kho')}>Nhập kho</Button>
-          <Button icon={<ExportOutlined />} onClick={() => navigate('/xuat-kho')}>Xuất kho</Button>
+          {canImport && (
+            <Button type='primary' icon={<ImportOutlined />} onClick={() => navigate('/nhap-kho')}>{t('actions.import')}</Button>
+          )}
+          {canExport && (
+            <Button icon={<ExportOutlined />} onClick={() => navigate('/xuat-kho')}>{t('actions.export')}</Button>
+          )}
         </Space>
       </div>
 
-      {/* KPI Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         {loadingSummary
           ? [0, 1, 2, 3].map((i) => <Col xs={24} sm={12} xl={6} key={i}><KpiSkeleton /></Col>)
@@ -163,7 +178,7 @@ const Home = () => {
                     )}
                     <Space size={4} style={{ marginTop: 4 }}>
                       <ArrowUpOutlined style={{ color: '#52c41a', fontSize: 11 }} />
-                      <Text style={{ fontSize: 12, color: '#52c41a' }}>Cập nhật mới nhất</Text>
+                      <Text style={{ fontSize: 12, color: '#52c41a' }}>{t('kpi.latestUpdate')}</Text>
                     </Space>
                   </div>
                   <div style={{ width: 48, height: 48, borderRadius: 10, background: `${k.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: k.color }}>
@@ -175,12 +190,10 @@ const Home = () => {
           ))}
       </Row>
 
-      {/* Charts Row */}
       <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-        {/* Pie Chart — phân bổ theo danh mục */}
         <Col xs={24} lg={10}>
           <Card style={cardStyle} title={
-            <Space><ShoppingOutlined style={{ color: PRIMARY }} /><span>Phân bổ sản phẩm theo danh mục</span></Space>
+            <Space><ShoppingOutlined style={{ color: PRIMARY }} /><span>{t('charts.pieTitle')}</span></Space>
           }>
             {pieData.length === 0 ? (
               <Skeleton active paragraph={{ rows: 4 }} />
@@ -194,7 +207,7 @@ const Home = () => {
                     ))}
                   </Pie>
                   <RTooltip
-                    formatter={(value) => [`${String(value ?? 0)} sản phẩm`, 'Số lượng']}
+                    formatter={(value) => [t('charts.pieTooltipUnit', { count: Number(value ?? 0) }), t('charts.pieTooltipLabel')]}
                     contentStyle={{ fontSize: 12 }}
                   />
                   <Legend formatter={(value: string) => <span style={{ fontSize: 12 }}>{value}</span>} />
@@ -204,55 +217,58 @@ const Home = () => {
           </Card>
         </Col>
 
-        {/* Bar Chart — top sản phẩm theo giá trị tồn */}
-        <Col xs={24} lg={14}>
-          <Card style={cardStyle} title={
-            <Space><DollarOutlined style={{ color: '#1677ff' }} /><span>Top sản phẩm theo giá trị tồn kho</span></Space>
-          } extra={
-            <Button type='link' size='small' onClick={() => navigate('/vat-tu')} icon={<RightOutlined />}>Xem tất cả</Button>
-          }>
-            {barData.length === 0 ? (
-              <Skeleton active paragraph={{ rows: 4 }} />
-            ) : (
-              <ResponsiveContainer width='100%' height={280}>
-                <BarChart data={barData} margin={{ top: 8, right: 16, left: 8, bottom: 48 }}>
-                  <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
-                  <XAxis dataKey='name' tick={{ fontSize: 11 }} angle={-30} textAnchor='end' interval={0} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `${v}M`} />
-                  <RTooltip formatter={(v) => [`${String(v ?? 0)} triệu ₫`, 'Giá trị tồn']} />
-                  <Bar dataKey='Giá trị (triệu)' radius={[4, 4, 0, 0]}>
-                    {barData.map((_, i) => (
-                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </Card>
-        </Col>
+        {canViewTopSelling && (
+          <Col xs={24} lg={14}>
+            <Card style={cardStyle} title={
+              <Space><DollarOutlined style={{ color: '#1677ff' }} /><span>{t('charts.barTitle')}</span></Space>
+            } extra={
+              <Button type='link' size='small' onClick={() => navigate('/vat-tu')} icon={<RightOutlined />}>{t('common:button.viewAll')}</Button>
+            }>
+              {barData.length === 0 ? (
+                <Skeleton active paragraph={{ rows: 4 }} />
+              ) : (
+                <ResponsiveContainer width='100%' height={280}>
+                  <BarChart data={barData} margin={{ top: 8, right: 16, left: 8, bottom: 48 }}>
+                    <CartesianGrid strokeDasharray='3 3' stroke='#f0f0f0' />
+                    <XAxis dataKey='name' tick={{ fontSize: 11 }} angle={-30} textAnchor='end' interval={0} />
+                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `${v}M`} />
+                    <RTooltip formatter={(v) => [t('charts.barTooltipUnit', { count: Number(v ?? 0) }), t('charts.barTooltipLabel')]} />
+                    <Bar dataKey='value' name={t('charts.barLegend')} radius={[4, 4, 0, 0]}>
+                      {barData.map((_, i) => (
+                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </Card>
+          </Col>
+        )}
       </Row>
 
-      {/* Low Stock + Recent Activity */}
       <Row gutter={[16, 16]}>
-        <Col xs={24} lg={14}>
-          <Card style={cardStyle}
-            title={<Space><WarningOutlined style={{ color: '#faad14' }} /><span>Cảnh báo sắp hết hàng</span></Space>}
-            extra={<Button type='link' size='small' onClick={() => navigate('/vat-tu')} icon={<RightOutlined />}>Xem tất cả</Button>}
-          >
-            <Table rowKey='id' size='small' pagination={false}
-              loading={loadingLowStock} dataSource={lowStock.slice(0, 5)}
-              columns={lowStockCols} locale={{ emptyText: 'Không có sản phẩm sắp hết hàng 🎉' }} />
-          </Card>
-        </Col>
+        {canViewLowStock && (
+          <Col xs={24} lg={canViewLogs ? 14 : 24}>
+            <Card style={cardStyle}
+              title={<Space><WarningOutlined style={{ color: '#faad14' }} /><span>{t('lowStock.title')}</span></Space>}
+              extra={<Button type='link' size='small' onClick={() => navigate('/vat-tu')} icon={<RightOutlined />}>{t('common:button.viewAll')}</Button>}
+            >
+              <Table rowKey='id' size='small' pagination={false}
+                loading={loadingLowStock} dataSource={lowStock.slice(0, 5)}
+                columns={lowStockCols} locale={{ emptyText: t('lowStock.empty') }} />
+            </Card>
+          </Col>
+        )}
 
-        <Col xs={24} lg={10}>
+        {canViewLogs && (
+        <Col xs={24} lg={canViewLowStock ? 10 : 24}>
           <Card style={cardStyle}
-            title={<Space><ClockCircleOutlined style={{ color: PRIMARY }} /><span>Hoạt động gần đây</span></Space>}
+            title={<Space><ClockCircleOutlined style={{ color: PRIMARY }} /><span>{t('recent.title')}</span></Space>}
           >
             {loadingSummary
               ? <Skeleton active paragraph={{ rows: 4 }} />
               : recentActivities.length === 0
-                ? <Text type='secondary'>Chưa có hoạt động nào</Text>
+                ? <Text type='secondary'>{t('recent.empty')}</Text>
                 : (
                   <List dataSource={recentActivities}
                     renderItem={(item: AuditLog) => {
@@ -272,9 +288,9 @@ const Home = () => {
                                 {item.action} — {item.entityName}
                               </div>
                               <Space size={8}>
-                                <Text type='secondary' style={{ fontSize: 11 }}><UserOutlined /> ID {item.userId}</Text>
+                                <Text type='secondary' style={{ fontSize: 11 }}><UserOutlined /> {item.staffName ?? item.staffUsername ?? t('recent.userId', { id: item.userId })}</Text>
                                 <Text type='secondary' style={{ fontSize: 11 }}>
-                                  {item.createdAt ? new Date(item.createdAt).toLocaleString('vi-VN') : ''}
+                                  {item.createdAt ? dateTime(item.createdAt) : ''}
                                 </Text>
                               </Space>
                             </div>
@@ -287,39 +303,41 @@ const Home = () => {
                 )}
           </Card>
         </Col>
+        )}
 
-        {/* Summary stats */}
+        {canViewRevenue && (
         <Col xs={24}>
-          <Card style={cardStyle} title='Tóm tắt kho hàng'
-            extra={<Button type='link' size='small' onClick={() => navigate('/thong-ke')} icon={<RightOutlined />}>Xem báo cáo</Button>}
+          <Card style={cardStyle} title={t('summary.title')}
+            extra={<Button type='link' size='small' onClick={() => navigate('/thong-ke')} icon={<RightOutlined />}>{t('common:button.viewReport')}</Button>}
           >
             {loadingSummary
               ? <Skeleton active paragraph={{ rows: 1 }} />
               : (
                 <Row gutter={[32, 16]}>
                   <Col xs={12} sm={6}>
-                    <Statistic title='Giá trị tồn kho' value={summary?.totalInventoryValue ?? 0}
+                    <Statistic title={t('summary.inventoryValue')} value={summary?.totalInventoryValue ?? 0}
                       formatter={(v) => <CurrencyDisplay value={Number(v)} color={PRIMARY} />} />
                   </Col>
                   <Col xs={12} sm={6}>
-                    <Statistic title='Lợi nhuận hôm nay' value={summary?.todayProfit ?? 0}
+                    <Statistic title={t('summary.todayProfit')} value={summary?.todayProfit ?? 0}
                       formatter={(v) => <CurrencyDisplay value={Number(v)} color='#52c41a' />} />
                   </Col>
                   <Col xs={12} sm={6}>
-                    <Statistic title='Bảo hành đang xử lý'
+                    <Statistic title={t('summary.activeWarranty')}
                       prefix={<SafetyCertificateOutlined style={{ color: '#faad14', marginRight: 4 }} />}
                       value={summary?.activeWarrantyClaims ?? 0}
-                      suffix='ca' valueStyle={{ color: '#faad14', fontSize: 18 }} />
+                      suffix={t('summary.activeWarrantySuffix')} valueStyle={{ color: '#faad14', fontSize: 18 }} />
                   </Col>
                   <Col xs={12} sm={6}>
-                    <Statistic title='Đơn hàng chờ xử lý'
+                    <Statistic title={t('summary.pendingOrders')}
                       value={summary?.pendingOrders ?? 0}
-                      suffix='đơn' valueStyle={{ color: '#1677ff', fontSize: 18 }} />
+                      suffix={t('summary.pendingOrdersSuffix')} valueStyle={{ color: '#1677ff', fontSize: 18 }} />
                   </Col>
                 </Row>
               )}
           </Card>
         </Col>
+        )}
       </Row>
     </div>
   )

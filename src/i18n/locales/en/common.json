@@ -1,0 +1,134 @@
+{
+  "appTitle": "Warehouse Management System",
+  "language": {
+    "label": "Language",
+    "vi": "Tiếng Việt",
+    "en": "English"
+  },
+  "button": {
+    "add": "Add new",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset",
+    "export": "Export Excel",
+    "exportCsv": "Export CSV",
+    "import": "Import file",
+    "refresh": "Refresh",
+    "submit": "Submit",
+    "back": "Back",
+    "restore": "Restore",
+    "hide": "Hide",
+    "showHidden": "Show hidden",
+    "viewingHidden": "Viewing hidden",
+    "update": "Update",
+    "create": "Create",
+    "viewDetail": "View detail",
+    "viewAll": "View all",
+    "viewReport": "View report"
+  },
+  "table": {
+    "noData": "No data",
+    "loading": "Loading...",
+    "actions": "Actions",
+    "totalCount": "Total {{count}} records",
+    "totalItems": "Total {{count}} items",
+    "no": "#",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at"
+  },
+  "validation": {
+    "required": "This field is required",
+    "minLength": "At least {{count}} characters",
+    "email": "Invalid email",
+    "passwordMismatch": "Password confirmation does not match",
+    "minLengthPassword": "Password must be at least 6 characters"
+  },
+  "user": {
+    "menu": {
+      "changePassword": "Change password",
+      "logout": "Log out"
+    },
+    "defaultName": "User",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    }
+  },
+  "status": {
+    "item": {
+      "AVAILABLE": "Available",
+      "SOLD": "Sold",
+      "RETURNED": "Returned",
+      "DAMAGED": "Damaged"
+    },
+    "product": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "inStock": "In stock",
+      "lowStock": "Low stock",
+      "outOfStock": "Out of stock"
+    },
+    "order": {
+      "PENDING": "Pending",
+      "COMPLETED": "Completed",
+      "CANCELED": "Canceled"
+    },
+    "warranty": {
+      "RECEIVED": "Received",
+      "FIXING": "Fixing",
+      "FIXED": "Fixed",
+      "RETURNED": "Returned",
+      "UNFIXABLE": "Unfixable"
+    },
+    "payment": {
+      "CASH": "Cash",
+      "TRANSFER": "Bank transfer",
+      "CARD": "Card"
+    },
+    "role": {
+      "ADMIN": "Administrator",
+      "SALES": "Sales",
+      "STOCK": "Warehouse"
+    },
+    "log": {
+      "SUCCESS": "Success",
+      "FAILED": "Failed",
+      "DENIED": "Denied",
+      "UNAUTHORIZED": "Unauthorized",
+      "EXPIRED": "Expired"
+    }
+  },
+  "error": {
+    "system": "System error",
+    "title": "Something went wrong",
+    "reloadHint": "Please try reloading the page.",
+    "reload": "Reload page"
+  },
+  "forbidden": {
+    "title": "Access denied",
+    "subtitle": "You don't have permission to view this page. Please contact an administrator for assistance.",
+    "backHome": "Back to home"
+  },
+  "empty": {
+    "noResults": "No data"
+  },
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "all": "All",
+    "none": "—",
+    "months": "months",
+    "days": "days",
+    "page": "page",
+    "active": "Active",
+    "locked": "Locked"
+  },
+  "footer": "UTC System ©{{year}}"
+}

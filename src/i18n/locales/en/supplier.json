@@ -1,0 +1,57 @@
+{
+  "title": "Suppliers",
+  "subtitle": "Manage the supplier list",
+  "addButton": "Add supplier",
+  "stats": {
+    "total": "Total suppliers",
+    "totalSuffix": "suppliers"
+  },
+  "filter": {
+    "search": "Search name, phone, tax code..."
+  },
+  "col": {
+    "no": "#",
+    "name": "Supplier name",
+    "contact": "Contact person",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "taxCode": "Tax code",
+    "createdAt": "Created at",
+    "actions": "Actions"
+  },
+  "tooltip": {
+    "edit": "Edit",
+    "hide": "Hide supplier",
+    "restore": "Restore"
+  },
+  "softDelete": {
+    "titleRestore": "Restore supplier?",
+    "titleHide": "Hide supplier?",
+    "contentRestore": "Restore supplier \"{{name}}\"?",
+    "contentHide": "Supplier \"{{name}}\" will no longer appear in stock-in lists. You can toggle \"Show hidden\" to see it again.",
+    "successRestore": "Restored",
+    "successHide": "Supplier hidden"
+  },
+  "modal": {
+    "titleEdit": "Edit supplier",
+    "titleAdd": "Add new supplier",
+    "name": "Supplier name",
+    "nameRequired": "Enter supplier name",
+    "namePlaceholder": "ABC Co., Ltd",
+    "contactPerson": "Contact person",
+    "contactPlaceholder": "John Doe",
+    "phone": "Phone number",
+    "phonePlaceholder": "09xxxxxxxx",
+    "email": "Email",
+    "emailPlaceholder": "contact@company.com",
+    "taxCode": "Tax code",
+    "taxCodePlaceholder": "0123456789",
+    "address": "Address",
+    "addressPlaceholder": "Company address...",
+    "successAdd": "Supplier added successfully!",
+    "successEdit": "Supplier updated successfully!"
+  },
+  "totalSuffix": "Total {{count}} suppliers",
+  "empty": "No suppliers"
+}

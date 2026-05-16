@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import { axiosBaseQuery } from '@/config/axiosBaseQuery'
-import type { User, RegisterRequest, UpdateInfoRequest, ResponsePage } from '@/types/api'
+import type { User, CreatedUser, RegisterRequest, UpdateInfoRequest, ResponsePage } from '@/types/api'
 
 export const userApi = createApi({
   reducerPath: 'userApi',
@@ -19,7 +19,7 @@ export const userApi = createApi({
       query: (id) => ({ url: `/user/${id}`, method: 'GET' }),
       providesTags: ['User'],
     }),
-    createUser: builder.mutation<User, RegisterRequest>({
+    createUser: builder.mutation<CreatedUser, RegisterRequest>({
       query: (data) => ({ url: '/user/', method: 'POST', data }),
       invalidatesTags: ['User'],
     }),

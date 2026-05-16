@@ -19,7 +19,7 @@ export const stockApi = createApi({
       }),
       invalidatesTags: ['Stock'],
     }),
-    markDamaged: builder.mutation<void, { imei: string }>({
+    markDamaged: builder.mutation<void, { imei: string; reason: string }>({
       query: (data) => ({ url: '/stock/mark-damaged', method: 'POST', data }),
       invalidatesTags: ['Stock'],
     }),

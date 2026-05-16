@@ -1,0 +1,57 @@
+{
+  "title": "Nhà cung cấp",
+  "subtitle": "Quản lý danh sách nhà cung cấp vật tư",
+  "addButton": "Thêm nhà cung cấp",
+  "stats": {
+    "total": "Tổng nhà cung cấp",
+    "totalSuffix": "NCC"
+  },
+  "filter": {
+    "search": "Tìm tên, SĐT, mã số thuế..."
+  },
+  "col": {
+    "no": "STT",
+    "name": "Tên nhà cung cấp",
+    "contact": "Người liên hệ",
+    "phone": "SĐT",
+    "email": "Email",
+    "address": "Địa chỉ",
+    "taxCode": "Mã số thuế",
+    "createdAt": "Ngày tạo",
+    "actions": "Hành động"
+  },
+  "tooltip": {
+    "edit": "Chỉnh sửa",
+    "hide": "Ẩn nhà cung cấp",
+    "restore": "Khôi phục"
+  },
+  "softDelete": {
+    "titleRestore": "Khôi phục nhà cung cấp?",
+    "titleHide": "Ẩn nhà cung cấp?",
+    "contentRestore": "Khôi phục lại nhà cung cấp \"{{name}}\"?",
+    "contentHide": "Nhà cung cấp \"{{name}}\" sẽ không còn hiển thị trong danh mục nhập kho. Bạn có thể bật \"Hiện đã ẩn\" để xem lại.",
+    "successRestore": "Đã khôi phục",
+    "successHide": "Đã ẩn nhà cung cấp"
+  },
+  "modal": {
+    "titleEdit": "Chỉnh sửa nhà cung cấp",
+    "titleAdd": "Thêm nhà cung cấp mới",
+    "name": "Tên nhà cung cấp",
+    "nameRequired": "Nhập tên nhà cung cấp",
+    "namePlaceholder": "Công ty TNHH ABC",
+    "contactPerson": "Người liên hệ",
+    "contactPlaceholder": "Nguyễn Văn A",
+    "phone": "Số điện thoại",
+    "phonePlaceholder": "09xxxxxxxx",
+    "email": "Email",
+    "emailPlaceholder": "contact@company.com",
+    "taxCode": "Mã số thuế",
+    "taxCodePlaceholder": "0123456789",
+    "address": "Địa chỉ",
+    "addressPlaceholder": "Địa chỉ công ty...",
+    "successAdd": "Thêm nhà cung cấp thành công!",
+    "successEdit": "Cập nhật nhà cung cấp thành công!"
+  },
+  "totalSuffix": "Tổng {{count}} nhà cung cấp",
+  "empty": "Chưa có nhà cung cấp"
+}

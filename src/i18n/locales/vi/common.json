@@ -1,0 +1,134 @@
+{
+  "appTitle": "Hệ thống Quản lý Kho",
+  "language": {
+    "label": "Ngôn ngữ",
+    "vi": "Tiếng Việt",
+    "en": "English"
+  },
+  "button": {
+    "add": "Thêm mới",
+    "edit": "Sửa",
+    "delete": "Xóa",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "close": "Đóng",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "reset": "Đặt lại",
+    "export": "Xuất Excel",
+    "exportCsv": "Xuất CSV",
+    "import": "Nhập file",
+    "refresh": "Làm mới",
+    "submit": "Gửi",
+    "back": "Quay lại",
+    "restore": "Khôi phục",
+    "hide": "Ẩn",
+    "showHidden": "Hiện đã ẩn",
+    "viewingHidden": "Đang xem đã ẩn",
+    "update": "Cập nhật",
+    "create": "Tạo mới",
+    "viewDetail": "Xem chi tiết",
+    "viewAll": "Xem tất cả",
+    "viewReport": "Xem báo cáo"
+  },
+  "table": {
+    "noData": "Không có dữ liệu",
+    "loading": "Đang tải...",
+    "actions": "Thao tác",
+    "totalCount": "Tổng {{count}} bản ghi",
+    "totalItems": "Tổng {{count}} mục",
+    "no": "STT",
+    "createdAt": "Ngày tạo",
+    "updatedAt": "Ngày cập nhật"
+  },
+  "validation": {
+    "required": "Trường này bắt buộc",
+    "minLength": "Tối thiểu {{count}} ký tự",
+    "email": "Email không hợp lệ",
+    "passwordMismatch": "Mật khẩu xác nhận không khớp",
+    "minLengthPassword": "Mật khẩu tối thiểu 6 ký tự"
+  },
+  "user": {
+    "menu": {
+      "changePassword": "Đổi mật khẩu",
+      "logout": "Đăng xuất"
+    },
+    "defaultName": "Người dùng",
+    "greeting": {
+      "morning": "Chào buổi sáng",
+      "afternoon": "Chào buổi chiều",
+      "evening": "Chào buổi tối"
+    }
+  },
+  "status": {
+    "item": {
+      "AVAILABLE": "Còn trong kho",
+      "SOLD": "Đã bán",
+      "RETURNED": "Đã trả lại",
+      "DAMAGED": "Hỏng"
+    },
+    "product": {
+      "active": "Hoạt động",
+      "inactive": "Ngừng bán",
+      "inStock": "Còn hàng",
+      "lowStock": "Sắp hết",
+      "outOfStock": "Hết hàng"
+    },
+    "order": {
+      "PENDING": "Chờ xử lý",
+      "COMPLETED": "Hoàn thành",
+      "CANCELED": "Đã huỷ"
+    },
+    "warranty": {
+      "RECEIVED": "Đã tiếp nhận",
+      "FIXING": "Đang sửa",
+      "FIXED": "Đã sửa xong",
+      "RETURNED": "Đã trả",
+      "UNFIXABLE": "Không sửa được"
+    },
+    "payment": {
+      "CASH": "Tiền mặt",
+      "TRANSFER": "Chuyển khoản",
+      "CARD": "Thẻ"
+    },
+    "role": {
+      "ADMIN": "Quản trị viên",
+      "SALES": "Kinh doanh",
+      "STOCK": "Thủ kho"
+    },
+    "log": {
+      "SUCCESS": "Thành công",
+      "FAILED": "Thất bại",
+      "DENIED": "Bị từ chối",
+      "UNAUTHORIZED": "Không có quyền",
+      "EXPIRED": "Hết hạn"
+    }
+  },
+  "error": {
+    "system": "Lỗi hệ thống",
+    "title": "Đã xảy ra lỗi",
+    "reloadHint": "Vui lòng thử tải lại trang.",
+    "reload": "Tải lại trang"
+  },
+  "forbidden": {
+    "title": "Không có quyền truy cập",
+    "subtitle": "Bạn không có quyền xem trang này. Vui lòng liên hệ quản trị viên nếu cần hỗ trợ.",
+    "backHome": "Về trang chủ"
+  },
+  "empty": {
+    "noResults": "Không có dữ liệu"
+  },
+  "common": {
+    "yes": "Có",
+    "no": "Không",
+    "all": "Tất cả",
+    "none": "—",
+    "months": "tháng",
+    "days": "ngày",
+    "page": "trang",
+    "active": "Active",
+    "locked": "Khoá"
+  },
+  "footer": "Hệ thống UTC ©{{year}}"
+}

@@ -1,0 +1,46 @@
+{
+  "kpi": {
+    "totalProducts": "Tổng sản phẩm",
+    "totalProductsSub": "mặt hàng",
+    "lowStock": "Sắp / Hết hàng",
+    "lowStockSub": "cần nhập",
+    "pendingOrders": "Đơn chờ xử lý",
+    "pendingOrdersSub": "đơn hàng",
+    "totalInventoryValue": "Giá trị tồn kho",
+    "latestUpdate": "Cập nhật mới nhất"
+  },
+  "charts": {
+    "pieTitle": "Phân bổ sản phẩm theo danh mục",
+    "pieTooltipLabel": "Số lượng",
+    "pieTooltipUnit": "{{count}} sản phẩm",
+    "barTitle": "Top sản phẩm theo giá trị tồn kho",
+    "barLegend": "Giá trị (triệu)",
+    "barTooltipLabel": "Giá trị tồn",
+    "barTooltipUnit": "{{count}} triệu ₫"
+  },
+  "lowStock": {
+    "title": "Cảnh báo sắp hết hàng",
+    "empty": "Không có sản phẩm sắp hết hàng 🎉",
+    "colProduct": "Sản phẩm",
+    "colStock": "Tồn / Ngưỡng",
+    "actionImport": "Nhập kho"
+  },
+  "recent": {
+    "title": "Hoạt động gần đây",
+    "empty": "Chưa có hoạt động nào",
+    "userId": "ID {{id}}"
+  },
+  "summary": {
+    "title": "Tóm tắt kho hàng",
+    "inventoryValue": "Giá trị tồn kho",
+    "todayProfit": "Lợi nhuận hôm nay",
+    "activeWarranty": "Bảo hành đang xử lý",
+    "activeWarrantySuffix": "ca",
+    "pendingOrders": "Đơn hàng chờ xử lý",
+    "pendingOrdersSuffix": "đơn"
+  },
+  "actions": {
+    "import": "Nhập kho",
+    "export": "Xuất kho"
+  }
+}

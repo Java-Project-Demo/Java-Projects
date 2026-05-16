@@ -62,6 +62,10 @@ export interface User {
   updatedAt: string
 }
 
+export interface CreatedUser extends User {
+  tempPassword?: string
+}
+
 export interface Supplier {
   id: number
   name: string
@@ -75,10 +79,19 @@ export interface Supplier {
   updatedAt: string
 }
 
+export interface Customer {
+  id: number
+  phoneNumber: string | null
+  fullName: string | null
+  email: string | null
+  address: string | null
+}
+
 export interface OrderItem {
   id: number
   productId: number
-  productName: string
+  productName: string | null
+  productSku?: string | null
   quantity: number
   unitPrice: number
 }
@@ -97,16 +110,17 @@ export interface OrderResponse {
 
 export interface WarrantyResponse {
   id: number
-  productItemId: number
-  customerId: number | null
-  createdBy: number
+  imei: string | null
+  productName: string | null
+  customerName: string | null
+  customerPhone: string | null
   issueDescription: string
+  staffName: string | null
+  staffUsername: string | null
   status: WarrantyStatus
   receivedDate: string
   returnDate: string | null
   technicalNote?: string
-  createdAt: string
-  updatedAt: string
 }
 
 export interface AuditLog {
@@ -117,6 +131,8 @@ export interface AuditLog {
   entityId: string
   status: string
   details: string
+  staffName?: string | null
+  staffUsername?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -204,6 +220,7 @@ export interface OrderRequest {
 
 export interface RegisterRequest {
   fullName: string
+  email?: string
   roleName: string
   status: string
 }
@@ -232,6 +249,15 @@ export interface AiAgentRequest {
 
 // ─── Warehouse / Inventory ────────────────────────────────────────────────────
 
+export interface LocationItemMini {
+  id: number
+  productId: number
+  productName: string | null
+  productSku: string | null
+  imei: string
+  status: ItemStatus
+}
+
 export interface WarehouseLocationResponse {
   id: number
   warehouseId: number
@@ -239,6 +265,7 @@ export interface WarehouseLocationResponse {
   rowNum: string | null
   shelfNum: string | null
   binNum: string | null
+  items: LocationItemMini[]
 }
 
 export interface WarehouseResponse {
@@ -264,3 +291,35 @@ export interface SetupLayoutRequest {
 }
 
 export type DetailStatus = 'MATCH' | 'MISMATCH' | 'MISSING' | 'EXTRA'
+
+export interface InventorySessionResponse {
+  id: number
+  warehouseId: number | null
+  warehouseName: string | null
+  warehouseAddress: string | null
+  createdBy: number
+  createdByUsername: string | null
+  status: 'IN_PROGRESS' | 'COMPLETED'
+  startDate: string
+  endDate: string | null
+}
+
+export interface ScanResultResponse {
+  detailId: number
+  imei: string
+  status: DetailStatus
+  expectedLocId: number | null
+  expectedLocLabel: string | null
+  actualLocId: number | null
+  actualLocLabel: string | null
+  note?: string | null
+}
+
+export interface SessionSummaryResponse {
+  session: InventorySessionResponse
+  matchCount: number
+  mismatchCount: number
+  missingCount: number
+  extraCount: number
+  details: ScanResultResponse[]
+}

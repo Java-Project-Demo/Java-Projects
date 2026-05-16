@@ -1,0 +1,61 @@
+{
+  "title": "System logs",
+  "subtitle": "Track all data changes and user activities",
+  "filter": {
+    "action": "Action",
+    "actionAll": "All actions",
+    "time": "Time",
+    "search": "Search",
+    "searchPlaceholder": "Search ID, content..."
+  },
+  "table": {
+    "time": "Time",
+    "actor": "User",
+    "action": "Action",
+    "entity": "Entity",
+    "refId": "Reference ID",
+    "status": "Status",
+    "details": "Details",
+    "system": "System",
+    "total": "Total {{count}} records"
+  },
+  "action": {
+    "LOGIN": "Sign in",
+    "LOGOUT": "Sign out",
+    "REFRESH_TOKEN": "Refresh session",
+    "CREATE_USER": "Create user",
+    "UPDATE_USER": "Update user",
+    "UPDATE_USER_INFO": "Update personal info",
+    "UPDATE_USER_STATUS": "Update user status",
+    "UPDATE_ROLE": "Change role",
+    "DELETE_USER": "Delete user",
+    "CHANGE_PASSWORD": "Change password",
+    "RESET_PASSWORD": "Reset password",
+    "CREATE_SUPPLIER": "Add supplier",
+    "UPDATE_SUPPLIER": "Update supplier",
+    "DELETE_SUPPLIER": "Delete supplier",
+    "CREATE_CATEGORY": "Add category",
+    "UPDATE_CATEGORY": "Update category",
+    "DELETE_CATEGORY": "Delete category",
+    "CREATE_PRODUCT": "Add product",
+    "UPDATE_PRODUCT": "Update product",
+    "DELETE_PRODUCT": "Delete product",
+    "CREATE_WAREHOUSE": "Set up warehouse",
+    "IMPORT_STOCK": "Stock in",
+    "ADJUST_STOCK": "Adjust stock",
+    "MARK_DAMAGED": "Mark damaged",
+    "CREATE_ORDER": "Create order",
+    "CANCEL_ORDER": "Cancel order",
+    "COMPLETE_ORDER": "Complete order",
+    "RETURN_ORDER": "Customer return",
+    "RECEIVE_WARRANTY": "Receive warranty"
+  },
+  "entity": {
+    "PRODUCT": "Product",
+    "PRODUCT_ITEM": "IMEI",
+    "ORDER": "Order",
+    "SUPPLIER": "Supplier",
+    "WAREHOUSE": "Warehouse",
+    "AUTH": "Authentication"
+  }
+}

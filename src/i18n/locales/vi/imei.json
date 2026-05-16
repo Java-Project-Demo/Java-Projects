@@ -1,0 +1,41 @@
+{
+  "title": "Tra cứu IMEI",
+  "subtitle": "Theo dõi toàn bộ lịch sử của một thiết bị theo mã IMEI",
+  "input": {
+    "placeholder": "Nhập mã IMEI để tra cứu...",
+    "submit": "Tra cứu"
+  },
+  "intro": "Nhập IMEI để xem thông tin thiết bị",
+  "notFound": {
+    "title": "Không tìm thấy IMEI: <0>{{imei}}</0>",
+    "description": "IMEI này chưa được đăng ký trong hệ thống"
+  },
+  "overview": {
+    "imei": "IMEI",
+    "status": "Trạng thái",
+    "product": "Sản phẩm"
+  },
+  "product": {
+    "title": "Thông tin sản phẩm",
+    "name": "Tên sản phẩm",
+    "sku": "SKU",
+    "warrantyPeriod": "Thời hạn BH",
+    "importDate": "Ngày nhập kho",
+    "empty": "Không có thông tin sản phẩm"
+  },
+  "sale": {
+    "title": "Thông tin bán hàng",
+    "customer": "Khách hàng",
+    "phone": "SĐT",
+    "saleDate": "Ngày bán",
+    "salePrice": "Giá bán",
+    "paymentMethod": "Thanh toán",
+    "empty": "Chưa được bán"
+  },
+  "warranty": {
+    "title": "Lịch sử bảo hành",
+    "received": "Nhận",
+    "returned": "Trả",
+    "empty": "Chưa có lịch sử bảo hành"
+  }
+}

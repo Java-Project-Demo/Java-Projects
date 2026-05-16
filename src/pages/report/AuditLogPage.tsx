@@ -2,75 +2,34 @@ import { Card, DatePicker, Input, Select, Space, Table, Tag, Typography } from '
 import { useState } from 'react'
 import { SearchOutlined, UserOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
 import PageHeader from '@/components/shared/PageHeader.tsx'
 import { useGetAuditLogsQuery } from '@/features/auditLog/auditLogApi.ts'
+import type { AuditLog } from '@/types/api'
 
 const { Text } = Typography
 const { RangePicker } = DatePicker
 
-const ACTION_CONFIG: Record<string, { label: string; color: string }> = {
-  // --- AUTH ---
-  LOGIN: { label: 'Đăng nhập', color: 'magenta' },
-  LOGOUT: { label: 'Đăng xuất', color: 'magenta' },
-  REFRESH_TOKEN: { label: 'Làm mới phiên', color: 'purple' },
-
-  // --- USER ---
-  CREATE_USER: { label: 'Tạo người dùng', color: 'green' },
-  UPDATE_USER: { label: 'Cập nhật người dùng', color: 'blue' },
-  UPDATE_USER_INFO: { label: 'Cập nhật thông tin cá nhân', color: 'blue' },
-  UPDATE_USER_STATUS: { label: 'Cập nhật trạng thái người dùng', color: 'cyan' },
-  UPDATE_ROLE: { label: 'Thay đổi quyền hạn', color: 'geekblue' },
-  DELETE_USER: { label: 'Xoá người dùng', color: 'red' },
-  CHANGE_PASSWORD: { label: 'Đổi mật khẩu', color: 'gold' },
-  RESET_PASSWORD: { label: 'Đặt lại mật khẩu', color: 'volcano' },
-
-  // --- SUPPLIER ---
-  CREATE_SUPPLIER: { label: 'Thêm nhà cung cấp', color: 'green' },
-  UPDATE_SUPPLIER: { label: 'Cập nhật nhà cung cấp', color: 'blue' },
-  DELETE_SUPPLIER: { label: 'Xoá nhà cung cấp', color: 'red' },
-
-  // --- CATEGORY ---
-  CREATE_CATEGORY: { label: 'Thêm danh mục', color: 'green' },
-  UPDATE_CATEGORY: { label: 'Cập nhật danh mục', color: 'blue' },
-  DELETE_CATEGORY: { label: 'Xoá danh mục', color: 'red' },
-
-  // --- WAREHOUSE / PRODUCT ---
-  CREATE_PRODUCT: { label: 'Thêm sản phẩm', color: 'green' },
-  UPDATE_PRODUCT: { label: 'Cập nhật sản phẩm', color: 'blue' },
-  DELETE_PRODUCT: { label: 'Xoá sản phẩm', color: 'red' },
-  CREATE_WAREHOUSE: { label: 'Thiết lập kho hàng', color: 'green' },
-  IMPORT_STOCK: { label: 'Nhập kho', color: 'blue' },
-  ADJUST_STOCK: { label: 'Điều chỉnh tồn kho', color: 'purple' },
-  MARK_DAMAGED: { label: 'Báo hàng hỏng', color: 'volcano' },
-
-  // --- ORDER ---
-  CREATE_ORDER: { label: 'Tạo đơn hàng', color: 'green' },
-  CANCEL_ORDER: { label: 'Huỷ đơn hàng', color: 'red' },
-  COMPLETE_ORDER: { label: 'Hoàn thành đơn hàng', color: 'cyan' },
-  RETURN_ORDER: { label: 'Khách trả hàng', color: 'orange' },
-
-  // --- WARRANTY ---
-  RECEIVE_WARRANTY: { label: 'Tiếp nhận bảo hành', color: 'gold' }
+const ACTION_COLORS: Record<string, string> = {
+  LOGIN: 'magenta', LOGOUT: 'magenta', REFRESH_TOKEN: 'purple',
+  CREATE_USER: 'green', UPDATE_USER: 'blue', UPDATE_USER_INFO: 'blue',
+  UPDATE_USER_STATUS: 'cyan', UPDATE_ROLE: 'geekblue', DELETE_USER: 'red',
+  CHANGE_PASSWORD: 'gold', RESET_PASSWORD: 'volcano',
+  CREATE_SUPPLIER: 'green', UPDATE_SUPPLIER: 'blue', DELETE_SUPPLIER: 'red',
+  CREATE_CATEGORY: 'green', UPDATE_CATEGORY: 'blue', DELETE_CATEGORY: 'red',
+  CREATE_PRODUCT: 'green', UPDATE_PRODUCT: 'blue', DELETE_PRODUCT: 'red',
+  CREATE_WAREHOUSE: 'green', IMPORT_STOCK: 'blue', ADJUST_STOCK: 'purple',
+  MARK_DAMAGED: 'volcano',
+  CREATE_ORDER: 'green', CANCEL_ORDER: 'red', COMPLETE_ORDER: 'cyan', RETURN_ORDER: 'orange',
+  RECEIVE_WARRANTY: 'gold'
 }
 
-const ENTITY_CONFIG: Record<string, string> = {
-  PRODUCT: 'Sản phẩm',
-  PRODUCT_ITEM: 'IMEI',
-  ORDER: 'Đơn hàng',
-  SUPPLIER: 'Nhà cung cấp',
-  WAREHOUSE: 'Kho hàng',
-  AUTH: 'Xác thực hệ thống',
-}
-
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  SUCCESS: { label: 'Thành công', color: 'green' },
-  FAILED: { label: 'Thất bại', color: 'red' },
-  DENIED: { label: 'Bị từ chối', color: 'volcano' },
-  UNAUTHORIZED: { label: 'Không có quyền', color: 'purple' },
-  EXPIRED: { label: 'Hết hạn', color: 'orange' }
+const STATUS_COLORS: Record<string, string> = {
+  SUCCESS: 'green', FAILED: 'red', DENIED: 'volcano', UNAUTHORIZED: 'purple', EXPIRED: 'orange'
 }
 
 const AuditLogPage = () => {
+  const { t } = useTranslation(['auditLog', 'common'])
   const [filters, setFilters] = useState({
     page: 0,
     size: 50,
@@ -82,85 +41,94 @@ const AuditLogPage = () => {
 
   const columns = [
     {
-      title: 'Thời gian',
+      title: t('table.time'),
       dataIndex: 'createdAt',
       key: 'createdAt',
       width: 180,
       render: (v: string) => <Text type='secondary'>{v ? dayjs(v).format('DD/MM/YYYY HH:mm:ss') : '-'}</Text>
     },
     {
-      title: 'Người thực hiện',
-      dataIndex: 'actorName',
+      title: t('table.actor'),
       key: 'actor',
-      width: 180,
-      render: (v: string) => (
-        <Space>
-          <UserOutlined style={{ fontSize: 12 }} />
-          <Text strong>{v || 'Hệ thống'}</Text>
-        </Space>
-      )
+      width: 200,
+      render: (_: unknown, r: AuditLog) => {
+        const name = r.staffName ?? r.staffUsername
+        return (
+          <Space>
+            <UserOutlined style={{ fontSize: 12 }} />
+            <div style={{ lineHeight: 1.3 }}>
+              <Text strong>{name ?? t('table.system')}</Text>
+              {r.staffName && r.staffUsername && (
+                <div>
+                  <Text type='secondary' style={{ fontSize: 11 }}>@{r.staffUsername}</Text>
+                </div>
+              )}
+            </div>
+          </Space>
+        )
+      }
     },
     {
-      title: 'Hành động',
+      title: t('table.action'),
       dataIndex: 'action',
       key: 'action',
       width: 180,
       render: (v: string) => {
-        const config = ACTION_CONFIG[v] || { label: v, color: 'default' }
-        return <Tag color={config.color}>{config.label}</Tag>
+        const color = ACTION_COLORS[v] ?? 'default'
+        const label = t(`action.${v}`, { defaultValue: v })
+        return <Tag color={color}>{label}</Tag>
       }
     },
     {
-      title: 'Đối tượng',
+      title: t('table.entity'),
       dataIndex: 'entityName',
       key: 'entity',
       width: 180,
-      render: (v: string) => <Tag>{ENTITY_CONFIG[v] || v}</Tag>
+      render: (v: string) => <Tag>{t(`entity.${v}`, { defaultValue: v })}</Tag>
     },
     {
-      title: 'ID Tham chiếu',
+      title: t('table.refId'),
       dataIndex: 'entityId',
       key: 'ref',
       width: 180,
       render: (v: string) => <Text code>{v}</Text>
     },
     {
-      title: 'Trạng thái',
+      title: t('table.status'),
       dataIndex: 'status',
       key: 'status',
       width: 110,
       render: (v: string) => {
-        const config = STATUS_CONFIG[v] || { label: v, color: 'default' }
-        return <Tag color={config.color}>{config.label}</Tag>
+        const color = STATUS_COLORS[v] ?? 'default'
+        const label = t(`common:status.log.${v}`, { defaultValue: v })
+        return <Tag color={color}>{label}</Tag>
       }
     },
     {
-      title: 'Nội dung chi tiết',
+      title: t('table.details'),
       dataIndex: 'details',
       key: 'message',
       render: (v: string) => <Text italic>{v}</Text>
     }
   ]
+
   return (
     <div>
-      <PageHeader
-        title='Nhật ký hệ thống'
-        subtitle='Theo dõi toàn bộ biến động dữ liệu và lịch sử thao tác của người dùng'
-      />
+      <PageHeader title={t('title')} subtitle={t('subtitle')} />
 
       <Card style={{ marginBottom: 16, borderRadius: 12 }}>
         <Space wrap size={16}>
           <div>
             <div style={{ marginBottom: 4 }}>
-              <Text type='secondary'>Hành động</Text>
+              <Text type='secondary'>{t('filter.action')}</Text>
             </div>
             <Select
               allowClear
-              placeholder='Tất cả hành động'
+              placeholder={t('filter.actionAll')}
               style={{ width: 180 }}
-              options={Object.keys(ACTION_CONFIG).map((key) => ({
+              options={Object.keys(ACTION_COLORS).map((key) => ({
                 value: key,
-                label: ACTION_CONFIG[key].label
+                label: t(`action.${key}`, { defaultValue: key })
               }))}
               onChange={(v) => setFilters({ ...filters, action: v })}
             />
@@ -168,16 +136,16 @@ const AuditLogPage = () => {
 
           <div>
             <div style={{ marginBottom: 4 }}>
-              <Text type='secondary'>Thời gian</Text>
+              <Text type='secondary'>{t('filter.time')}</Text>
             </div>
             <RangePicker showTime />
           </div>
 
           <div>
             <div style={{ marginBottom: 4 }}>
-              <Text type='secondary'>Tìm kiếm</Text>
+              <Text type='secondary'>{t('filter.search')}</Text>
             </div>
-            <Input prefix={<SearchOutlined />} placeholder='Tìm ID, nội dung...' style={{ width: 250 }} />
+            <Input prefix={<SearchOutlined />} placeholder={t('filter.searchPlaceholder')} style={{ width: 250 }} />
           </div>
         </Space>
       </Card>
@@ -194,7 +162,7 @@ const AuditLogPage = () => {
             current: filters.page + 1,
             onChange: (p, s) => setFilters({ ...filters, page: p - 1, size: s }),
             showSizeChanger: true,
-            showTotal: (total) => `Tổng cộng ${total} bản ghi`
+            showTotal: (total) => t('table.total', { count: total })
           }}
         />
       </Card>

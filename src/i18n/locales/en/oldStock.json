@@ -1,0 +1,33 @@
+{
+  "title": "Aged stock report",
+  "subtitle": "IMEIs in stock for a long time without being sold",
+  "filter": {
+    "label": "Show IMEIs older than",
+    "unit": "days",
+    "submit": "Load report"
+  },
+  "tableTitle": "Aged stock ({{count}} IMEIs)",
+  "col": {
+    "imei": "IMEI",
+    "importDate": "Import date",
+    "daysOld": "Days in stock",
+    "status": "Status",
+    "action": "Action",
+    "daysSuffix": "days"
+  },
+  "markDamaged": {
+    "button": "Mark damaged",
+    "title": "Mark damaged",
+    "content": "You're about to mark IMEI {{imei}} as damaged. Please provide a reason:",
+    "reasonLabel": "Damage reason",
+    "reasonPlaceholder": "e.g. Cracked screen, won't power on, water damage, missing accessories...",
+    "reasonRequired": "Reason is required",
+    "reasonMin": "Reason must be at least 5 characters",
+    "success": "IMEI {{imei}} marked as damaged"
+  },
+  "totalSuffix": "{{count}} IMEIs",
+  "empty": {
+    "title": "No data",
+    "description": "Click \"Load report\" to view aged stock"
+  }
+}

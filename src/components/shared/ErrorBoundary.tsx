@@ -1,8 +1,10 @@
 import { Component } from 'react'
 import type { ReactNode, ErrorInfo } from 'react'
 import { Button, Result } from 'antd'
+import { withTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
-interface Props { children: ReactNode }
+interface Props { children: ReactNode; t: TFunction }
 interface State { hasError: boolean; message: string }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -17,15 +19,16 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   render() {
+    const { t } = this.props
     if (this.state.hasError) {
       return (
         <Result
           status='error'
-          title='Đã xảy ra lỗi'
-          subTitle={this.state.message || 'Vui lòng thử tải lại trang.'}
+          title={t('error.title')}
+          subTitle={this.state.message || t('error.reloadHint')}
           extra={
             <Button type='primary' onClick={() => window.location.reload()}>
-              Tải lại trang
+              {t('error.reload')}
             </Button>
           }
         />
@@ -35,4 +38,4 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default ErrorBoundary
+export default withTranslation('common')(ErrorBoundary)

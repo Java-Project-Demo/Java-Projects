@@ -1,0 +1,64 @@
+{
+  "title": "Quản lý nhân viên",
+  "addButton": "Thêm nhân viên",
+  "filter": {
+    "search": "Tìm tên, username...",
+    "role": "Vai trò"
+  },
+  "col": {
+    "user": "Nhân viên",
+    "email": "Email",
+    "phone": "Điện thoại",
+    "role": "Vai trò",
+    "status": "Trạng thái",
+    "resetPwd": "Đặt lại MK",
+    "createdAt": "Ngày tạo",
+    "actions": "Hành động"
+  },
+  "tooltip": {
+    "edit": "Sửa thông tin",
+    "resetPassword": "Đặt lại mật khẩu"
+  },
+  "statusBadge": {
+    "reset": "Đã đặt lại",
+    "notReset": "Chưa"
+  },
+  "create": {
+    "title": "Thêm nhân viên mới",
+    "fullName": "Họ và tên",
+    "fullNameRequired": "Nhập họ tên",
+    "fullNamePlaceholder": "Nguyễn Văn A",
+    "email": "Email",
+    "emailInvalid": "Email không hợp lệ",
+    "emailPlaceholder": "nhanvien@congty.com (tuỳ chọn)",
+    "role": "Vai trò",
+    "roleRequired": "Chọn vai trò",
+    "hint": "Username và mật khẩu tạm thời sẽ được hệ thống tự tạo từ họ tên.",
+    "submit": "Tạo nhân viên",
+    "success": "Tạo nhân viên thành công!"
+  },
+  "edit": {
+    "title": "Cập nhật thông tin",
+    "fullName": "Họ và tên",
+    "phone": "Số điện thoại",
+    "phonePlaceholder": "09xxxxxxxx",
+    "submit": "Cập nhật",
+    "success": "Cập nhật thành công!"
+  },
+  "reset": {
+    "title": "Đặt lại mật khẩu",
+    "confirm": "Bạn có chắc muốn đặt lại mật khẩu cho <0>{{username}}</0>?",
+    "tempIntro": "Mật khẩu tạm thời cho <0>{{username}}</0>:",
+    "tempNote": "Nhân viên cần đổi mật khẩu khi đăng nhập lần tiếp theo.",
+    "submit": "Xác nhận đặt lại",
+    "fail": "Lỗi reset mật khẩu"
+  },
+  "toggleStatus": {
+    "successUnlock": "Đã mở khoá tài khoản {{username}}",
+    "successLock": "Đã khoá tài khoản {{username}}"
+  },
+  "changeRole": {
+    "success": "Đã chuyển vai trò của {{username}} sang {{role}}"
+  },
+  "totalSuffix": "Tổng {{count}} nhân viên"
+}

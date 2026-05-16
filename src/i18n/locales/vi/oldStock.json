@@ -1,0 +1,33 @@
+{
+  "title": "Báo cáo tồn kho cũ",
+  "subtitle": "Danh sách IMEI tồn kho lâu ngày chưa được bán",
+  "filter": {
+    "label": "Hiển thị IMEI tồn kho hơn",
+    "unit": "ngày",
+    "submit": "Tải báo cáo"
+  },
+  "tableTitle": "Tồn kho cũ ({{count}} IMEI)",
+  "col": {
+    "imei": "IMEI",
+    "importDate": "Ngày nhập",
+    "daysOld": "Số ngày tồn",
+    "status": "Trạng thái",
+    "action": "Hành động",
+    "daysSuffix": "ngày"
+  },
+  "markDamaged": {
+    "button": "Đánh dấu hỏng",
+    "title": "Đánh dấu hỏng",
+    "content": "Xác nhận đánh dấu IMEI {{imei}} là hàng hỏng. Vui lòng nhập lý do bên dưới:",
+    "reasonLabel": "Lý do hỏng",
+    "reasonPlaceholder": "VD: Màn hình vỡ, không lên nguồn, vào nước, mất phụ kiện...",
+    "reasonRequired": "Vui lòng nhập lý do hỏng",
+    "reasonMin": "Lý do tối thiểu 5 ký tự",
+    "success": "Đã đánh dấu IMEI {{imei}} là hàng hỏng"
+  },
+  "totalSuffix": "{{count}} IMEI",
+  "empty": {
+    "title": "Không có dữ liệu",
+    "description": "Nhấn \"Tải báo cáo\" để xem danh sách tồn kho cũ"
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "page": {
+    "title": "Quản lý kho hàng"
+  },
+  "stats": {
+    "totalProducts": "Tổng sản phẩm",
+    "totalProductsSub": "mặt hàng",
+    "lowStock": "Cần chú ý",
+    "lowStockSub": "sắp hết",
+    "outOfStock": "Hết hàng",
+    "outOfStockSub": "mặt hàng",
+    "active": "Đang hoạt động",
+    "activeSub": "sản phẩm"
+  },
+  "filter": {
+    "search": "Tìm tên, mã SKU...",
+    "category": "Danh mục",
+    "status": "Trạng thái"
+  },
+  "col": {
+    "no": "STT",
+    "product": "Sản phẩm",
+    "category": "Danh mục",
+    "image": "Hình Ảnh",
+    "stock": "Tồn kho",
+    "stockThreshold": "{{stock}} / ngưỡng {{threshold}}",
+    "priceImport": "Giá nhập",
+    "priceExport": "Giá xuất",
+    "margin": "Lãi gộp",
+    "status": "Trạng thái",
+    "imei": "IMEI",
+    "active": "Hoạt động",
+    "actions": "Hành động"
+  },
+  "table": {
+    "totalSummary": "{{start}}-{{end}} / {{total}}"
+  },
+  "tooltip": {
+    "activate": "Kích hoạt",
+    "deactivate": "Ngừng bán",
+    "edit": "Chỉnh sửa",
+    "hide": "Ẩn sản phẩm",
+    "restore": "Khôi phục"
+  },
+  "softDelete": {
+    "titleRestore": "Khôi phục sản phẩm?",
+    "titleHide": "Ẩn sản phẩm?",
+    "contentRestore": "Khôi phục sản phẩm \"{{name}}\" — sẽ hiển thị lại trong danh sách.",
+    "contentHide": "Sản phẩm \"{{name}}\" sẽ được ẩn khỏi danh mục bán hàng. Tồn kho hiện tại không bị thay đổi.",
+    "successRestore": "Đã khôi phục sản phẩm",
+    "successHide": "Đã ẩn sản phẩm"
+  },
+  "toggleStatus": {
+    "success": "Đã {{action}} sản phẩm",
+    "activate": "kích hoạt",
+    "deactivate": "ngừng bán"
+  },
+  "modal": {
+    "titleEdit": "Chỉnh sửa sản phẩm",
+    "titleAdd": "Thêm sản phẩm mới",
+    "name": "Tên sản phẩm",
+    "namePlaceholder": "Nhập tên sản phẩm",
+    "nameRequired": "Vui lòng nhập tên",
+    "sku": "Mã SKU",
+    "skuPlaceholder": "SP-XXXXX",
+    "skuRequired": "Vui lòng nhập SKU",
+    "category": "Danh mục",
+    "categoryPlaceholder": "Chọn danh mục",
+    "categoryRequired": "Chọn danh mục",
+    "status": "Trạng thái",
+    "priceImport": "Giá nhập",
+    "priceImportRequired": "Nhập giá nhập",
+    "priceExport": "Giá xuất",
+    "priceExportRequired": "Nhập giá xuất",
+    "currentStock": "Tồn kho ban đầu",
+    "minThreshold": "Ngưỡng cảnh báo ⓘ",
+    "minThresholdTooltip": "Khi tồn kho xuống dưới mức này sẽ hiện cảnh báo",
+    "warrantyPeriod": "Bảo hành (tháng)",
+    "warrantyPeriodSuffix": "tháng",
+    "hasImei": "Theo dõi IMEI ⓘ",
+    "hasImeiTooltip": "Sản phẩm có số IMEI riêng (điện thoại, laptop, v.v.)",
+    "specifications": "Thông số kỹ thuật",
+    "specificationsPlaceholder": "Mô tả thông số (không bắt buộc)",
+    "image": "Hình ảnh sản phẩm",
+    "uploading": "Đang tải...",
+    "uploadLabel": "Tải ảnh",
+    "uploadSuccess": "Tải ảnh lên thành công",
+    "uploadFail": "Upload ảnh thất bại",
+    "successAdd": "Thêm sản phẩm thành công!",
+    "successEdit": "Cập nhật sản phẩm thành công!",
+    "previewTitle": "Xem ảnh sản phẩm"
+  },
+  "drawer": {
+    "tabInfo": "Thông tin",
+    "tabHistory": "Lịch sử nhập/xuất",
+    "edit": "Sửa",
+    "stock": "Tồn kho",
+    "priceImport": "Giá nhập",
+    "priceExport": "Giá xuất",
+    "margin": "Lãi gộp",
+    "fieldSku": "Mã SKU",
+    "fieldCategory": "Danh mục",
+    "fieldThreshold": "Ngưỡng cảnh báo",
+    "fieldWarranty": "Thời hạn BH",
+    "fieldHasImei": "Theo dõi IMEI",
+    "fieldStatus": "Trạng thái",
+    "fieldSpecs": "Thông số",
+    "imeiList": "Danh sách IMEI ({{count}})",
+    "imeiColImei": "IMEI",
+    "imeiColStatus": "Trạng thái",
+    "historyColAction": "Hành động",
+    "historyColStatus": "Trạng thái",
+    "historyColTime": "Thời gian",
+    "historyEmpty": "Chưa có lịch sử hoạt động"
+  },
+  "empty": {
+    "title": "Không có sản phẩm nào",
+    "action": "Thêm sản phẩm"
+  },
+  "csv": {
+    "headerId": "ID",
+    "headerSku": "SKU",
+    "headerName": "Tên sản phẩm",
+    "headerCategory": "Danh mục",
+    "headerPriceImport": "Giá nhập",
+    "headerPriceExport": "Giá xuất",
+    "headerStock": "Tồn kho",
+    "headerThreshold": "Ngưỡng",
+    "headerStatus": "Trạng thái"
+  },
+  "category": {
+    "title": "Danh mục vật tư",
+    "addButton": "Thêm danh mục",
+    "colNo": "STT",
+    "colName": "Tên danh mục",
+    "colDescription": "Mô tả",
+    "colCount": "Số sản phẩm",
+    "countSuffix": "{{count}} SP",
+    "softDelete": {
+      "titleRestore": "Khôi phục danh mục?",
+      "titleHide": "Ẩn danh mục?",
+      "contentRestore": "Khôi phục lại danh mục \"{{name}}\"?",
+      "contentHide": "Danh mục \"{{name}}\" sẽ bị ẩn. Sản phẩm thuộc danh mục này không bị xoá.",
+      "successRestore": "Đã khôi phục",
+      "successHide": "Đã ẩn danh mục"
+    },
+    "tooltip": {
+      "edit": "Chỉnh sửa",
+      "hide": "Ẩn danh mục",
+      "restore": "Khôi phục"
+    },
+    "modal": {
+      "titleEdit": "Chỉnh sửa danh mục",
+      "titleAdd": "Thêm danh mục mới",
+      "name": "Tên danh mục",
+      "namePlaceholder": "Nhập tên danh mục",
+      "nameRequired": "Vui lòng nhập tên danh mục",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "Mô tả ngắn về danh mục (không bắt buộc)",
+      "successAdd": "Thêm danh mục thành công!",
+      "successEdit": "Cập nhật danh mục thành công!"
+    },
+    "totalSuffix": "Tổng {{count}} danh mục"
+  },
+  "barcode": {
+    "breadcrumb": "In Barcode",
+    "title": "In Barcode sản phẩm",
+    "selectCard": "Chọn sản phẩm ({{count}} đã chọn)",
+    "clearSelection": "Bỏ chọn tất cả",
+    "searchPlaceholder": "Tìm tên sản phẩm, SKU...",
+    "previewCard": "Xem trước & In",
+    "printButton": "In",
+    "printSuffix": "({{count}} bản)",
+    "printWarning": "Chọn ít nhất một sản phẩm",
+    "printing": "Đang in {{count}} loại barcode...",
+    "selectHint": "Chọn sản phẩm để xem trước barcode",
+    "colProduct": "Sản phẩm",
+    "colCategory": "Danh mục",
+    "colStock": "Tồn kho",
+    "colCopies": "Số bản in",
+    "copies": "x{{count}} bản in",
+    "totalSuffix": "{{count}} sản phẩm",
+    "header": "Warehouse Management System"
+  }
+}

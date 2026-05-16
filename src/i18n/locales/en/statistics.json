@@ -1,0 +1,48 @@
+{
+  "title": "Reports & Statistics",
+  "tabs": {
+    "overview": "Overview",
+    "logs": "Activity logs",
+    "aging": "Aged stock"
+  },
+  "kpi": {
+    "totalProducts": "Total products",
+    "totalProductsSub": "items",
+    "lowStock": "Low / Out of stock",
+    "lowStockSub": "need restock",
+    "todayRevenue": "Today's revenue",
+    "todayProfit": "Today's profit"
+  },
+  "categoryStock": {
+    "title": "Stock by category",
+    "empty": "No data yet"
+  },
+  "lowStockTable": {
+    "title": "Low / Out of stock products",
+    "empty": "All products are in good stock",
+    "colProduct": "Product",
+    "colStock": "Stock",
+    "colThreshold": "Threshold",
+    "colShortage": "Shortage"
+  },
+  "logs": {
+    "filterAction": "Action type",
+    "filterStatus": "Status",
+    "dateFrom": "From date",
+    "dateTo": "To date",
+    "actionOptions": {
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "import": "Stock in",
+      "order": "Stock out / Order"
+    },
+    "colTime": "Time",
+    "colUser": "User",
+    "colAction": "Action",
+    "colEntity": "Entity",
+    "colStatus": "Status",
+    "colDetails": "Details",
+    "userId": "ID #{{id}}"
+  }
+}

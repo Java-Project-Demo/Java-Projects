@@ -1,20 +1,31 @@
 import type { ReactNode } from 'react'
-import { Result } from 'antd'
+import { Button, Result } from 'antd'
+import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '@/app/hooks'
+import type { URole } from '@/config/rolePermissions'
 
 interface RoleRouteProps {
-  allowedRoles: string[]
+  allowedRoles: URole[]
   children: ReactNode
 }
 
 const RoleRoute = ({ allowedRoles, children }: RoleRouteProps) => {
   const user = useAppSelector((s) => s.auth.user)
-  if (!user || !allowedRoles.includes(user.role)) {
+  const navigate = useNavigate()
+  const { t } = useTranslation('common')
+
+  if (!user || !(allowedRoles as string[]).includes(user.role)) {
     return (
       <Result
         status='403'
-        title='Không có quyền truy cập'
-        subTitle='Bạn không có quyền xem trang này. Vui lòng liên hệ quản trị viên.'
+        title={t('forbidden.title')}
+        subTitle={t('forbidden.subtitle')}
+        extra={
+          <Button type='primary' onClick={() => navigate('/')}>
+            {t('forbidden.backHome')}
+          </Button>
+        }
       />
     )
   }

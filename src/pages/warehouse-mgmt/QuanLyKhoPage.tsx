@@ -1,15 +1,17 @@
 import { useMemo, useState } from 'react'
 import {
-  App, Badge, Button, Card, Col, Drawer, Empty, Form, Input, InputNumber, Modal,
-  Row, Select, Space, Statistic, Table, Tabs, Tag, Tooltip, Typography,
+  App, Button, Card, Col, Drawer, Empty, Form, Input, InputNumber, Modal,
+  Popover, Row, Space, Statistic, Table, Tabs, Tag, Tooltip, Typography,
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
   PlusOutlined, AppstoreAddOutlined, SwapOutlined, ShopOutlined,
   EnvironmentOutlined, BarcodeOutlined,
 } from '@ant-design/icons'
+import { Trans, useTranslation } from 'react-i18next'
 import PageHeader from '@/components/shared/PageHeader'
 import EmptyState from '@/components/shared/EmptyState'
+import BinPickerGrid from '@/components/shared/BinPickerGrid'
 import {
   useGetMapQuery,
   useCreateWarehouseMutation,
@@ -38,13 +40,9 @@ interface MoveItemForm {
   targetLocId: number
 }
 
-const formatBin = (loc: WarehouseLocationResponse) => {
-  const parts = [loc.zoneName, loc.rowNum, loc.shelfNum, loc.binNum].filter(Boolean)
-  return parts.length > 0 ? parts.join('-') : `#${loc.id}`
-}
-
 const QuanLyKhoPage = () => {
   const { message } = App.useApp()
+  const { t } = useTranslation(['warehouse', 'common'])
   const [createOpen, setCreateOpen] = useState(false)
   const [layoutTarget, setLayoutTarget] = useState<WarehouseResponse | null>(null)
   const [moveTarget, setMoveTarget] = useState<WarehouseResponse | null>(null)
@@ -80,11 +78,11 @@ const QuanLyKhoPage = () => {
     createForm.validateFields().then(async (values) => {
       try {
         const created = await createWarehouse(values).unwrap()
-        void message.success(`Đã tạo kho "${created.name}"`)
+        void message.success(t('create.success', { name: created.name }))
         setCreateOpen(false)
       } catch (err: unknown) {
         const e = err as { data?: { message?: string } }
-        void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+        void message.error(e?.data?.message ?? t('common:error.system'))
       }
     })
   }
@@ -106,13 +104,15 @@ const QuanLyKhoPage = () => {
           shelfCount: values.shelfCount,
           binCount: values.binCount,
         }).unwrap()
-        void message.success(
-          `Đã tạo ${values.shelfCount * values.binCount} bin cho zone ${values.zone} - row ${values.row}`,
-        )
+        void message.success(t('layout.success', {
+          count: values.shelfCount * values.binCount,
+          zone: values.zone,
+          row: values.row,
+        }))
         setLayoutTarget(null)
       } catch (err: unknown) {
         const e = err as { data?: { message?: string } }
-        void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+        void message.error(e?.data?.message ?? t('common:error.system'))
       }
     })
   }
@@ -126,18 +126,18 @@ const QuanLyKhoPage = () => {
     moveForm.validateFields().then(async (values) => {
       try {
         await moveItem({ imei: values.imei.trim(), targetLocId: values.targetLocId }).unwrap()
-        void message.success('Đã di chuyển IMEI sang vị trí mới')
+        void message.success(t('move.success'))
         setMoveTarget(null)
       } catch (err: unknown) {
         const e = err as { data?: { message?: string } }
-        void message.error(e?.data?.message ?? 'Lỗi hệ thống')
+        void message.error(e?.data?.message ?? t('common:error.system'))
       }
     })
   }
 
   const warehouseColumns: ColumnsType<WarehouseResponse> = [
     {
-      title: 'Kho', dataIndex: 'name', key: 'name',
+      title: t('col.warehouse'), dataIndex: 'name', key: 'name',
       render: (v: string, r) => (
         <Space>
           <div style={{ width: 36, height: 36, borderRadius: 8, background: `${PRIMARY}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -151,11 +151,11 @@ const QuanLyKhoPage = () => {
       ),
     },
     {
-      title: 'Số bin', key: 'bins', width: 120,
+      title: t('col.bins'), key: 'bins', width: 120,
       render: (_, r) => <Tag color='blue'>{r.locations.length}</Tag>,
     },
     {
-      title: 'Zones', key: 'zones', width: 200,
+      title: t('col.zones'), key: 'zones', width: 200,
       render: (_, r) => {
         const zones = Array.from(new Set(r.locations.map((l) => l.zoneName).filter(Boolean)))
         return zones.length > 0
@@ -164,19 +164,19 @@ const QuanLyKhoPage = () => {
       },
     },
     {
-      title: 'Hành động', key: 'action', width: 320,
+      title: t('col.actions'), key: 'action', width: 320,
       render: (_, r) => (
         <Space size={4}>
-          <Tooltip title='Xem chi tiết bin'>
+          <Tooltip title={t('tooltip.map')}>
             <Button size='small' icon={<EnvironmentOutlined />} onClick={() => setDrawerWarehouse(r)}>
-              Bản đồ
+              {t('actions.map')}
             </Button>
           </Tooltip>
           <Button size='small' type='primary' ghost icon={<AppstoreAddOutlined />} onClick={() => openLayout(r)}>
-            Setup layout
+            {t('actions.setupLayout')}
           </Button>
           <Button size='small' icon={<SwapOutlined />} onClick={() => openMove(r)}>
-            Move IMEI
+            {t('actions.moveImei')}
           </Button>
         </Space>
       ),
@@ -185,9 +185,8 @@ const QuanLyKhoPage = () => {
 
   const renderLocationGrid = (w: WarehouseResponse) => {
     if (w.locations.length === 0) {
-      return <Empty description={<>Chưa có bin. Bấm <Text strong>Setup layout</Text> để tạo.</>} />
+      return <Empty description={t('empty.noBin')} />
     }
-    // Group by zone → row → list of bins
     const groups: Record<string, Record<string, WarehouseLocationResponse[]>> = {}
     w.locations.forEach((l) => {
       const z = l.zoneName ?? 'NO_ZONE'
@@ -197,49 +196,89 @@ const QuanLyKhoPage = () => {
       groups[z][r].push(l)
     })
     return (
-      <Tabs
-        items={Object.entries(groups).map(([zone, rows]) => ({
-          key: zone,
-          label: `Zone ${zone}`,
-          children: (
-            <Space direction='vertical' style={{ width: '100%' }} size={20}>
-              {Object.entries(rows).map(([row, bins]) => (
-                <div key={row}>
-                  <Text type='secondary' style={{ fontSize: 13 }}>Row {row}</Text>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
-                    {bins
-                      .sort((a, b) => Number(a.shelfNum) - Number(b.shelfNum) || Number(a.binNum) - Number(b.binNum))
-                      .map((b) => (
-                        <Badge key={b.id} count={0} showZero={false}>
-                          <Tag
-                            style={{
-                              fontFamily: 'monospace', padding: '4px 10px', borderRadius: 6,
-                              background: '#fafafa', border: '1px solid #d9d9d9',
-                            }}
-                          >
-                            {`S${b.shelfNum}-B${b.binNum}`}
-                            <Text type='secondary' style={{ fontSize: 11, marginLeft: 6 }}>#{b.id}</Text>
-                          </Tag>
-                        </Badge>
-                      ))}
+      <>
+        <Space size={4} style={{ marginBottom: 12, fontSize: 12 }}>
+          <Tag color='default'>{t('drawer.legendEmpty')}</Tag>
+          <Tag color='red'>{t('drawer.legendOccupied')}</Tag>
+          <Text type='secondary'>{t('drawer.legendHint')}</Text>
+        </Space>
+        <Tabs
+          items={Object.entries(groups).map(([zone, rows]) => ({
+            key: zone,
+            label: t('drawer.zoneTab', { zone }),
+            children: (
+              <Space direction='vertical' style={{ width: '100%' }} size={20}>
+                {Object.entries(rows).map(([row, bins]) => (
+                  <div key={row}>
+                    <Text type='secondary' style={{ fontSize: 13 }}>{t('drawer.rowLabel', { row })}</Text>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                      {bins
+                        .sort((a, b) => Number(a.shelfNum) - Number(b.shelfNum) || Number(a.binNum) - Number(b.binNum))
+                        .map((b) => {
+                          const count = b.items?.length ?? 0
+                          const occupied = count > 0
+                          const tag = (
+                            <Tag
+                              key={b.id}
+                              style={{
+                                fontFamily: 'monospace', padding: '4px 10px', borderRadius: 6, margin: 0,
+                                background: occupied ? '#fff1f0' : '#fafafa',
+                                border: `1px solid ${occupied ? '#ffa39e' : '#d9d9d9'}`,
+                                color: occupied ? '#cf1322' : undefined,
+                                cursor: occupied ? 'help' : 'default',
+                              }}
+                            >
+                              {`S${b.shelfNum}-B${b.binNum}`}
+                              {occupied && (
+                                <span style={{
+                                  marginLeft: 6, padding: '0 6px', borderRadius: 8,
+                                  background: '#cf1322', color: '#fff', fontSize: 10, fontWeight: 700,
+                                }}>{count}</span>
+                              )}
+                            </Tag>
+                          )
+                          return occupied ? (
+                            <Popover
+                              key={b.id}
+                              title={t('drawer.binPopoverTitle', { shelf: b.shelfNum, bin: b.binNum, count })}
+                              content={
+                                <div style={{ maxWidth: 280 }}>
+                                  {b.items.map((it) => (
+                                    <div key={it.id} style={{ marginBottom: 6 }}>
+                                      <Text strong style={{ fontSize: 12 }}>{it.productName || `Product #${it.productId}`}</Text>
+                                      <br />
+                                      <Text type='secondary' style={{ fontSize: 11 }}>
+                                        IMEI: <code>{it.imei}</code>
+                                        {it.productSku && <> · SKU: <code>{it.productSku}</code></>}
+                                      </Text>
+                                    </div>
+                                  ))}
+                                </div>
+                              }
+                            >
+                              {tag}
+                            </Popover>
+                          ) : tag
+                        })}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </Space>
-          ),
-        }))}
-      />
+                ))}
+              </Space>
+            ),
+          }))}
+        />
+      </>
     )
   }
 
   return (
     <div>
       <PageHeader
-        title='Quản lý kho vật lý'
-        subtitle='Tạo kho, cấu hình layout zone/row/shelf/bin và di chuyển sản phẩm'
+        title={t('title')}
+        subtitle={t('subtitle')}
         extra={
           <Button type='primary' icon={<PlusOutlined />} onClick={openCreate}>
-            Tạo kho mới
+            {t('createButton')}
           </Button>
         }
       />
@@ -247,12 +286,12 @@ const QuanLyKhoPage = () => {
       <Row gutter={[16, 16]} style={{ marginBottom: 20 }}>
         <Col xs={12} md={6}>
           <Card style={{ borderRadius: 12 }}>
-            <Statistic title='Tổng kho' value={totals.warehouses} prefix={<ShopOutlined />} valueStyle={{ color: PRIMARY, fontWeight: 700 }} />
+            <Statistic title={t('stats.totalWarehouses')} value={totals.warehouses} prefix={<ShopOutlined />} valueStyle={{ color: PRIMARY, fontWeight: 700 }} />
           </Card>
         </Col>
         <Col xs={12} md={6}>
           <Card style={{ borderRadius: 12 }}>
-            <Statistic title='Tổng bin' value={totals.bins} prefix={<EnvironmentOutlined />} valueStyle={{ color: '#1677ff', fontWeight: 700 }} />
+            <Statistic title={t('stats.totalBins')} value={totals.bins} prefix={<EnvironmentOutlined />} valueStyle={{ color: '#1677ff', fontWeight: 700 }} />
           </Card>
         </Col>
       </Row>
@@ -261,109 +300,108 @@ const QuanLyKhoPage = () => {
         <Table
           rowKey='id' loading={isLoading} columns={warehouseColumns} dataSource={warehouses}
           size='middle' bordered
-          locale={{ emptyText: <EmptyState title='Chưa có kho nào' action={{ label: 'Tạo kho mới', onClick: openCreate }} /> }}
+          locale={{ emptyText: <EmptyState title={t('empty.title')} action={{ label: t('empty.action'), onClick: openCreate }} /> }}
         />
       </Card>
 
-      {/* Create warehouse modal */}
       <Modal
-        title='Tạo kho mới' open={createOpen} onCancel={() => setCreateOpen(false)}
+        title={t('create.title')} open={createOpen} onCancel={() => setCreateOpen(false)}
         width={480}
         footer={[
-          <Button key='c' onClick={() => setCreateOpen(false)}>Huỷ</Button>,
-          <Button key='s' type='primary' loading={creating} onClick={handleCreate}>Tạo kho</Button>,
+          <Button key='c' onClick={() => setCreateOpen(false)}>{t('common:button.cancel')}</Button>,
+          <Button key='s' type='primary' loading={creating} onClick={handleCreate}>{t('create.submit')}</Button>,
         ]}
       >
         <Form form={createForm} layout='vertical' style={{ marginTop: 16 }}>
-          <Form.Item label='Tên kho' name='name' rules={[{ required: true, message: 'Nhập tên kho' }]}>
-            <Input autoFocus placeholder='Kho trung tâm Hà Nội' />
+          <Form.Item label={t('create.name')} name='name' rules={[{ required: true, message: t('create.nameRequired') }]}>
+            <Input autoFocus placeholder={t('create.namePlaceholder')} />
           </Form.Item>
-          <Form.Item label='Địa chỉ' name='address'>
-            <Input.TextArea rows={2} placeholder='Số 1, ABC Street...' />
+          <Form.Item label={t('create.address')} name='address'>
+            <Input.TextArea rows={2} placeholder={t('create.addressPlaceholder')} />
           </Form.Item>
         </Form>
       </Modal>
 
-      {/* Setup layout modal */}
       <Modal
-        title={layoutTarget ? `Cấu hình layout — ${layoutTarget.name}` : ''}
+        title={layoutTarget ? t('layout.title', { name: layoutTarget.name }) : ''}
         open={!!layoutTarget} onCancel={() => setLayoutTarget(null)}
-        width={520}
+        width={640}
         footer={[
-          <Button key='c' onClick={() => setLayoutTarget(null)}>Huỷ</Button>,
+          <Button key='c' onClick={() => setLayoutTarget(null)}>{t('common:button.cancel')}</Button>,
           <Button key='s' type='primary' loading={settingLayout} onClick={handleSetupLayout}>
-            Tạo bin
+            {t('layout.submit')}
           </Button>,
         ]}
       >
         <Form form={layoutForm} layout='vertical' style={{ marginTop: 16 }}>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label='Zone' name='zone' rules={[{ required: true, message: 'Nhập tên zone' }]}>
+              <Form.Item label={t('layout.zone')} name='zone' rules={[{ required: true, message: t('layout.zoneRequired') }]}>
                 <Input placeholder='A' autoFocus />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label='Row' name='row' rules={[{ required: true, message: 'Nhập số row' }]}>
+              <Form.Item label={t('layout.row')} name='row' rules={[{ required: true, message: t('layout.rowRequired') }]}>
                 <Input placeholder='1' />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label='Số kệ (shelves)' name='shelfCount' rules={[{ required: true, message: 'Nhập số kệ' }]}>
-                <InputNumber min={1} max={100} style={{ width: '100%' }} />
+              <Form.Item label={t('layout.shelfCount')} name='shelfCount'
+                rules={[{ required: true, message: t('layout.shelfCountRequired') }]}>
+                <InputNumber min={1} max={20} style={{ width: '100%' }}
+                  parser={(s) => Number((s ?? '').replace(/[^0-9]/g, '')) || 1} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item label='Số ô / kệ (bins)' name='binCount' rules={[{ required: true, message: 'Nhập số bin' }]}>
-                <InputNumber min={1} max={100} style={{ width: '100%' }} />
+              <Form.Item label={t('layout.binCount')} name='binCount'
+                rules={[{ required: true, message: t('layout.binCountRequired') }]}>
+                <InputNumber min={1} max={20} style={{ width: '100%' }}
+                  parser={(s) => Number((s ?? '').replace(/[^0-9]/g, '')) || 1} />
               </Form.Item>
             </Col>
           </Row>
+
+          <LayoutPreview form={layoutForm} />
+
           <Text type='secondary' style={{ fontSize: 12 }}>
-            Hệ thống sẽ tạo <Text strong>shelves × bins</Text> bin trong zone-row chỉ định.
-            VD: 3 × 5 = 15 bin (S1-B1, S1-B2, ..., S3-B5).
+            <Trans i18nKey='layout.hint' ns='warehouse' components={[<Text strong key='0' />]} />
           </Text>
         </Form>
       </Modal>
 
-      {/* Move IMEI modal */}
       <Modal
-        title={moveTarget ? `Di chuyển IMEI — ${moveTarget.name}` : ''}
+        title={moveTarget ? t('move.title', { name: moveTarget.name }) : ''}
         open={!!moveTarget} onCancel={() => setMoveTarget(null)}
-        width={520}
+        width={760}
         footer={[
-          <Button key='c' onClick={() => setMoveTarget(null)}>Huỷ</Button>,
-          <Button key='s' type='primary' loading={moving} onClick={handleMoveItem}>Di chuyển</Button>,
+          <Button key='c' onClick={() => setMoveTarget(null)}>{t('common:button.cancel')}</Button>,
+          <Button key='s' type='primary' loading={moving} onClick={handleMoveItem}>{t('move.submit')}</Button>,
         ]}
       >
         <Form form={moveForm} layout='vertical' style={{ marginTop: 16 }}>
-          <Form.Item label='IMEI' name='imei' rules={[{ required: true, message: 'Nhập IMEI cần move' }]}>
-            <Input prefix={<BarcodeOutlined />} placeholder='Quét hoặc nhập IMEI' autoFocus />
+          <Form.Item label={t('move.imei')} name='imei' rules={[{ required: true, message: t('move.imeiRequired') }]}>
+            <Input prefix={<BarcodeOutlined />} placeholder={t('move.imeiPlaceholder')} autoFocus />
           </Form.Item>
-          <Form.Item label='Vị trí đích (chỉ hiển thị bin trống)' name='targetLocId' rules={[{ required: true, message: 'Chọn vị trí đích' }]}>
-            <Select
-              showSearch optionFilterProp='label'
-              placeholder='Chọn bin trống'
-              options={availableBins.map((b) => ({
-                value: b.id, label: formatBin(b),
-              }))}
-              notFoundContent={<Empty description='Không còn bin trống' image={Empty.PRESENTED_IMAGE_SIMPLE} />}
+          <Form.Item label={t('move.target')} name='targetLocId'
+            rules={[{ required: true, message: t('move.targetRequired') }]}>
+            <BinPickerGrid
+              warehouse={moveTarget}
+              availableIds={new Set(availableBins.map((b) => b.id))}
             />
           </Form.Item>
         </Form>
       </Modal>
 
-      {/* Map drawer */}
       <Drawer
-        title={drawerWarehouse ? `Bản đồ — ${drawerWarehouse.name}` : ''}
+        title={drawerWarehouse ? t('drawer.title', { name: drawerWarehouse.name }) : ''}
         width={720} open={!!drawerWarehouse} onClose={() => setDrawerWarehouse(null)}
       >
         {drawerWarehouse && (
           <>
             <Title level={5} style={{ marginTop: 0 }}>
-              {drawerWarehouse.locations.length} bin
+              {t('drawer.binCount', { count: drawerWarehouse.locations.length })}
             </Title>
             {drawerWarehouse.address && (
               <Text type='secondary'>{drawerWarehouse.address}</Text>
@@ -374,6 +412,55 @@ const QuanLyKhoPage = () => {
           </>
         )}
       </Drawer>
+    </div>
+  )
+}
+
+const LayoutPreview = ({ form }: { form: ReturnType<typeof Form.useForm<SetupLayoutForm>>[0] }) => {
+  const { t } = useTranslation('warehouse')
+  const zone = Form.useWatch('zone', form)
+  const row = Form.useWatch('row', form)
+  const shelfCount = Form.useWatch('shelfCount', form)
+  const binCount = Form.useWatch('binCount', form)
+
+  const valid = Number(shelfCount) > 0 && Number(binCount) > 0
+  if (!valid) {
+    return (
+      <div style={{ padding: 12, background: '#fafafa', borderRadius: 8, marginBottom: 12 }}>
+        <Text type='secondary' style={{ fontSize: 12 }}>{t('layout.previewHint')}</Text>
+      </div>
+    )
+  }
+  const total = Number(shelfCount) * Number(binCount)
+  return (
+    <div style={{ padding: 12, background: '#fafafa', borderRadius: 8, marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <Text strong style={{ fontSize: 13 }}>
+          <Trans i18nKey='layout.preview' ns='warehouse'
+            values={{ zone: zone || '?', row: row || '?' }}
+            components={[<Tag color='orange' key='0' />, <Tag color='orange' key='1' />]}
+          />
+        </Text>
+        <Tag color={total > 60 ? 'red' : 'blue'}>{t('layout.previewBin', { count: total })}</Tag>
+      </div>
+      <div style={{ maxHeight: 220, overflow: 'auto' }}>
+        {Array.from({ length: Number(shelfCount) }).map((_, si) => (
+          <div key={si} style={{ display: 'flex', gap: 4, marginBottom: 4, alignItems: 'center' }}>
+            <Text style={{ width: 36, fontSize: 11, color: '#888' }}>S{si + 1}</Text>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {Array.from({ length: Number(binCount) }).map((_, bi) => (
+                <Tag key={bi} style={{
+                  minWidth: 44, textAlign: 'center', margin: 0,
+                  background: '#fff', border: '1px dashed #d9d9d9',
+                  fontFamily: 'monospace', fontSize: 11,
+                }}>
+                  B{bi + 1}
+                </Tag>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

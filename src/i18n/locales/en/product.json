@@ -1,0 +1,185 @@
+{
+  "page": {
+    "title": "Warehouse management"
+  },
+  "stats": {
+    "totalProducts": "Total products",
+    "totalProductsSub": "items",
+    "lowStock": "Need attention",
+    "lowStockSub": "low stock",
+    "outOfStock": "Out of stock",
+    "outOfStockSub": "items",
+    "active": "Active",
+    "activeSub": "products"
+  },
+  "filter": {
+    "search": "Search name, SKU...",
+    "category": "Category",
+    "status": "Status"
+  },
+  "col": {
+    "no": "#",
+    "product": "Product",
+    "category": "Category",
+    "image": "Image",
+    "stock": "Stock",
+    "stockThreshold": "{{stock}} / threshold {{threshold}}",
+    "priceImport": "Import price",
+    "priceExport": "Export price",
+    "margin": "Gross margin",
+    "status": "Status",
+    "imei": "IMEI",
+    "active": "Active",
+    "actions": "Actions"
+  },
+  "table": {
+    "totalSummary": "{{start}}-{{end}} / {{total}}"
+  },
+  "tooltip": {
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "edit": "Edit",
+    "hide": "Hide product",
+    "restore": "Restore"
+  },
+  "softDelete": {
+    "titleRestore": "Restore product?",
+    "titleHide": "Hide product?",
+    "contentRestore": "Restore product \"{{name}}\" — it will reappear in the list.",
+    "contentHide": "Product \"{{name}}\" will be hidden from the sales catalog. Current stock is not affected.",
+    "successRestore": "Product restored",
+    "successHide": "Product hidden"
+  },
+  "toggleStatus": {
+    "success": "Product {{action}}",
+    "activate": "activated",
+    "deactivate": "deactivated"
+  },
+  "modal": {
+    "titleEdit": "Edit product",
+    "titleAdd": "Add new product",
+    "name": "Product name",
+    "namePlaceholder": "Enter product name",
+    "nameRequired": "Please enter name",
+    "sku": "SKU",
+    "skuPlaceholder": "SP-XXXXX",
+    "skuRequired": "Please enter SKU",
+    "category": "Category",
+    "categoryPlaceholder": "Select category",
+    "categoryRequired": "Select category",
+    "status": "Status",
+    "priceImport": "Import price",
+    "priceImportRequired": "Enter import price",
+    "priceExport": "Export price",
+    "priceExportRequired": "Enter export price",
+    "currentStock": "Initial stock",
+    "minThreshold": "Warning threshold ⓘ",
+    "minThresholdTooltip": "Alerts will show when stock falls below this level",
+    "warrantyPeriod": "Warranty (months)",
+    "warrantyPeriodSuffix": "months",
+    "hasImei": "IMEI tracking ⓘ",
+    "hasImeiTooltip": "Product has individual IMEI (phones, laptops, etc.)",
+    "specifications": "Specifications",
+    "specificationsPlaceholder": "Describe specifications (optional)",
+    "image": "Product image",
+    "uploading": "Uploading...",
+    "uploadLabel": "Upload",
+    "uploadSuccess": "Image uploaded successfully",
+    "uploadFail": "Image upload failed",
+    "successAdd": "Product added successfully!",
+    "successEdit": "Product updated successfully!",
+    "previewTitle": "Preview product image"
+  },
+  "drawer": {
+    "tabInfo": "Information",
+    "tabHistory": "Stock history",
+    "edit": "Edit",
+    "stock": "Stock",
+    "priceImport": "Import price",
+    "priceExport": "Export price",
+    "margin": "Gross margin",
+    "fieldSku": "SKU",
+    "fieldCategory": "Category",
+    "fieldThreshold": "Warning threshold",
+    "fieldWarranty": "Warranty period",
+    "fieldHasImei": "IMEI tracking",
+    "fieldStatus": "Status",
+    "fieldSpecs": "Specifications",
+    "imeiList": "IMEI list ({{count}})",
+    "imeiColImei": "IMEI",
+    "imeiColStatus": "Status",
+    "historyColAction": "Action",
+    "historyColStatus": "Status",
+    "historyColTime": "Time",
+    "historyEmpty": "No activity history"
+  },
+  "empty": {
+    "title": "No products",
+    "action": "Add product"
+  },
+  "csv": {
+    "headerId": "ID",
+    "headerSku": "SKU",
+    "headerName": "Product name",
+    "headerCategory": "Category",
+    "headerPriceImport": "Import price",
+    "headerPriceExport": "Export price",
+    "headerStock": "Stock",
+    "headerThreshold": "Threshold",
+    "headerStatus": "Status"
+  },
+  "category": {
+    "title": "Product categories",
+    "addButton": "Add category",
+    "colNo": "#",
+    "colName": "Category name",
+    "colDescription": "Description",
+    "colCount": "Product count",
+    "countSuffix": "{{count}} items",
+    "softDelete": {
+      "titleRestore": "Restore category?",
+      "titleHide": "Hide category?",
+      "contentRestore": "Restore category \"{{name}}\"?",
+      "contentHide": "Category \"{{name}}\" will be hidden. Products in this category are not deleted.",
+      "successRestore": "Restored",
+      "successHide": "Category hidden"
+    },
+    "tooltip": {
+      "edit": "Edit",
+      "hide": "Hide category",
+      "restore": "Restore"
+    },
+    "modal": {
+      "titleEdit": "Edit category",
+      "titleAdd": "Add new category",
+      "name": "Category name",
+      "namePlaceholder": "Enter category name",
+      "nameRequired": "Please enter category name",
+      "description": "Description",
+      "descriptionPlaceholder": "Short description (optional)",
+      "successAdd": "Category added successfully!",
+      "successEdit": "Category updated successfully!"
+    },
+    "totalSuffix": "Total {{count}} categories"
+  },
+  "barcode": {
+    "breadcrumb": "Print barcode",
+    "title": "Print product barcode",
+    "selectCard": "Select products ({{count}} selected)",
+    "clearSelection": "Clear all",
+    "searchPlaceholder": "Search product name, SKU...",
+    "previewCard": "Preview & Print",
+    "printButton": "Print",
+    "printSuffix": "({{count}} copies)",
+    "printWarning": "Select at least one product",
+    "printing": "Printing {{count}} barcode types...",
+    "selectHint": "Select products to preview barcode",
+    "colProduct": "Product",
+    "colCategory": "Category",
+    "colStock": "Stock",
+    "colCopies": "Copies",
+    "copies": "x{{count}} copies",
+    "totalSuffix": "{{count}} products",
+    "header": "Warehouse Management System"
+  }
+}

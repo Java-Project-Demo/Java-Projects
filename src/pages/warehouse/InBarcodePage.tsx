@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { App, Breadcrumb, Button, Card, Checkbox, Col, Input, InputNumber, Row, Space, Table, Tag, Typography } from 'antd'
 import { HomeOutlined, PrinterOutlined, BarcodeOutlined, ClearOutlined } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import { useTranslation } from 'react-i18next'
 import { useGetProductsQuery } from '@/features/product/productApi'
 import { useGetCategoriesQuery } from '@/features/category/categoryApi'
 import type { Product } from '@/types/api'
@@ -11,11 +12,11 @@ const PRIMARY = '#E8603C'
 
 interface PrintItem { product: Product; copies: number }
 
-const BarcodePreview = ({ sku, name, copies }: { sku: string; name: string; copies: number }) => (
+const BarcodePreview = ({ sku, name, copies, copyLabel, headerLabel }: { sku: string; name: string; copies: number; copyLabel: string; headerLabel: string }) => (
   <div style={{ border: '1px solid #e5e5e5', borderRadius: 10, padding: '16px 20px', background: '#fff', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
     <div style={{ textAlign: 'center' }}>
       <div style={{ fontSize: 10, color: '#999', letterSpacing: 2, marginBottom: 6, textTransform: 'uppercase' }}>
-        Warehouse Management System
+        {headerLabel}
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 1, marginBottom: 8 }}>
         {sku.split('').map((_, i) => (
@@ -25,12 +26,13 @@ const BarcodePreview = ({ sku, name, copies }: { sku: string; name: string; copi
       <div style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 800, letterSpacing: 4, color: '#111', marginBottom: 4 }}>{sku}</div>
       <div style={{ fontSize: 11, color: '#555', marginBottom: 4, maxWidth: 200, margin: '0 auto 4px' }}>{name}</div>
     </div>
-    {copies > 1 && <div style={{ textAlign: 'center', marginTop: 8 }}><Tag color='blue' style={{ fontSize: 10 }}>x{copies} bản in</Tag></div>}
+    {copies > 1 && <div style={{ textAlign: 'center', marginTop: 8 }}><Tag color='blue' style={{ fontSize: 10 }}>{copyLabel}</Tag></div>}
   </div>
 )
 
 const InBarcodePage = () => {
   const { message } = App.useApp()
+  const { t } = useTranslation(['product', 'menu', 'common'])
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [copies, setCopies] = useState<Record<number, number>>({})
@@ -61,9 +63,9 @@ const InBarcodePage = () => {
   }
 
   const handlePrint = () => {
-    if (printItems.length === 0) { void message.warning('Chọn ít nhất một sản phẩm'); return }
+    if (printItems.length === 0) { void message.warning(t('barcode.printWarning')); return }
     window.print()
-    void message.success(`Đang in ${printItems.length} loại barcode...`)
+    void message.success(t('barcode.printing', { count: printItems.length }))
   }
 
   const columns: ColumnsType<Product> = [
@@ -74,7 +76,7 @@ const InBarcodePage = () => {
       ),
     },
     {
-      title: 'Sản phẩm', key: 'name',
+      title: t('barcode.colProduct'), key: 'name',
       render: (_, r) => (
         <div>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{r.name}</div>
@@ -83,15 +85,15 @@ const InBarcodePage = () => {
       ),
     },
     {
-      title: 'Danh mục', dataIndex: 'categoryId', key: 'cat', width: 130,
+      title: t('barcode.colCategory'), dataIndex: 'categoryId', key: 'cat', width: 130,
       render: (v: number) => <Tag>{catMap[v] ?? `#${v}`}</Tag>,
     },
     {
-      title: 'Tồn kho', dataIndex: 'currentStock', key: 'stock', width: 90, align: 'center' as const,
+      title: t('barcode.colStock'), dataIndex: 'currentStock', key: 'stock', width: 90, align: 'center' as const,
       render: (v: number) => v,
     },
     {
-      title: 'Số bản in', key: 'copies', width: 110,
+      title: t('barcode.colCopies'), key: 'copies', width: 110,
       render: (_, r) => (
         <InputNumber min={1} max={100} size='small'
           value={copies[r.id] ?? 1}
@@ -103,33 +105,35 @@ const InBarcodePage = () => {
     },
   ]
 
+  const totalCopies = printItems.reduce((s, i) => s + i.copies, 0)
+
   return (
     <div>
       <Breadcrumb style={{ marginBottom: 16 }}
-        items={[{ href: '/', title: <HomeOutlined /> }, { title: 'In Barcode' }]} />
+        items={[{ href: '/', title: <HomeOutlined /> }, { title: t('menu:item.printBarcode') }]} />
 
       <Title level={4} style={{ marginBottom: 20 }}>
-        <BarcodeOutlined style={{ color: PRIMARY, marginRight: 8 }} />In Barcode sản phẩm
+        <BarcodeOutlined style={{ color: PRIMARY, marginRight: 8 }} />{t('barcode.title')}
       </Title>
 
       <Row gutter={[20, 20]}>
         <Col xs={24} lg={14}>
           <Card
             style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}
-            title={`Chọn sản phẩm (${selected.size} đã chọn)`}
+            title={t('barcode.selectCard', { count: selected.size })}
             extra={
               <Space>
                 {selected.size > 0 && (
-                  <Button size='small' icon={<ClearOutlined />} onClick={() => setSelected(new Set())}>Bỏ chọn tất cả</Button>
+                  <Button size='small' icon={<ClearOutlined />} onClick={() => setSelected(new Set())}>{t('barcode.clearSelection')}</Button>
                 )}
               </Space>
             }
           >
-            <Input.Search placeholder='Tìm tên sản phẩm, SKU...' style={{ marginBottom: 12 }}
+            <Input.Search placeholder={t('barcode.searchPlaceholder')} style={{ marginBottom: 12 }}
               value={search} onChange={(e) => setSearch(e.target.value)} allowClear />
             <Table
               rowKey='id' loading={isLoading} columns={columns} dataSource={filtered}
-              size='small' pagination={{ pageSize: 10, showTotal: (t) => `${t} sản phẩm` }}
+              size='small' pagination={{ pageSize: 10, showTotal: (total) => t('barcode.totalSuffix', { count: total }) }}
               onRow={(r) => ({ onClick: () => toggleSelect(r.id), style: { cursor: 'pointer', background: selected.has(r.id) ? '#fff7f5' : undefined } })}
             />
           </Card>
@@ -138,17 +142,17 @@ const InBarcodePage = () => {
         <Col xs={24} lg={10}>
           <Card
             style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)' }}
-            title='Xem trước & In'
+            title={t('barcode.previewCard')}
             extra={
               <Button type='primary' icon={<PrinterOutlined />} onClick={handlePrint} disabled={printItems.length === 0}>
-                In {printItems.length > 0 ? `(${printItems.reduce((s, i) => s + i.copies, 0)} bản)` : ''}
+                {t('barcode.printButton')} {printItems.length > 0 ? t('barcode.printSuffix', { count: totalCopies }) : ''}
               </Button>
             }
           >
             {printItems.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '48px 0' }}>
                 <BarcodeOutlined style={{ fontSize: 48, color: '#ddd', display: 'block', marginBottom: 12 }} />
-                <Text type='secondary'>Chọn sản phẩm để xem trước barcode</Text>
+                <Text type='secondary'>{t('barcode.selectHint')}</Text>
               </div>
             ) : (
               printItems.map((item) => (
@@ -157,6 +161,8 @@ const InBarcodePage = () => {
                   sku={item.product.sku}
                   name={item.product.name}
                   copies={item.copies}
+                  copyLabel={t('barcode.copies', { count: item.copies })}
+                  headerLabel={t('barcode.header')}
                 />
               ))
             )}

@@ -1,0 +1,48 @@
+{
+  "title": "Thống kê báo cáo",
+  "tabs": {
+    "overview": "Tổng quan",
+    "logs": "Nhật ký hoạt động",
+    "aging": "Tồn kho cũ"
+  },
+  "kpi": {
+    "totalProducts": "Tổng sản phẩm",
+    "totalProductsSub": "mặt hàng",
+    "lowStock": "Sắp/Hết hàng",
+    "lowStockSub": "cần nhập",
+    "todayRevenue": "Doanh thu hôm nay",
+    "todayProfit": "Lợi nhuận hôm nay"
+  },
+  "categoryStock": {
+    "title": "Tồn kho theo danh mục",
+    "empty": "Chưa có dữ liệu"
+  },
+  "lowStockTable": {
+    "title": "Sản phẩm sắp / hết hàng",
+    "empty": "Tất cả sản phẩm đủ hàng",
+    "colProduct": "Sản phẩm",
+    "colStock": "Tồn kho",
+    "colThreshold": "Ngưỡng",
+    "colShortage": "Thiếu"
+  },
+  "logs": {
+    "filterAction": "Loại hành động",
+    "filterStatus": "Trạng thái",
+    "dateFrom": "Từ ngày",
+    "dateTo": "Đến ngày",
+    "actionOptions": {
+      "create": "Tạo mới",
+      "update": "Cập nhật",
+      "delete": "Xoá",
+      "import": "Nhập kho",
+      "order": "Xuất kho/Đơn hàng"
+    },
+    "colTime": "Thời gian",
+    "colUser": "Người thực hiện",
+    "colAction": "Hành động",
+    "colEntity": "Đối tượng",
+    "colStatus": "Trạng thái",
+    "colDetails": "Chi tiết",
+    "userId": "ID #{{id}}"
+  }
+}

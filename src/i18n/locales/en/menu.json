@@ -1,0 +1,27 @@
+{
+  "group": {
+    "warehouse": "Warehouse",
+    "category": "Categories",
+    "sales": "Sales",
+    "report": "Reports",
+    "system": "System"
+  },
+  "item": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "import": "Stock in",
+    "export": "Stock out",
+    "warehouseLayout": "Physical layout",
+    "inventory": "Stocktaking",
+    "categories": "Product categories",
+    "suppliers": "Suppliers",
+    "orderHistory": "Order history",
+    "warranty": "Warranty",
+    "imeiLookup": "IMEI lookup",
+    "statistics": "Statistics",
+    "oldStock": "Aged stock",
+    "employees": "Employees",
+    "printBarcode": "Print barcode",
+    "logs": "System logs"
+  }
+}
