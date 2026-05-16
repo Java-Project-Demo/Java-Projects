@@ -57,6 +57,11 @@ public class Message {
         public static final String EMAIL_NOT_EMPTY = "Email address cannot be empty";
         public static final String PASSWORD_NOT_MATCH = "Password not match";
         public static final String PASSWORD_TOO_SHORT = "Password must be at least 6 characters";
+        public static final String USER_INACTIVE = "Tài khoản đã bị khoá hoặc chưa được kích hoạt";
+        public static final String CAN_NOT_CHANGE_OWN_ROLE = "Bạn không thể tự đổi vai trò của chính mình";
+        public static final String CAN_NOT_ASSIGN_ADMIN_ROLE = "Không thể gán vai trò Quản trị viên qua API này";
+        public static final String EMAIL_ALREADY_USED = "Email đã được sử dụng bởi tài khoản khác";
+        public static final String EMAIL_INVALID_FORMAT = "Email không đúng định dạng";
         //     Role
         public static final String ROLE_NOT_FOUND = "Role not found";
         public static final String PERMISSION_DENIED = "You don't have permission";

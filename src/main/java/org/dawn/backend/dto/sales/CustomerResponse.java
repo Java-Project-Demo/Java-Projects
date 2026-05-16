@@ -1,5 +1,6 @@
-package org.dawn.backend.dto.auth;
+package org.dawn.backend.dto.sales;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,9 +10,11 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class RegisterRequest {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CustomerResponse {
+    private Long id;
+    private String phoneNumber;
     private String fullName;
     private String email;
-    private String roleName;
-    private String status;
+    private String address;
 }

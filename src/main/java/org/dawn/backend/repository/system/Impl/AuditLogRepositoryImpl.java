@@ -7,13 +7,16 @@ import org.dawn.backend.repository.base.AbstractRepository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Slf4j
@@ -129,6 +132,11 @@ public class AuditLogRepositoryImpl extends AbstractRepository<AuditLog, Long> i
     }
 
     private AuditLog mapResultSet(ResultSet rs) throws SQLException {
+        Set<String> cols = new HashSet<>();
+        ResultSetMetaData md = rs.getMetaData();
+        for (int i = 1; i <= md.getColumnCount(); i++) {
+            cols.add(md.getColumnLabel(i).toLowerCase());
+        }
         return AuditLog.builder()
                 .id(rs.getLong("id"))
                 .userId(rs.getLong("user_id"))
@@ -137,6 +145,8 @@ public class AuditLogRepositoryImpl extends AbstractRepository<AuditLog, Long> i
                 .entityId(rs.getString("entity_id"))
                 .status(rs.getString("status"))
                 .details(rs.getString("details"))
+                .staffName(cols.contains("staff_name") ? rs.getString("staff_name") : null)
+                .staffUsername(cols.contains("staff_username") ? rs.getString("staff_username") : null)
                 .createdAt(getInstant(rs, "created_at"))
                 .updatedAt(getInstant(rs, "updated_at"))
                 .build();

@@ -50,6 +50,11 @@ public class AuthService {
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new PermissionDeniedException(Message.Exception.INVALID_PASSWORD);
         }
+
+        if (Boolean.TRUE.equals(user.getIsDeleted()) || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            throw new PermissionDeniedException(Message.Exception.USER_INACTIVE);
+        }
+
         String jwt = jwtUtils.generateToken(
                 user.getId(),
                 user.getUsername(),

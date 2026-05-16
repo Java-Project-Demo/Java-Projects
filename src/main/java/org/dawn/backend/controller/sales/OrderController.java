@@ -30,6 +30,15 @@ public class OrderController extends AbstractController {
         return ResponseObject.success(orderService.getAll(status, null, null, page, size));
     }
 
+    @Get("/{id}")
+    public ResponseObject<OrderResponse> getOne(HttpServletRequest req, HttpServletResponse res) {
+        Long id = getPathId(req);
+        if (id == null) {
+            throw new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND);
+        }
+        return ResponseObject.success(orderService.getOne(id));
+    }
+
     @Post("/create")
     public ResponseObject<OrderResponse> create(HttpServletRequest req, HttpServletResponse res) {
         OrderRequest dto = body(req, OrderRequest.class);

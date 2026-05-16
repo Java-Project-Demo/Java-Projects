@@ -63,18 +63,39 @@ public class OrderService {
         return org.dawn.backend.config.web.response.ResponsePage.of(pageRes);
     }
 
+    public OrderResponse getOne(Long id) {
+        Order order = orderRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
+        List<OrderItem> items = orderItemRepository.findByOrderId(id);
+        return OrderMappingHelper.mapDetail(order, items);
+    }
+
     public OrderResponse create(OrderRequest req) {
         return manager.execute(() -> {
             UserPrincipal currentUser = SecurityContext.get();
             Long currentUserId = (currentUser != null) ? currentUser.id() : null;
 
-            // Get customer
+            // Get customer (upsert email/address if user provided new info)
             Customer customer = customerRepository
                     .findByPhoneNumber(req.getCustomerPhone())
+                    .map(existing -> {
+                        boolean changed = false;
+                        if (existing.getEmail() == null && req.getCustomerEmail() != null && !req.getCustomerEmail().isBlank()) {
+                            existing.setEmail(req.getCustomerEmail().trim());
+                            changed = true;
+                        }
+                        if (existing.getAddress() == null && req.getCustomerAddress() != null && !req.getCustomerAddress().isBlank()) {
+                            existing.setAddress(req.getCustomerAddress().trim());
+                            changed = true;
+                        }
+                        return changed ? customerRepository.save(existing) : existing;
+                    })
                     .orElseGet(() -> customerRepository
                             .save(Customer
                                     .builder()
                                     .phoneNumber(req.getCustomerPhone())
+                                    .email(req.getCustomerEmail() != null && !req.getCustomerEmail().isBlank() ? req.getCustomerEmail().trim() : null)
                                     .address(req.getCustomerAddress())
                                     .fullName(req.getCustomerName())
                                     .build()));
@@ -118,13 +139,21 @@ public class OrderService {
                         .build());
 
                 if (product.getHasImei()) {
-                    if (item.getSelectImeis() == null || item.getSelectImeis().isEmpty()) {
-                        throw new RuntimeException(MessageFormat.format(Message.Exception.IMEI_SELECTION_REQUIRED, product.getName()));
-                    }
-                    if (item.getSelectImeis().size() != item.getQuantity()) {
+                    List<String> imeis = item.getSelectImeis();
+                    if (imeis == null || imeis.isEmpty()) {
+                        List<ProductItem> picked = itemRepository
+                                .findByProductIdAndStatus(product.getId(), ItemStatus.AVAILABLE.name())
+                                .stream()
+                                .limit(item.getQuantity())
+                                .toList();
+                        if (picked.size() < item.getQuantity()) {
+                            throw new RuntimeException(MessageFormat.format(Message.Exception.INSUFFICIENT_STOCK, product.getName()));
+                        }
+                        imeis = picked.stream().map(ProductItem::getImei).toList();
+                    } else if (imeis.size() != item.getQuantity()) {
                         throw new RuntimeException(MessageFormat.format(Message.Exception.IMEI_COUNT_MISMATCH, product.getName()));
                     }
-                    for (String imei : item.getSelectImeis()) {
+                    for (String imei : imeis) {
                         stockService.exportByImei(saveOrder.getId(), imei);
                     }
                 } else {

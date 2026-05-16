@@ -61,6 +61,34 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
     }
 
     @Override
+    public List<String> findMissingImeisByWarehouse(Long sessionId, Long warehouseId) {
+        String sql = """
+                SELECT pi.imei
+                FROM product_items pi
+                JOIN warehouse_locations wl ON pi.location_id = wl.id
+                WHERE pi.status = 'AVAILABLE'
+                  AND wl.warehouse_id = ?
+                  AND pi.imei NOT IN (
+                      SELECT imei FROM inventory_details WHERE session_id = ?
+                  )
+                """;
+        List<String> list = new ArrayList<>();
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setObject(1, warehouseId);
+            ps.setObject(2, sessionId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString("imei"));
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error find missing imeis for session {} / warehouse {}", sessionId, warehouseId, e);
+        }
+        return list;
+    }
+
+    @Override
     public List<ProductItem> findAgingStock(int days) {
         String sql = """
                 SELECT *
@@ -183,7 +211,11 @@ public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, L
 
     @Override
     public List<ProductItem> findByProductIdAndStatus(Long productId, String status) {
-        String sql = "SELECT * FROM product_items WHERE product_id = ? AND status = ?";
+        String sql = """
+                SELECT * FROM product_items
+                WHERE product_id = ? AND status = ?
+                ORDER BY import_date ASC NULLS LAST, id ASC
+                """;
         return queryList(sql, this::mapResultSet, productId, status);
     }
 

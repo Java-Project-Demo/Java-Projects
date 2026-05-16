@@ -14,6 +14,8 @@ public interface AuditLogMappingHelper {
                 .entityId(log.getEntityId())
                 .status(log.getStatus())
                 .details(log.getDetails())
+                .staffName(log.getStaffName())
+                .staffUsername(log.getStaffUsername())
                 .createdAt(log.getCreatedAt())
                 .build();
     }
