@@ -2,6 +2,7 @@ package org.dawn.backend.service.catalog;
 
 import lombok.RequiredArgsConstructor;
 import org.dawn.backend.config.database.TransactionManager;
+import org.dawn.backend.constant.system.ActiveStatus;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.dto.catalog.SupplierMappingHelper;
@@ -61,14 +62,14 @@ public class SupplierService {
             Supplier existing = supplierRepository
                     .findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.SUPPLIER_NOT_FOUND));
-            existing.setName(req.getName());
-            existing.setContactPerson(req.getContactPerson());
-            existing.setPhoneNumber(req.getPhoneNumber());
-            existing.setEmail(req.getEmail());
-            existing.setAddress(req.getAddress());
-            existing.setTaxCode(req.getTaxCode());
-            existing.setStatus(req.getStatus());
-            existing.setIsDeleted(req.getIsDeleted());
+            if (req.getName() != null) existing.setName(req.getName());
+            if (req.getContactPerson() != null) existing.setContactPerson(req.getContactPerson());
+            if (req.getPhoneNumber() != null) existing.setPhoneNumber(req.getPhoneNumber());
+            if (req.getEmail() != null) existing.setEmail(req.getEmail());
+            if (req.getAddress() != null) existing.setAddress(req.getAddress());
+            if (req.getTaxCode() != null) existing.setTaxCode(req.getTaxCode());
+            if (req.getStatus() != null) existing.setStatus(req.getStatus());
+            if (req.getIsDeleted() != null) existing.setIsDeleted(req.getIsDeleted());
 
             auditLogService.saveLog(
                     LogConstant.Action.UPDATE_SUPPLIER,
