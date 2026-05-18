@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux'
 import type { AppDispatch, RootState } from './store'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>()
 export const useAppSelector = useSelector.withTypes<RootState>()
@@ -23,12 +23,19 @@ interface SpeechRecognitionInstance {
 
 type SpeechRecognitionCtor = new () => SpeechRecognitionInstance
 
-export const useSpeechRecognition = (
-  onFinal: (text: string) => void,
-  onInterim: (text: string) => void,
-) => {
+export const useSpeechRecognition = (onFinal: (text: string) => void, onInterim: (text: string) => void) => {
   const [isListening, setIsListening] = useState(false)
-  const [recognition, setRecognition] = useState<SpeechRecognitionInstance | null>(null)
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null)
+
+  const onFinalRef = useRef(onFinal)
+  const onInterimRef = useRef(onInterim)
+
+  useEffect(() => {
+    onFinalRef.current = onFinal
+  }, [onFinal])
+  useEffect(() => {
+    onInterimRef.current = onInterim
+  }, [onInterim])
 
   useEffect(() => {
     const w = window as unknown as {
@@ -48,7 +55,7 @@ export const useSpeechRecognition = (
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript
         if (event.results[i].isFinal) {
-          onFinal(transcript)
+          onFinalRef.current(transcript)
         } else {
           interim += transcript
           onInterim(interim)
@@ -58,16 +65,24 @@ export const useSpeechRecognition = (
 
     recog.onend = () => setIsListening(false)
     recog.onerror = () => setIsListening(false)
-    setRecognition(recog)
-  }, [onFinal, onInterim])
+    recognitionRef.current = recog
 
-  const toggleListening = () => {
-    if (isListening) recognition?.stop()
-    else {
-      recognition?.start()
+    return () => {
+      recog.stop()
+    }
+  }, [])
+
+  const toggleListening = useCallback(() => {
+    if (!recognitionRef.current) return
+
+    if (isListening) {
+      recognitionRef.current.stop()
+      setIsListening(false)
+    } else {
+      recognitionRef.current.start()
       setIsListening(true)
     }
-  }
+  }, [isListening])
 
   return { isListening, toggleListening }
 }

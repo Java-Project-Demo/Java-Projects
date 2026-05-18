@@ -326,3 +326,8 @@ export interface SessionSummaryResponse {
   extraCount: number
   details: ScanResultResponse[]
 }
+
+export interface ChatResponse {
+  answer: string
+  suggestions: string[]
+}

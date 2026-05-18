@@ -7,11 +7,13 @@ import {
   SendOutlined,
   UserOutlined
 } from '@ant-design/icons'
-import { Badge, Button, Card, FloatButton, Input, Space, Spin, theme, Tooltip, Typography } from 'antd'
+import { Badge, Button, Card, FloatButton, Input, Space, Spin, Tag, theme, Typography } from 'antd'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAskAgentMutation } from '@/features/aiAgent/aiAgentApi.ts'
 import { useSpeechRecognition } from '@/app/hooks.ts'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const { Text } = Typography
 interface Message {
@@ -20,6 +22,7 @@ interface Message {
   text: string
   time: string
   isMe: boolean
+  suggestions?: string[]
 }
 
 interface ChatPopupProps {
@@ -46,34 +49,9 @@ const ChatPopup = ({ username }: ChatPopupProps) => {
   const [askAgent, { isLoading }] = useAskAgentMutation()
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    setInputValue(val)
-    baseTextRef.current = val
-  }
-
-  const handleInterim = useCallback((interim: string) => {
-    const base = baseTextRef.current.trim()
-    setInputValue(base ? `${base} ${interim}` : interim)
-  }, [])
-
-  const handleFinal = useCallback((final: string) => {
-    const base = baseTextRef.current.trim()
-    const updated = base ? `${base} ${final}` : final
-    setInputValue(updated)
-    baseTextRef.current = updated
-  }, [])
-
-  const { isListening, toggleListening } = useSpeechRecognition(handleFinal, handleInterim)
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [messages, open, isLoading, inputValue])
-
-  const handleSendMessage = async () => {
-    const messageText = inputValue.trim()
+  // Hàm xử lý gửi tin nhắn (Dùng chung cho cả Input và Suggestions)
+  const handleSendMessage = async (textOverride?: string) => {
+    const messageText = textOverride || inputValue.trim()
     if (!messageText || isLoading) return
 
     const userMsg: Message = {
@@ -89,17 +67,19 @@ const ChatPopup = ({ username }: ChatPopupProps) => {
     baseTextRef.current = ''
 
     try {
-      const aiResponseText = await askAgent({ message: messageText }).unwrap()
+      // Backend trả về { answer: string, suggestions: string[] }
+      const response = await askAgent({ message: messageText }).unwrap()
+
       const botReply: Message = {
         id: Date.now() + 1,
         sender: t('aiSender'),
-        text: aiResponseText,
+        text: response.answer,
+        suggestions: response.suggestions,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isMe: false
       }
       setMessages((prev) => [...prev, botReply])
     } catch (err) {
-      console.error('Chi tiết lỗi:', err)
       const errorMsg: Message = {
         id: Date.now() + 2,
         sender: t('systemSender'),
@@ -111,6 +91,25 @@ const ChatPopup = ({ username }: ChatPopupProps) => {
     }
   }
 
+  // Voice Recognition Logic
+  const handleInterim = useCallback((interim: string) => {
+    const base = baseTextRef.current.trim()
+    setInputValue(base ? `${base} ${interim}` : interim)
+  }, [])
+  const handleFinal = useCallback((final: string) => {
+    const base = baseTextRef.current.trim()
+    const updated = base ? `${base} ${final}` : final
+    setInputValue(updated)
+    baseTextRef.current = updated
+  }, [])
+  const { isListening, toggleListening } = useSpeechRecognition(handleFinal, handleInterim)
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [messages, open, isLoading])
+
   return (
     <>
       <FloatButton
@@ -119,7 +118,6 @@ const ChatPopup = ({ username }: ChatPopupProps) => {
         badge={{ dot: true }}
         onClick={() => setOpen(!open)}
         style={{ right: 24, bottom: 24 }}
-        tooltip={<div>{t('tooltip')}</div>}
       />
 
       {open && (
@@ -137,13 +135,12 @@ const ChatPopup = ({ username }: ChatPopupProps) => {
             position: 'fixed',
             right: 24,
             bottom: 80,
-            width: 380,
+            width: 450,
             zIndex: 1000,
             boxShadow: '0 6px 16px 0 rgba(0, 0, 0, 0.15)',
-            borderRadius: 12,
-            border: 'none'
+            borderRadius: 12
           }}
-          styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', height: 450 } }}
+          styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', height: 500 } }}
         >
           <div
             ref={scrollRef}
@@ -158,7 +155,7 @@ const ChatPopup = ({ username }: ChatPopupProps) => {
             }}
           >
             {messages.map((msg) => (
-              <div key={msg.id} style={{ alignSelf: msg.isMe ? 'flex-end' : 'flex-start', maxWidth: '90%' }}>
+              <div key={msg.id} style={{ alignSelf: msg.isMe ? 'flex-end' : 'flex-start', maxWidth: '95%' }}>
                 <div
                   style={{
                     fontSize: '11px',
@@ -174,19 +171,49 @@ const ChatPopup = ({ username }: ChatPopupProps) => {
                   {msg.sender} • {msg.time}
                   {msg.isMe && <UserOutlined />}
                 </div>
+
+                {/* Bubble Chat */}
                 <div
                   style={{
                     padding: '10px 14px',
                     borderRadius: msg.isMe ? '15px 15px 2px 15px' : '15px 15px 15px 2px',
                     background: msg.isMe ? token.colorPrimary : '#fff',
                     color: msg.isMe ? '#fff' : '#000',
-                    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-                    whiteSpace: 'pre-wrap',
-                    lineHeight: '1.5'
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
                   }}
                 >
-                  {msg.text}
+                  {msg.isMe ? (
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
+                  ) : (
+                    <div
+                      className='  text-[13px]
+  [&_table]:w-full [&_table]:my-2 [&_table]:border-collapse
+  [&_th]:border [&_th]:border-gray-300 [&_th]:p-2 [&_th]:bg-gray-50 [&_th]:text-left
+  [&_td]:border [&_td]:border-gray-300 [&_td]:p-2
+  [&_p]:mb-2 [&_p]:last:mb-0
+  [&_ul]:list-disc [&_ul]:ml-4
+  [&_strong]:font-bold'
+                    >
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                    </div>
+                  )}
                 </div>
+
+                {/* Suggestions Chips */}
+                {!msg.isMe && msg.suggestions && msg.suggestions.length > 0 && (
+                  <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {msg.suggestions.map((sug, index) => (
+                      <Tag
+                        key={index}
+                        color='blue'
+                        style={{ cursor: 'pointer', borderRadius: 12, padding: '2px 10px', margin: 0 }}
+                        onClick={() => handleSendMessage(sug)}
+                      >
+                        {sug}
+                      </Tag>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
 
@@ -203,42 +230,29 @@ const ChatPopup = ({ username }: ChatPopupProps) => {
           </div>
 
           <div style={{ padding: '12px', background: '#fff', borderTop: '1px solid #f0f0f0' }}>
-            {isListening && (
-              <div className='text-[10px] text-red-500 mb-1 animate-pulse flex items-center gap-1'>
-                <span className='w-1.5 h-1.5 bg-red-500 rounded-full'></span>
-                {t('listening')}
-              </div>
-            )}
             <Input
               placeholder={isListening ? t('listeningPlaceholder') : t('inputPlaceholder')}
               value={inputValue}
               disabled={isLoading}
-              onChange={handleInputChange}
-              onPressEnter={handleSendMessage}
+              onChange={(e) => setInputValue(e.target.value)}
+              onPressEnter={() => handleSendMessage()}
               suffix={
                 <Space size={4}>
-                  <Tooltip title={isListening ? t('voiceTooltip.stop') : t('voiceTooltip.start')}>
-                    <Button
-                      type='text'
-                      size='small'
-                      shape='circle'
-                      disabled={isLoading}
-                      icon={isListening ? <AudioMutedOutlined style={{ color: '#ff4d4f' }} /> : <AudioOutlined />}
-                      onClick={toggleListening}
-                      className={isListening ? 'animate-pulse bg-red-50' : ''}
-                    />
-                  </Tooltip>
-
+                  <Button
+                    type='text'
+                    size='small'
+                    shape='circle'
+                    icon={isListening ? <AudioMutedOutlined style={{ color: '#ff4d4f' }} /> : <AudioOutlined />}
+                    onClick={toggleListening}
+                  />
                   <Button
                     type='text'
                     size='small'
                     shape='circle'
                     icon={<SendOutlined />}
-                    onClick={handleSendMessage}
+                    onClick={() => handleSendMessage()}
                     disabled={!inputValue.trim() || isLoading}
-                    style={{
-                      color: inputValue.trim() && !isLoading ? token.colorPrimary : '#bfbfbf'
-                    }}
+                    style={{ color: inputValue.trim() && !isLoading ? token.colorPrimary : '#bfbfbf' }}
                   />
                 </Space>
               }
