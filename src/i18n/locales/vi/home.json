@@ -13,6 +13,8 @@
     "pieTitle": "Phân bổ sản phẩm theo danh mục",
     "pieTooltipLabel": "Số lượng",
     "pieTooltipUnit": "{{count}} sản phẩm",
+    "pieTotal": "Tổng SP",
+    "pieOthers": "Khác ({{count}} danh mục)",
     "barTitle": "Top sản phẩm theo giá trị tồn kho",
     "barLegend": "Giá trị (triệu)",
     "barTooltipLabel": "Giá trị tồn",

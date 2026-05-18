@@ -9,20 +9,33 @@ test('STOCK full flow demo (one session)', async ({ page }) => {
   /* ─────────── 1. LOGIN + đổi MK lần đầu ─────────── */
   await loginAsRole(page, STOCK_USER.id, STOCK_USER.username)
 
-  /* ─────────── 2. DANH SÁCH SẢN PHẨM (chỉ xem) ─────────── */
+  /* ─────────── 2. DASHBOARD MỚI — chart phân bổ danh mục ─────────── */
+  await page.goto('/')
+  await showBanner(page, '② Dashboard mới — donut Top 6 + "Khác", legend list scroll bên phải')
+  await pause(page, 1500)
+
+  const pieCard = page.locator('.ant-card-head-title:has-text("Phân bổ")').first()
+  if (await pieCard.count()) {
+    await pieCard.scrollIntoViewIfNeeded()
+    await pause(page, 3500)
+  } else {
+    await pause(page, 2500)
+  }
+
+  /* ─────────── 3. DANH SÁCH SẢN PHẨM (chỉ xem) ─────────── */
   await page.goto('/vat-tu')
-  await showBanner(page, '② STOCK xem danh mục sản phẩm — chỉ đọc')
+  await showBanner(page, '③ STOCK xem danh mục sản phẩm — chỉ đọc')
   await pause(page, 2500)
 
-  /* ─────────── 3. KIỂM CHỨNG PHÂN QUYỀN — không vào /nhan-vien ─────────── */
-  await showBanner(page, '③ Thử vào /nhan-vien — RoleRoute redirect (chỉ ADMIN)')
+  /* ─────────── 4. KIỂM CHỨNG PHÂN QUYỀN — không vào /nhan-vien ─────────── */
+  await showBanner(page, '④ Thử vào /nhan-vien — RoleRoute redirect (chỉ ADMIN)')
   const blockedFromUsers = await isBlockedFromRoute(page, '/nhan-vien')
   console.log(`  [verify] STOCK bị chặn /nhan-vien: ${blockedFromUsers ? '✓' : '✗'}`)
   await pause(page, 1500)
 
-  /* ─────────── 4. NHẬP KHO — luồng chính ─────────── */
+  /* ─────────── 5. NHẬP KHO — luồng chính ─────────── */
   await page.goto('/nhap-kho')
-  await showBanner(page, '④ Nhập kho — chọn SP, NCC, bin, nhập IMEI')
+  await showBanner(page, '⑤ Nhập kho — chọn SP, NCC, bin, nhập IMEI')
   await pause(page, 2500)
 
   // Chọn sản phẩm đầu tiên trong dropdown
@@ -37,9 +50,9 @@ test('STOCK full flow demo (one session)', async ({ page }) => {
     }
   }
 
-  /* ─────────── 5. KHO VẬT LÝ — xem bản đồ ─────────── */
+  /* ─────────── 6. KHO VẬT LÝ — xem bản đồ ─────────── */
   await page.goto('/quan-ly-kho')
-  await showBanner(page, '⑤ Quản lý kho vật lý — STOCK truy cập được')
+  await showBanner(page, '⑥ Quản lý kho vật lý — STOCK truy cập được')
   await pause(page, 2000)
 
   const mapBtn = page.locator('button:has-text("Bản đồ"), button:has-text("Map")').first()
@@ -49,11 +62,6 @@ test('STOCK full flow demo (one session)', async ({ page }) => {
     await page.keyboard.press('Escape')
     await pause(page, 800)
   }
-
-  /* ─────────── 6. KIỂM KÊ — bắt đầu phiên ─────────── */
-  await page.goto('/kiem-ke')
-  await showBanner(page, '⑥ Kiểm kê — chức năng riêng của STOCK')
-  await pause(page, 3000)
 
   /* ─────────── 7. TỒN KHO CŨ ─────────── */
   await page.goto('/ton-kho-cu')

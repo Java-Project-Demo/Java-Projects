@@ -13,8 +13,6 @@ import {
   InboxOutlined,
   KeyOutlined,
   LogoutOutlined,
-  SafetyCertificateOutlined,
-  ScanOutlined,
   SearchOutlined,
   ShopOutlined,
   ShoppingCartOutlined,
@@ -58,8 +56,7 @@ const ALL_MENU: MenuItem[] = [
         labelKey: 'menu:item.warehouseLayout',
         icon: <EnvironmentOutlined />,
         roles: rolesFor('/quan-ly-kho')
-      },
-      { key: '/kiem-ke', labelKey: 'menu:item.inventory', icon: <ScanOutlined />, roles: rolesFor('/kiem-ke') }
+      }
     ]
   },
   {
@@ -77,7 +74,6 @@ const ALL_MENU: MenuItem[] = [
     icon: <ShoppingCartOutlined />,
     children: [
       { key: '/lich-su-don-hang', labelKey: 'menu:item.orderHistory', icon: <ShoppingCartOutlined />, roles: rolesFor('/lich-su-don-hang') },
-      { key: '/bao-hanh', labelKey: 'menu:item.warranty', icon: <SafetyCertificateOutlined />, roles: rolesFor('/bao-hanh') },
       { key: '/tra-cuu-imei', labelKey: 'menu:item.imeiLookup', icon: <SearchOutlined />, roles: rolesFor('/tra-cuu-imei') }
     ]
   },

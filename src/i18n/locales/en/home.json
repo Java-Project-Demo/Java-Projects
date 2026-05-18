@@ -13,6 +13,8 @@
     "pieTitle": "Product distribution by category",
     "pieTooltipLabel": "Count",
     "pieTooltipUnit": "{{count}} products",
+    "pieTotal": "Total",
+    "pieOthers": "Others ({{count}} categories)",
     "barTitle": "Top products by inventory value",
     "barLegend": "Value (million)",
     "barTooltipLabel": "Inventory value",

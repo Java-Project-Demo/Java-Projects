@@ -9,7 +9,7 @@ import {
   UserOutlined, RightOutlined, DollarOutlined, SafetyCertificateOutlined,
 } from '@ant-design/icons'
 import {
-  PieChart, Pie, Cell, Tooltip as RTooltip, Legend,
+  PieChart, Pie, Cell, Tooltip as RTooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
 } from 'recharts'
 import { useNavigate } from 'react-router-dom'
@@ -27,8 +27,12 @@ const { Title, Text } = Typography
 const PRIMARY = '#E8603C'
 
 const CHART_COLORS = ['#E8603C', '#1677ff', '#52c41a', '#faad14', '#722ed1', '#13c2c2', '#eb2f96']
+const OTHERS_COLOR = '#8c8c8c'
+const TOP_PIE_CATEGORIES = 6
 
 const cardStyle = { borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.07)', height: '100%' }
+
+type PieSlice = { name: string; value: number; isOthers?: boolean }
 
 const actionLabel = (action: string) => {
   if (action?.includes('IMPORT') || action?.includes('STOCK')) return 'nhap'
@@ -43,7 +47,7 @@ const KpiSkeleton = () => (
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const PieLabel = (props: any) => {
   const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props
-  if ((percent as number) < 0.05) return null
+  if ((percent as number) < 0.08) return null
   const RADIAN = Math.PI / 180
   const radius = (innerRadius as number) + ((outerRadius as number) - (innerRadius as number)) * 0.5
   const x = (cx as number) + radius * Math.cos(-(midAngle as number) * RADIAN)
@@ -81,14 +85,29 @@ const Home = () => {
 
   const catMap = useMemo(() => Object.fromEntries(categories.map((c) => [c.id, c.name])), [categories])
   const pieData = useMemo(() => {
-    const counts: Record<number, { name: string; value: number; stockValue: number }> = {}
+    const counts: Record<number, { name: string; value: number }> = {}
     products.forEach((p) => {
-      if (!counts[p.categoryId]) counts[p.categoryId] = { name: catMap[p.categoryId] ?? `#${p.categoryId}`, value: 0, stockValue: 0 }
+      if (!counts[p.categoryId]) counts[p.categoryId] = { name: catMap[p.categoryId] ?? `#${p.categoryId}`, value: 0 }
       counts[p.categoryId].value += 1
-      counts[p.categoryId].stockValue += p.currentStock * p.priceExport
     })
-    return Object.values(counts).filter((c) => c.value > 0)
-  }, [products, catMap])
+    const all = Object.values(counts)
+      .filter((c) => c.value > 0)
+      .sort((a, b) => b.value - a.value)
+    const total = all.reduce((s, c) => s + c.value, 0)
+    if (all.length <= TOP_PIE_CATEGORIES + 1) {
+      return { slices: all as PieSlice[], total }
+    }
+    const top = all.slice(0, TOP_PIE_CATEGORIES)
+    const rest = all.slice(TOP_PIE_CATEGORIES)
+    const othersValue = rest.reduce((s, c) => s + c.value, 0)
+    return {
+      slices: [
+        ...top,
+        { name: t('charts.pieOthers', { count: rest.length }), value: othersValue, isOthers: true },
+      ] as PieSlice[],
+      total,
+    }
+  }, [products, catMap, t])
 
   const barData = useMemo(() =>
     [...products]
@@ -195,24 +214,58 @@ const Home = () => {
           <Card style={cardStyle} title={
             <Space><ShoppingOutlined style={{ color: PRIMARY }} /><span>{t('charts.pieTitle')}</span></Space>
           }>
-            {pieData.length === 0 ? (
+            {pieData.slices.length === 0 ? (
               <Skeleton active paragraph={{ rows: 4 }} />
             ) : (
-              <ResponsiveContainer width='100%' height={280}>
-                <PieChart>
-                  <Pie data={pieData} cx='50%' cy='50%' innerRadius={60} outerRadius={110}
-                    dataKey='value' labelLine={false} label={PieLabel}>
-                    {pieData.map((_, index) => (
-                      <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <RTooltip
-                    formatter={(value) => [t('charts.pieTooltipUnit', { count: Number(value ?? 0) }), t('charts.pieTooltipLabel')]}
-                    contentStyle={{ fontSize: 12 }}
-                  />
-                  <Legend formatter={(value: string) => <span style={{ fontSize: 12 }}>{value}</span>} />
-                </PieChart>
-              </ResponsiveContainer>
+              <Row gutter={[12, 12]} align='middle'>
+                <Col xs={24} sm={12}>
+                  <div style={{ position: 'relative' }}>
+                    <ResponsiveContainer width='100%' height={240}>
+                      <PieChart>
+                        <Pie data={pieData.slices} cx='50%' cy='50%' innerRadius={55} outerRadius={100}
+                          dataKey='value' labelLine={false} label={PieLabel}>
+                          {pieData.slices.map((s, i) => (
+                            <Cell key={i} fill={s.isOthers ? OTHERS_COLOR : CHART_COLORS[i % CHART_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <RTooltip
+                          formatter={(value, _name, p) => [
+                            t('charts.pieTooltipUnit', { count: Number(value ?? 0) }),
+                            (p as { payload?: { name: string } })?.payload?.name ?? '',
+                          ]}
+                          contentStyle={{ fontSize: 12 }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div style={{
+                      position: 'absolute', top: '50%', left: '50%',
+                      transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none',
+                    }}>
+                      <div style={{ fontSize: 11, color: '#8c8c8c' }}>{t('charts.pieTotal')}</div>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: PRIMARY, lineHeight: 1.2 }}>{pieData.total}</div>
+                    </div>
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div style={{ maxHeight: 240, overflowY: 'auto', paddingRight: 4 }}>
+                    {pieData.slices.map((s, i) => {
+                      const pct = pieData.total > 0 ? (s.value / pieData.total) * 100 : 0
+                      const color = s.isOthers ? OTHERS_COLOR : CHART_COLORS[i % CHART_COLORS.length]
+                      return (
+                        <div key={i} style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '7px 0', borderBottom: '1px solid #f5f5f5',
+                        }}>
+                          <span style={{ width: 10, height: 10, borderRadius: 2, background: color, flexShrink: 0 }} />
+                          <Text style={{ flex: 1, fontSize: 12, minWidth: 0 }} ellipsis={{ tooltip: s.name }}>{s.name}</Text>
+                          <Text strong style={{ fontSize: 12, flexShrink: 0 }}>{s.value}</Text>
+                          <Text type='secondary' style={{ fontSize: 11, width: 36, textAlign: 'right', flexShrink: 0 }}>{pct.toFixed(0)}%</Text>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </Col>
+              </Row>
             )}
           </Card>
         </Col>

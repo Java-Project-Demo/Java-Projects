@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test'
+import { test, Page } from '@playwright/test'
 
 const ADMIN = { username: 'admin', password: 'admin' }
 const SUFFIX = Date.now().toString().slice(-6)
@@ -37,14 +37,27 @@ test('ADMIN full flow demo (one session)', async ({ page }) => {
   await page.waitForURL((u) => !u.pathname.includes('/login'), { timeout: 15_000 })
   await pause(page, 1500)
 
-  /* ─────────── 2. DANH SÁCH SẢN PHẨM ─────────── */
+  /* ─────────── 2. DASHBOARD MỚI — chart phân bổ danh mục ─────────── */
+  await page.goto('/')
+  await showBanner(page, '② Dashboard mới — donut Top 6 + "Khác", legend dạng list scroll bên phải')
+  await pause(page, 1500)
+
+  const pieCard = page.locator('.ant-card-head-title:has-text("Phân bổ")').first()
+  if (await pieCard.count()) {
+    await pieCard.scrollIntoViewIfNeeded()
+    await pause(page, 3500)
+  } else {
+    await pause(page, 2500)
+  }
+
+  /* ─────────── 3. DANH SÁCH SẢN PHẨM ─────────── */
   await page.goto('/vat-tu')
-  await showBanner(page, '② Danh sách sản phẩm — xem trong bảng')
+  await showBanner(page, '③ Danh sách sản phẩm — xem trong bảng')
   await pause(page, 2500)
 
-  /* ─────────── 3. TẠO DANH MỤC ─────────── */
+  /* ─────────── 4. TẠO DANH MỤC ─────────── */
   await page.goto('/danh-muc-vat-tu')
-  await showBanner(page, `③ Tạo danh mục mới: "E2E Category ${SUFFIX}"`)
+  await showBanner(page, `④ Tạo danh mục mới: "E2E Category ${SUFFIX}"`)
   await pause(page, 1200)
 
   const addCatBtn = page.locator('button:has-text("Thêm danh mục"), button:has-text("Add"), button.ant-btn-primary').first()
@@ -57,9 +70,9 @@ test('ADMIN full flow demo (one session)', async ({ page }) => {
   await page.locator('.ant-modal-content .ant-btn-primary').last().click()
   await pause(page, 2000)
 
-  /* ─────────── 4. TẠO NHÀ CUNG CẤP ─────────── */
+  /* ─────────── 5. TẠO NHÀ CUNG CẤP ─────────── */
   await page.goto('/nha-cung-cap')
-  await showBanner(page, `④ Tạo NCC mới: "E2E Supplier ${SUFFIX}"`)
+  await showBanner(page, `⑤ Tạo NCC mới: "E2E Supplier ${SUFFIX}"`)
   await pause(page, 1200)
 
   await page.locator('button.ant-btn-primary').first().click()
@@ -72,9 +85,9 @@ test('ADMIN full flow demo (one session)', async ({ page }) => {
   await page.locator('.ant-modal-content .ant-btn-primary').last().click()
   await pause(page, 2000)
 
-  /* ─────────── 5. BẢN ĐỒ KHO ─────────── */
+  /* ─────────── 6. BẢN ĐỒ KHO ─────────── */
   await page.goto('/quan-ly-kho')
-  await showBanner(page, '⑤ Bản đồ kho — mở Drawer xem layout bin có sản phẩm')
+  await showBanner(page, '⑥ Bản đồ kho — mở Drawer xem layout bin có sản phẩm')
   await pause(page, 1500)
 
   const mapBtn = page.locator('button:has-text("Bản đồ"), button:has-text("Map")').first()
@@ -85,9 +98,9 @@ test('ADMIN full flow demo (one session)', async ({ page }) => {
     await pause(page, 800)
   }
 
-  /* ─────────── 6. LỊCH SỬ ĐƠN HÀNG (verify fix mới) ─────────── */
+  /* ─────────── 7. LỊCH SỬ ĐƠN HÀNG (verify fix mới) ─────────── */
   await page.goto('/lich-su-don-hang')
-  await showBanner(page, '⑥ Lịch sử đơn hàng — click 👁 xem chi tiết (fix 2026-05-16)')
+  await showBanner(page, '⑦ Lịch sử đơn hàng — click 👁 xem chi tiết (fix 2026-05-16)')
   await pause(page, 1500)
 
   const detailBtn = page.locator('table tbody tr').first().locator('button').first()
@@ -97,11 +110,6 @@ test('ADMIN full flow demo (one session)', async ({ page }) => {
     await page.keyboard.press('Escape')
     await pause(page, 800)
   }
-
-  /* ─────────── 7. BẢO HÀNH (verify cột mới) ─────────── */
-  await page.goto('/bao-hanh')
-  await showBanner(page, '⑦ Bảo hành — bảng có cột Sản phẩm + IMEI + Khách hàng (fix mới)')
-  await pause(page, 3000)
 
   /* ─────────── 8. TỒN KHO CŨ — modal lý do hỏng (fix mới) ─────────── */
   await page.goto('/ton-kho-cu')
