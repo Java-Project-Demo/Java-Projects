@@ -24,7 +24,7 @@ public class LangChainConfig {
                     .apiKey(modeApi)
                     .modelName(modeType)
                     .timeout(Duration.ofSeconds(60))
-                    .maxTokens(1000)
+                    .maxTokens(4000)
                     .logRequests(true)
                     .logResponses(true)
                     .build();
