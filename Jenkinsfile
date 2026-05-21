@@ -8,6 +8,12 @@ pipeline {
             }
         }
 
+        stage('Debug') {
+            steps {
+                sh 'pwd && ls -la'
+            }
+        }
+
         stage('Deploy') {
             steps {
                 withCredentials([file(credentialsId: 'infra-env', variable: 'ENV_FILE')]) {
