@@ -1,0 +1,27 @@
+{
+  "group": {
+    "warehouse": "Kho hàng",
+    "category": "Danh mục",
+    "sales": "Bán hàng",
+    "report": "Báo cáo",
+    "system": "Hệ thống"
+  },
+  "item": {
+    "dashboard": "Tổng quan",
+    "products": "Vật tư",
+    "import": "Nhập kho",
+    "export": "Xuất kho",
+    "warehouseLayout": "Quản lý kho vật lý",
+    "inventory": "Kiểm kê",
+    "categories": "Danh mục vật tư",
+    "suppliers": "Nhà cung cấp",
+    "orderHistory": "Lịch sử đơn hàng",
+    "warranty": "Bảo hành",
+    "imeiLookup": "Tra cứu IMEI",
+    "statistics": "Thống kê",
+    "oldStock": "Tồn kho cũ",
+    "employees": "Nhân viên",
+    "printBarcode": "In Barcode",
+    "logs": "Nhật ký hệ thống"
+  }
+}

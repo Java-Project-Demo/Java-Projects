@@ -1,0 +1,61 @@
+{
+  "title": "Nhật ký hệ thống",
+  "subtitle": "Theo dõi toàn bộ biến động dữ liệu và lịch sử thao tác của người dùng",
+  "filter": {
+    "action": "Hành động",
+    "actionAll": "Tất cả hành động",
+    "time": "Thời gian",
+    "search": "Tìm kiếm",
+    "searchPlaceholder": "Tìm ID, nội dung..."
+  },
+  "table": {
+    "time": "Thời gian",
+    "actor": "Người thực hiện",
+    "action": "Hành động",
+    "entity": "Đối tượng",
+    "refId": "ID Tham chiếu",
+    "status": "Trạng thái",
+    "details": "Nội dung chi tiết",
+    "system": "Hệ thống",
+    "total": "Tổng cộng {{count}} bản ghi"
+  },
+  "action": {
+    "LOGIN": "Đăng nhập",
+    "LOGOUT": "Đăng xuất",
+    "REFRESH_TOKEN": "Làm mới phiên",
+    "CREATE_USER": "Tạo người dùng",
+    "UPDATE_USER": "Cập nhật người dùng",
+    "UPDATE_USER_INFO": "Cập nhật thông tin cá nhân",
+    "UPDATE_USER_STATUS": "Cập nhật trạng thái người dùng",
+    "UPDATE_ROLE": "Thay đổi quyền hạn",
+    "DELETE_USER": "Xoá người dùng",
+    "CHANGE_PASSWORD": "Đổi mật khẩu",
+    "RESET_PASSWORD": "Đặt lại mật khẩu",
+    "CREATE_SUPPLIER": "Thêm nhà cung cấp",
+    "UPDATE_SUPPLIER": "Cập nhật nhà cung cấp",
+    "DELETE_SUPPLIER": "Xoá nhà cung cấp",
+    "CREATE_CATEGORY": "Thêm danh mục",
+    "UPDATE_CATEGORY": "Cập nhật danh mục",
+    "DELETE_CATEGORY": "Xoá danh mục",
+    "CREATE_PRODUCT": "Thêm sản phẩm",
+    "UPDATE_PRODUCT": "Cập nhật sản phẩm",
+    "DELETE_PRODUCT": "Xoá sản phẩm",
+    "CREATE_WAREHOUSE": "Thiết lập kho hàng",
+    "IMPORT_STOCK": "Nhập kho",
+    "ADJUST_STOCK": "Điều chỉnh tồn kho",
+    "MARK_DAMAGED": "Báo hàng hỏng",
+    "CREATE_ORDER": "Tạo đơn hàng",
+    "CANCEL_ORDER": "Huỷ đơn hàng",
+    "COMPLETE_ORDER": "Hoàn thành đơn hàng",
+    "RETURN_ORDER": "Khách trả hàng",
+    "RECEIVE_WARRANTY": "Tiếp nhận bảo hành"
+  },
+  "entity": {
+    "PRODUCT": "Sản phẩm",
+    "PRODUCT_ITEM": "IMEI",
+    "ORDER": "Đơn hàng",
+    "SUPPLIER": "Nhà cung cấp",
+    "WAREHOUSE": "Kho hàng",
+    "AUTH": "Xác thực hệ thống"
+  }
+}

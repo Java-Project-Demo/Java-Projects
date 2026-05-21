@@ -1,0 +1,63 @@
+{
+  "title": "Kiểm kê kho",
+  "subtitle": "Mở phiên — quét IMEI tại từng vị trí — đóng phiên để đối chiếu MATCH/MISMATCH/MISSING/EXTRA",
+  "steps": {
+    "open": "Mở phiên",
+    "scan": "Quét IMEI",
+    "reconcile": "Đối chiếu"
+  },
+  "open": {
+    "title": "Chọn kho cần kiểm kê",
+    "noWarehouseTitle": "Chưa có kho nào trong hệ thống",
+    "noWarehouseDesc": "Vào trang Quản lý kho để tạo kho và bin trước khi kiểm kê.",
+    "placeholder": "Chọn kho...",
+    "option": "{{name}}{{address}} ({{count}} bin)",
+    "warehouseRequired": "Chọn kho cần kiểm kê",
+    "submit": "Bắt đầu phiên kiểm kê",
+    "sessionStarted": "Đã mở phiên kiểm kê #{{id}}",
+    "sessionFail": "Không khởi tạo được phiên"
+  },
+  "scan": {
+    "stats": {
+      "session": "Phiên",
+      "scanned": "Đã quét",
+      "ok": "Thành công",
+      "error": "Lỗi"
+    },
+    "title": "Quét IMEI",
+    "imeiPlaceholder": "Quét hoặc nhập IMEI",
+    "imeiRequired": "Nhập IMEI",
+    "locationPlaceholder": "Chọn bin / vị trí thực tế",
+    "locationRequired": "Chọn vị trí thực tế",
+    "duplicate": "IMEI này đã được scan trong phiên này",
+    "record": "Ghi nhận",
+    "scanFail": "Lỗi ghi nhận scan",
+    "historyTitle": "Lịch sử scan trong phiên ({{count}})",
+    "finish": "Kết thúc & đối chiếu",
+    "empty": "Chưa có scan nào",
+    "col": {
+      "imei": "IMEI",
+      "location": "Vị trí thực tế",
+      "status": "Trạng thái"
+    },
+    "statusOk": "Đã ghi nhận",
+    "statusError": "Lỗi"
+  },
+  "complete": {
+    "title": "Kết thúc phiên kiểm kê?",
+    "content": "Đã scan {{count}} IMEI thành công. Sau khi kết thúc, BE sẽ đối chiếu và đánh dấu các IMEI MISSING (có trong DB nhưng chưa được scan).",
+    "okText": "Kết thúc & đối chiếu",
+    "cancelText": "Tiếp tục scan",
+    "success": "Phiên kiểm kê đã được đối chiếu",
+    "fail": "Lỗi kết thúc phiên"
+  },
+  "result": {
+    "title": "Phiên kiểm kê đã hoàn tất",
+    "subtitle": "Phiên <0>#{{id}}</0> đã ghi nhận <1>{{count}}</1> IMEI và đã đối chiếu. Truy cập <2>Audit log</2> hoặc DB để xem chi tiết kết quả MATCH / MISMATCH / MISSING / EXTRA.",
+    "restart": "Bắt đầu phiên mới",
+    "summary": "Tóm tắt phiên",
+    "summaryTotal": "Tổng scan: {{count}}",
+    "summaryOk": "Thành công: {{count}}",
+    "summaryError": "Lỗi tại UI: {{count}}"
+  }
+}

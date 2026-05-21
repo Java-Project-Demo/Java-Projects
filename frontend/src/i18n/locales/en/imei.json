@@ -1,0 +1,41 @@
+{
+  "title": "IMEI lookup",
+  "subtitle": "Track the full history of a device by IMEI",
+  "input": {
+    "placeholder": "Enter IMEI to look up...",
+    "submit": "Look up"
+  },
+  "intro": "Enter IMEI to view device information",
+  "notFound": {
+    "title": "IMEI not found: <0>{{imei}}</0>",
+    "description": "This IMEI has not been registered in the system"
+  },
+  "overview": {
+    "imei": "IMEI",
+    "status": "Status",
+    "product": "Product"
+  },
+  "product": {
+    "title": "Product information",
+    "name": "Product name",
+    "sku": "SKU",
+    "warrantyPeriod": "Warranty period",
+    "importDate": "Import date",
+    "empty": "No product information"
+  },
+  "sale": {
+    "title": "Sale information",
+    "customer": "Customer",
+    "phone": "Phone",
+    "saleDate": "Sale date",
+    "salePrice": "Sale price",
+    "paymentMethod": "Payment",
+    "empty": "Not sold yet"
+  },
+  "warranty": {
+    "title": "Warranty history",
+    "received": "Received",
+    "returned": "Returned",
+    "empty": "No warranty history"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "tooltip": "Chat với AI hỗ trợ",
+  "title": "Trợ lý AI Kho hàng",
+  "systemSender": "Hệ thống",
+  "aiSender": "AI Assistant",
+  "welcome": "Xin chào! Tôi là trợ lý UTC. Bạn cần hỗ trợ gì về kho hàng không?",
+  "error": "Xin lỗi, tôi gặp sự cố kết nối. Vui lòng thử lại sau.",
+  "thinking": "AI đang suy nghĩ...",
+  "listening": "Hệ thống đang nghe...",
+  "inputPlaceholder": "Nhập nội dung...",
+  "listeningPlaceholder": "Đang nghe...",
+  "voiceTooltip": {
+    "start": "Nói để nhập liệu",
+    "stop": "Dừng nghe"
+  }
+}

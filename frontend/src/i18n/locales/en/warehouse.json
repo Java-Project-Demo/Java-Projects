@@ -1,0 +1,87 @@
+{
+  "title": "Physical warehouse management",
+  "subtitle": "Create warehouses, configure zone/row/shelf/bin layout and move items",
+  "createButton": "Create warehouse",
+  "stats": {
+    "totalWarehouses": "Total warehouses",
+    "totalBins": "Total bins"
+  },
+  "col": {
+    "warehouse": "Warehouse",
+    "bins": "Bin count",
+    "zones": "Zones",
+    "actions": "Actions"
+  },
+  "tooltip": {
+    "map": "View bin details"
+  },
+  "actions": {
+    "map": "Map",
+    "setupLayout": "Setup layout",
+    "moveImei": "Move IMEI"
+  },
+  "empty": {
+    "title": "No warehouses yet",
+    "action": "Create warehouse",
+    "noBin": "No bins. Click Setup layout to create."
+  },
+  "create": {
+    "title": "Create warehouse",
+    "name": "Warehouse name",
+    "nameRequired": "Enter warehouse name",
+    "namePlaceholder": "Hanoi central warehouse",
+    "address": "Address",
+    "addressPlaceholder": "1 ABC Street...",
+    "submit": "Create",
+    "success": "Warehouse \"{{name}}\" created"
+  },
+  "layout": {
+    "title": "Configure layout — {{name}}",
+    "zone": "Zone",
+    "zoneRequired": "Enter zone name",
+    "row": "Row",
+    "rowRequired": "Enter row number",
+    "shelfCount": "Shelf count (shelves)",
+    "shelfCountRequired": "Enter shelf count",
+    "binCount": "Bin count / shelf (bins)",
+    "binCountRequired": "Enter bin count",
+    "hint": "The system will create <0>shelves × bins</0> bins in the specified zone-row.",
+    "preview": "Preview · Zone <0>{{zone}}</0> · Row <1>{{row}}</1>",
+    "previewBin": "{{count}} bins",
+    "previewHint": "Enter shelf and bin counts to preview",
+    "submit": "Create bins",
+    "success": "Created {{count}} bins for zone {{zone}} - row {{row}}"
+  },
+  "move": {
+    "title": "Move IMEI — {{name}}",
+    "imei": "IMEI",
+    "imeiRequired": "Enter IMEI to move",
+    "imeiPlaceholder": "Scan or enter IMEI",
+    "target": "Target location (click empty bin)",
+    "targetRequired": "Select target location",
+    "submit": "Move",
+    "success": "IMEI moved to new location"
+  },
+  "drawer": {
+    "title": "Map — {{name}}",
+    "binCount": "{{count}} bins",
+    "zoneTab": "Zone {{zone}}",
+    "rowLabel": "Row {{row}}",
+    "legendEmpty": "Empty",
+    "legendOccupied": "Occupied (number = items)",
+    "legendHint": "· Hover for details",
+    "binPopoverTitle": "Bin S{{shelf}}-B{{bin}} · {{count}} items"
+  },
+  "binPicker": {
+    "selectWarehouse": "Select warehouse first",
+    "noBin": "Warehouse has no bins",
+    "rowLabel": "Row {{row}}",
+    "zoneTab": "Zone {{zone}}",
+    "legendAvailable": "Available",
+    "legendOccupied": "Occupied",
+    "legendSelected": "Selected",
+    "binTooltipAvailable": "{{label}} — Available",
+    "binTooltipOccupied": "{{label}} — {{count}} items",
+    "binPopoverTitle": "Bin {{label}}"
+  }
+}

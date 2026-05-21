@@ -1,0 +1,66 @@
+{
+  "title": "Quản lý bảo hành",
+  "subtitle": "Theo dõi và xử lý các phiếu bảo hành",
+  "createButton": "Tạo phiếu bảo hành",
+  "stats": {
+    "total": "Tổng phiếu",
+    "active": "Đang xử lý",
+    "fixed": "Đã sửa xong",
+    "unfixable": "Không sửa được"
+  },
+  "listTitle": "Danh sách phiếu bảo hành",
+  "filter": "Lọc trạng thái",
+  "col": {
+    "id": "ID",
+    "productItemId": "ProductItem ID",
+    "product": "Sản phẩm",
+    "customer": "Khách hàng",
+    "issue": "Mô tả sự cố",
+    "status": "Trạng thái",
+    "receivedDate": "Ngày nhận",
+    "returnDate": "Ngày trả",
+    "technicalNote": "Ghi chú KT",
+    "staff": "Nhân viên",
+    "actions": "Hành động"
+  },
+  "tooltip": {
+    "update": "Cập nhật trạng thái"
+  },
+  "create": {
+    "title": "Tạo phiếu bảo hành",
+    "imeiHeader": "Danh sách IMEI cần bảo hành",
+    "imeiPlaceholder": "Nhập IMEI rồi nhấn Thêm hoặc Enter — hệ thống sẽ tra cứu thông tin",
+    "imeiAdd": "Thêm",
+    "imeiDuplicate": "IMEI đã được thêm",
+    "imeiNotFound": "IMEI \"{{imei}}\" không tồn tại trong hệ thống",
+    "imeiTraceFail": "Không tra cứu được IMEI \"{{imei}}\"",
+    "imeiEmpty": "Chưa có IMEI. Hệ thống sẽ tra cứu tên sản phẩm + khách hàng khi bạn thêm.",
+    "imeiNeedOne": "Cần nhập ít nhất 1 IMEI",
+    "imeiBlocked": "{{count}} IMEI không hợp lệ. Vui lòng xoá trước khi tạo.",
+    "warningNotSold": "Chưa được bán — không thể bảo hành",
+    "warningExpired": "Hết hạn bảo hành ({{date}})",
+    "customerLabel": "Khách:",
+    "expiryLabel": "Hết hạn: {{date}}",
+    "issue": "Mô tả sự cố",
+    "issueRequired": "Nhập mô tả sự cố",
+    "issuePlaceholder": "Mô tả chi tiết tình trạng hư hỏng...",
+    "submit": "Tạo phiếu",
+    "submitWithCount": "Tạo phiếu ({{count}})",
+    "success": "Tạo {{count}} phiếu bảo hành thành công!"
+  },
+  "update": {
+    "title": "Cập nhật trạng thái bảo hành",
+    "status": "Trạng thái mới",
+    "statusRequired": "Chọn trạng thái",
+    "note": "Ghi chú kỹ thuật",
+    "notePlaceholder": "Ghi chú về quá trình sửa chữa...",
+    "submit": "Cập nhật",
+    "success": "Cập nhật bảo hành thành công!"
+  },
+  "totalSuffix": "Tổng {{count}} phiếu",
+  "empty": {
+    "title": "Chưa có phiếu bảo hành nào",
+    "description": "Tạo phiếu mới khi có thiết bị cần sửa chữa",
+    "action": "Tạo phiếu"
+  }
+}

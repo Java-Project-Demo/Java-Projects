@@ -1,0 +1,69 @@
+{
+  "title": "Order history",
+  "subtitle": "Track all stock-out orders",
+  "stats": {
+    "total": "Total orders",
+    "pending": "Pending",
+    "completed": "Completed",
+    "canceled": "Canceled"
+  },
+  "revenueLabel": "Revenue (completed orders):",
+  "listTitle": "Order list",
+  "filter": {
+    "status": "Filter status"
+  },
+  "col": {
+    "id": "#",
+    "customer": "Customer",
+    "total": "Total",
+    "payment": "Payment",
+    "status": "Status",
+    "createdAt": "Created at",
+    "actions": "Actions"
+  },
+  "tooltip": {
+    "viewDetail": "View detail",
+    "cancel": "Cancel order",
+    "return": "Return"
+  },
+  "cancel": {
+    "title": "Confirm cancel order",
+    "content": "Cancel order #{{id}} of customer {{customer}}?",
+    "okText": "Cancel order",
+    "cancelText": "No",
+    "success": "Order canceled!"
+  },
+  "return": {
+    "title": "Return order #{{id}}",
+    "imeiLabel": "IMEIs to return",
+    "imeiExtra": "Separate IMEIs by comma, space, or newline.",
+    "imeiRequired": "Enter IMEIs to return",
+    "imeiPlaceholder": "IMEI1, IMEI2, ...",
+    "imeiNeedOne": "Need at least 1 IMEI to return",
+    "reason": "Reason",
+    "reasonRequired": "Enter return reason",
+    "reasonPlaceholder": "e.g. Customer changed mind, technical issue, ...",
+    "submit": "Confirm return",
+    "success": "Returned {{count}} IMEIs for order #{{id}}"
+  },
+  "drawer": {
+    "title": "Order #{{id}}",
+    "customer": "Customer",
+    "phone": "Phone number",
+    "payment": "Payment",
+    "total": "Total",
+    "createdAt": "Created at",
+    "itemsHeader": "Product details:",
+    "itemsEmpty": "No products.",
+    "colProduct": "Product",
+    "colQty": "Qty",
+    "colPrice": "Unit price",
+    "colSubtotal": "Subtotal"
+  },
+  "empty": {
+    "loading": "Feature in progress",
+    "loadingDesc": "Order list endpoint is not ready. Please try again later.",
+    "title": "No orders yet"
+  },
+  "totalSuffix": "Total {{count}} orders"
+}

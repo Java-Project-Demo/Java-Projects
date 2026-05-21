@@ -1,0 +1,16 @@
+{
+  "tooltip": "Chat with AI assistant",
+  "title": "Warehouse AI Assistant",
+  "systemSender": "System",
+  "aiSender": "AI Assistant",
+  "welcome": "Hello! I'm the UTC assistant. How can I help with the warehouse?",
+  "error": "Sorry, I encountered a connection error. Please try again later.",
+  "thinking": "AI is thinking...",
+  "listening": "Listening...",
+  "inputPlaceholder": "Type a message...",
+  "listeningPlaceholder": "Listening...",
+  "voiceTooltip": {
+    "start": "Speak to type",
+    "stop": "Stop listening"
+  }
+}

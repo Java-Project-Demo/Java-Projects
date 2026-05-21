@@ -1,0 +1,63 @@
+{
+  "title": "Inventory check",
+  "subtitle": "Open a session — scan IMEIs at each location — close to reconcile MATCH/MISMATCH/MISSING/EXTRA",
+  "steps": {
+    "open": "Open session",
+    "scan": "Scan IMEI",
+    "reconcile": "Reconcile"
+  },
+  "open": {
+    "title": "Select warehouse to check",
+    "noWarehouseTitle": "No warehouse in the system",
+    "noWarehouseDesc": "Go to Warehouse Management to create a warehouse and bins before checking.",
+    "placeholder": "Select warehouse...",
+    "option": "{{name}}{{address}} ({{count}} bins)",
+    "warehouseRequired": "Select a warehouse",
+    "submit": "Start session",
+    "sessionStarted": "Session #{{id}} opened",
+    "sessionFail": "Could not start session"
+  },
+  "scan": {
+    "stats": {
+      "session": "Session",
+      "scanned": "Scanned",
+      "ok": "Success",
+      "error": "Error"
+    },
+    "title": "Scan IMEI",
+    "imeiPlaceholder": "Scan or type IMEI",
+    "imeiRequired": "Enter IMEI",
+    "locationPlaceholder": "Select bin / actual location",
+    "locationRequired": "Select actual location",
+    "duplicate": "This IMEI was already scanned in this session",
+    "record": "Record",
+    "scanFail": "Scan record error",
+    "historyTitle": "Scan history this session ({{count}})",
+    "finish": "Finish & reconcile",
+    "empty": "No scans yet",
+    "col": {
+      "imei": "IMEI",
+      "location": "Actual location",
+      "status": "Status"
+    },
+    "statusOk": "Recorded",
+    "statusError": "Error"
+  },
+  "complete": {
+    "title": "End inventory session?",
+    "content": "{{count}} IMEIs successfully scanned. After ending, BE will reconcile and mark MISSING IMEIs (in DB but not scanned).",
+    "okText": "Finish & reconcile",
+    "cancelText": "Continue scanning",
+    "success": "Session reconciled",
+    "fail": "Session finish failed"
+  },
+  "result": {
+    "title": "Inventory session completed",
+    "subtitle": "Session <0>#{{id}}</0> recorded <1>{{count}}</1> IMEIs and reconciled. Visit <2>Audit log</2> or DB to view MATCH / MISMATCH / MISSING / EXTRA results.",
+    "restart": "Start new session",
+    "summary": "Session summary",
+    "summaryTotal": "Total scans: {{count}}",
+    "summaryOk": "Success: {{count}}",
+    "summaryError": "UI errors: {{count}}"
+  }
+}

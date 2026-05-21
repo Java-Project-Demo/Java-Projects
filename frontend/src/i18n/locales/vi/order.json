@@ -1,0 +1,69 @@
+{
+  "title": "Lịch sử đơn hàng",
+  "subtitle": "Theo dõi tất cả các đơn xuất kho",
+  "stats": {
+    "total": "Tổng đơn",
+    "pending": "Chờ xử lý",
+    "completed": "Hoàn thành",
+    "canceled": "Đã huỷ"
+  },
+  "revenueLabel": "Doanh thu (đơn hoàn thành):",
+  "listTitle": "Danh sách đơn hàng",
+  "filter": {
+    "status": "Lọc trạng thái"
+  },
+  "col": {
+    "id": "#",
+    "customer": "Khách hàng",
+    "total": "Tổng tiền",
+    "payment": "Thanh toán",
+    "status": "Trạng thái",
+    "createdAt": "Ngày tạo",
+    "actions": "Hành động"
+  },
+  "tooltip": {
+    "viewDetail": "Xem chi tiết",
+    "cancel": "Huỷ đơn",
+    "return": "Hoàn trả"
+  },
+  "cancel": {
+    "title": "Xác nhận huỷ đơn",
+    "content": "Huỷ đơn hàng #{{id}} của khách {{customer}}?",
+    "okText": "Huỷ đơn",
+    "cancelText": "Không",
+    "success": "Đã huỷ đơn hàng!"
+  },
+  "return": {
+    "title": "Hoàn trả đơn #{{id}}",
+    "imeiLabel": "Danh sách IMEI cần trả",
+    "imeiExtra": "Mỗi IMEI cách nhau bằng dấu phẩy, dấu cách hoặc xuống dòng.",
+    "imeiRequired": "Nhập IMEI cần trả",
+    "imeiPlaceholder": "IMEI1, IMEI2, ...",
+    "imeiNeedOne": "Cần nhập ít nhất 1 IMEI để hoàn trả",
+    "reason": "Lý do trả",
+    "reasonRequired": "Nhập lý do trả hàng",
+    "reasonPlaceholder": "VD: Khách đổi ý, lỗi kỹ thuật, ...",
+    "submit": "Xác nhận hoàn trả",
+    "success": "Đã hoàn trả {{count}} IMEI cho đơn #{{id}}"
+  },
+  "drawer": {
+    "title": "Đơn hàng #{{id}}",
+    "customer": "Khách hàng",
+    "phone": "Số điện thoại",
+    "payment": "Thanh toán",
+    "total": "Tổng tiền",
+    "createdAt": "Ngày tạo",
+    "itemsHeader": "Chi tiết sản phẩm:",
+    "itemsEmpty": "Chưa có sản phẩm.",
+    "colProduct": "Sản phẩm",
+    "colQty": "SL",
+    "colPrice": "Đơn giá",
+    "colSubtotal": "Thành tiền"
+  },
+  "empty": {
+    "loading": "Chức năng đang cập nhật",
+    "loadingDesc": "Endpoint lấy danh sách đơn hàng chưa sẵn sàng. Vui lòng thử lại sau.",
+    "title": "Chưa có đơn hàng nào"
+  },
+  "totalSuffix": "Tổng {{count}} đơn hàng"
+}

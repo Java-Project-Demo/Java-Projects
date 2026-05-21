@@ -1,0 +1,64 @@
+{
+  "title": "Employee management",
+  "addButton": "Add employee",
+  "filter": {
+    "search": "Search name, username...",
+    "role": "Role"
+  },
+  "col": {
+    "user": "Employee",
+    "email": "Email",
+    "phone": "Phone",
+    "role": "Role",
+    "status": "Status",
+    "resetPwd": "Reset PW",
+    "createdAt": "Created at",
+    "actions": "Actions"
+  },
+  "tooltip": {
+    "edit": "Edit info",
+    "resetPassword": "Reset password"
+  },
+  "statusBadge": {
+    "reset": "Was reset",
+    "notReset": "No"
+  },
+  "create": {
+    "title": "Add new employee",
+    "fullName": "Full name",
+    "fullNameRequired": "Enter full name",
+    "fullNamePlaceholder": "John Doe",
+    "email": "Email",
+    "emailInvalid": "Invalid email",
+    "emailPlaceholder": "employee@company.com (optional)",
+    "role": "Role",
+    "roleRequired": "Select role",
+    "hint": "Username and temporary password will be auto-generated from the full name.",
+    "submit": "Create employee",
+    "success": "Employee created successfully!"
+  },
+  "edit": {
+    "title": "Update info",
+    "fullName": "Full name",
+    "phone": "Phone number",
+    "phonePlaceholder": "09xxxxxxxx",
+    "submit": "Update",
+    "success": "Updated successfully!"
+  },
+  "reset": {
+    "title": "Reset password",
+    "confirm": "Are you sure you want to reset password for <0>{{username}}</0>?",
+    "tempIntro": "Temporary password for <0>{{username}}</0>:",
+    "tempNote": "The employee needs to change password on next sign-in.",
+    "submit": "Confirm reset",
+    "fail": "Password reset failed"
+  },
+  "toggleStatus": {
+    "successUnlock": "Account {{username}} unlocked",
+    "successLock": "Account {{username}} locked"
+  },
+  "changeRole": {
+    "success": "{{username}}'s role changed to {{role}}"
+  },
+  "totalSuffix": "Total {{count}} employees"
+}
