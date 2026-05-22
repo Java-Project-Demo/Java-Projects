@@ -4,71 +4,38 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.exception.payload.ExceptionMessage;
 import org.dawn.backend.utils.L10nUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.time.ZonedDateTime;
 
-@WebFilter("/*")
+@RestControllerAdvice
 @Slf4j
-public class ApiExceptionHandler implements Filter {
+public class ApiExceptionHandler {
 
-
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-
-    @Override
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        try {
-            chain.doFilter(req, res);
-        } catch (Exception e) {
-            handleApiRequestException((HttpServletResponse) res, e);
-        }
-
-    }
-
-    public void handleApiRequestException(HttpServletResponse res, Exception e) throws IOException {
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ExceptionMessage> handleApiRequestException(ApiException e) {
         log.info("**ApiExceptionHandler controller, handler API request*\n");
-        Throwable cause = e;
-        while (cause.getCause() != null && !(cause instanceof ApiException)) {
-            if (cause instanceof InvocationTargetException || cause instanceof ServletException || cause instanceof RuntimeException) {
-                cause = cause.getCause();
-            } else {
-                break;
-            }
-        }
-        int status;
-        String message;
-
-        if (cause instanceof ApiException apiEx) {
-            status = apiEx.getStatus();
-            message = L10nUtils.translate(apiEx.getMessage(), apiEx.getArgs());
-            log.warn("API Exception handled: {} - {}", status, message);
-        } else {
-            log.error("Unexcepted error occurred", e);
-            status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-            message = L10nUtils.translate(cause.getMessage());
-        }
-
-        ExceptionMessage errorBody = buildResponse(status, message);
-
-        res.setStatus(status);
-        res.setContentType("application/json;charset=UTF-8");
-        res.setCharacterEncoding("UTF-8");
-        res.getWriter().write(mapper.writeValueAsString(errorBody));
-        res.getWriter().flush();
+        return buildResponse(e.getStatus(), e.getMessage());
     }
 
-    private ExceptionMessage buildResponse(int status, String message) {
-        return ExceptionMessage
+    private ResponseEntity<ExceptionMessage> buildResponse(HttpStatus status, String message) {
+        ExceptionMessage response = ExceptionMessage
                 .builder()
                 .timestamp(ZonedDateTime.now())
-                .status(status)
+                .status(status.value())
                 .message(message)
                 .build();
+        return new ResponseEntity<>(response, status);
     }
 
 }
