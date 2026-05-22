@@ -25,10 +25,18 @@ interface BinPickerGridProps {
   bins: WarehouseLocationResponse[]
   selectedProductId?: number
   value?: number
+  disableConflictCheck?: boolean
   onChange?: (id: number) => void
   compact?: boolean
 }
-const BinPickerGrid = ({ bins, selectedProductId, value, onChange, compact }: BinPickerGridProps) => {
+const BinPickerGrid = ({
+  bins,
+  disableConflictCheck,
+  selectedProductId,
+  value,
+  onChange,
+  compact
+}: BinPickerGridProps) => {
   const { t } = useTranslation('warehouse')
 
   const grouped = useMemo(() => {
@@ -51,7 +59,11 @@ const BinPickerGrid = ({ bins, selectedProductId, value, onChange, compact }: Bi
     const isSelected = value === b.id
     const isFull = b.items.length >= b.capacity
     const isEmpty = b.items.length === 0
-    const isConflict = !isEmpty && selectedProductId != null && b.items.some((i) => i.productId !== selectedProductId)
+    const isConflict =
+      !disableConflictCheck &&
+      !isEmpty &&
+      selectedProductId != null &&
+      b.items.some((i) => i.productId !== selectedProductId)
     const isDisabled = isFull || isConflict
     const label = `S${b.shelfNum}-B${b.binNum}`
 
