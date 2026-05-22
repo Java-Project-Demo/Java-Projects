@@ -6,18 +6,19 @@ import org.dawn.backend.config.database.TransactionManager;
 import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.constant.catalog.ItemStatus;
-import org.dawn.backend.constant.system.ActiveStatus;
 import org.dawn.backend.constant.inventory.MovementType;
 import org.dawn.backend.constant.sales.OrderStatus;
+import org.dawn.backend.constant.system.ActiveStatus;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
-import org.dawn.backend.dto.inventory.ImportImeiRequest;
 import org.dawn.backend.dto.catalog.ProductItemResponse;
+import org.dawn.backend.dto.catalog.ProductMappingHelper;
 import org.dawn.backend.dto.catalog.ProductResponse;
+import org.dawn.backend.dto.inventory.ImportImeiRequest;
 import org.dawn.backend.entity.*;
+import org.dawn.backend.exception.wrapper.InvalidRequestException;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
-import org.dawn.backend.dto.catalog.ProductMappingHelper;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.catalog.ProductRepository;
 import org.dawn.backend.repository.catalog.SupplierRepository;
@@ -31,8 +32,9 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -63,46 +65,60 @@ public class StockService {
             if (req.getCostPrice() == null || req.getCostPrice().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new RuntimeException(Message.Exception.COST_PRICE_INVALID);
             }
-            locationRepository.findById(req.getLocationId())
+            WarehouseLocation location = locationRepository
+                    .findById(req.getLocationId())
                     .orElseThrow(() -> new ResourceNotFoundException(MessageFormat.format(Message.Exception.WAREHOUSE_LOCATION_NOT_FOUND, req.getLocationId())));
+            if (locationRepository.hasOtherProductInLocation(req.getLocationId(), req.getProductId())) {
+                throw new InvalidRequestException(MessageFormat.format(Message.Exception.LOCATION_HAS_OTHER_PRODUCT, req.getLocationId()));
+            }
+
+            long currentCount = locationRepository.countAvailableItemsByLocationId(req.getLocationId());
+            long remaining = location.getCapacity() - currentCount;
+            int incoming = req.getImeiList().size();
+            if (incoming > remaining) {
+                throw new InvalidRequestException(MessageFormat.format(Message.Exception.BIN_CAPACITY_EXCEEDED, remaining, incoming));
+            }
+
             supplierRepository.findById(req.getSupplierId())
                     .orElseThrow(() -> new ResourceNotFoundException(MessageFormat.format(Message.Exception.SUPPLIER_NOT_FOUND_WITH_ID, req.getSupplierId())));
 
-            List<ProductItem> itemsSaved = new ArrayList<>();
-            for (String imei : req.getImeiList()) {
-                if (itemRepository.existsByImei(imei))
-                    throw new ResourceAlreadyExistedException(MessageFormat.format(Message.Exception.ITEM_IMEI_ALREADY_EXISTS, imei));
 
-                itemsSaved.add(ProductItem
-                        .builder()
-                        .productId(req.getProductId())
-                        .locationId(req.getLocationId())
-                        .costPrice(req.getCostPrice())
-                        .supplierId(req.getSupplierId())
-                        .imei(imei)
-                        .status(ItemStatus.AVAILABLE)
-                        .build());
+            List<String> duplicates = req.getImeiList()
+                    .stream()
+                    .filter(itemRepository::existsByImei)
+                    .toList();
+            if (!duplicates.isEmpty()) {
+                throw new ResourceAlreadyExistedException(MessageFormat.format(Message.Exception.ITEM_IMEI_ALREADY_EXISTS, String.join(", ", duplicates)));
             }
 
-            itemRepository.saveAll(itemsSaved);
+            List<ProductItem> items = req.getImeiList()
+                    .stream()
+                    .map(imei -> ProductItem
+                            .builder()
+                            .productId(req.getProductId())
+                            .locationId(req.getLocationId())
+                            .costPrice(req.getCostPrice())
+                            .supplierId(req.getSupplierId())
+                            .imei(imei)
+                            .status(ItemStatus.AVAILABLE)
+                            .build())
+                    .collect(Collectors.toList());
+            itemRepository.saveAll(items);
 
-            int importQty = req.getImeiList().size();
-            product.setCurrentStock(product.getCurrentStock() + importQty);
+            product.setCurrentStock(product.getCurrentStock() + incoming);
 
             if (product.getStatus() == ActiveStatus.INACTIVE) {
                 product.setStatus(ActiveStatus.ACTIVE);
             }
 
             Product savedProduct = productRepository.save(product);
-
-            UserPrincipal currentUser = SecurityContext.get();
-            Long currentId = (currentUser != null) ? currentUser.id() : null;
+            Long currentId = Optional.ofNullable(SecurityContext.get()).map(UserPrincipal::id).orElse(null);
 
             saveMovement(
                     req.getProductId(),
                     MovementType.IMPORT,
                     "NEW_IMPORT",
-                    req.getImeiList().size(),
+                    incoming,
                     null,
                     currentId,
                     "Import IMEI"

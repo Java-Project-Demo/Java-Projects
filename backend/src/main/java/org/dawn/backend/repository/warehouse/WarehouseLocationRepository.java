@@ -1,6 +1,5 @@
 package org.dawn.backend.repository.warehouse;
 
-import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.entity.WarehouseLocation;
 import org.dawn.backend.repository.base.BaseRepository;
 
@@ -13,5 +12,9 @@ public interface WarehouseLocationRepository extends BaseRepository<WarehouseLoc
 
     List<WarehouseLocation> findEmptyLocations();
 
-    List<WarehouseLocation> findEmptyLocationsByWarehouseId(Long warehouseId);
+    List<WarehouseLocation> findAvailableLocationsByWarehouseId(Long warehouseId, Long productId);
+
+    long countAvailableItemsByLocationId(Long locationId);
+
+    boolean hasOtherProductInLocation(Long locationId, Long productId);
 }

@@ -39,6 +39,7 @@ public interface WarehouseMappingHelper {
                 .rowNum(item.getRowNum())
                 .shelfNum(item.getShelfNum())
                 .binNum(item.getBinNum())
+                .capacity(item.getCapacity())
                 .items(items == null
                         ? List.of()
                         : items.stream().map(WarehouseMappingHelper::mapMini).toList())

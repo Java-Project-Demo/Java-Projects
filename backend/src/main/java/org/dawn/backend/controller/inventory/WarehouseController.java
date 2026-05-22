@@ -11,8 +11,6 @@ import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.dto.inventory.WarehouseLocationResponse;
 import org.dawn.backend.dto.inventory.WarehouseRequest;
 import org.dawn.backend.dto.inventory.WarehouseResponse;
-import org.dawn.backend.entity.Warehouse;
-import org.dawn.backend.entity.WarehouseLocation;
 import org.dawn.backend.service.inventory.WarehouseService;
 
 import java.util.List;
@@ -56,6 +54,7 @@ public class WarehouseController extends AbstractController {
     @Get("/available-bins")
     public ResponseObject<List<WarehouseLocationResponse>> getAvailableBins(HttpServletRequest req, HttpServletResponse res) {
         Long warehouseId = Long.valueOf(req.getParameter("warehouseId"));
-        return ResponseObject.success(warehouseService.getAvailableBins(warehouseId));
+        Long productId = Long.valueOf(req.getParameter("productId"));
+        return ResponseObject.success(warehouseService.getAvailableBins(warehouseId, productId));
     }
 }
