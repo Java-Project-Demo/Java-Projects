@@ -25,6 +25,8 @@ public class WarehouseLocationResponse {
 
     private String binNum;
 
+    private Long capacity;
+
     @lombok.Builder.Default
     private List<LocationItemMini> items = new ArrayList<>();
 }

@@ -112,9 +112,9 @@ public class WarehouseService {
                 .toList();
     }
 
-    public List<WarehouseLocationResponse> getAvailableBins(Long warehouseId) {
+    public List<WarehouseLocationResponse> getAvailableBins(Long warehouseId, Long productId) {
         return locationRepository
-                .findEmptyLocationsByWarehouseId(warehouseId)
+                .findAvailableLocationsByWarehouseId(warehouseId, productId)
                 .stream()
                 .map(WarehouseMappingHelper::mapItem)
                 .toList();

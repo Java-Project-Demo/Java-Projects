@@ -46,7 +46,8 @@ public class Message {
         public static final String ENDPOINT_NOT_FOUND = "API Endpoint not found";
         public static final String EMAIL_SENDING_FAILED = "Could not send email. Please contact administrator.";
         public static final String LOCATION_NOT_FOUND = "Location not found";
-
+        public static final String LOCATION_HAS_OTHER_PRODUCT = "Location {0} already contains a different product";
+        public static final String BIN_CAPACITY_EXCEEDED = "Bin only has {0} slot(s) left, but you are importing {1} IMEI(s)";
         //     Refresh Token
         public static final String REFRESH_TOKEN_NOT_FOUND = "Refresh token not found";
         public static final String REFRESH_TOKEN_EXPIRED = "Refresh token was expired, Please make a new log in request";

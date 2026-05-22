@@ -56,6 +56,7 @@ public class WarehouseController extends AbstractController {
     @Get("/available-bins")
     public ResponseObject<List<WarehouseLocationResponse>> getAvailableBins(HttpServletRequest req, HttpServletResponse res) {
         Long warehouseId = Long.valueOf(req.getParameter("warehouseId"));
-        return ResponseObject.success(warehouseService.getAvailableBins(warehouseId));
+        Long productId = Long.valueOf(req.getParameter("productId"));
+        return ResponseObject.success(warehouseService.getAvailableBins(warehouseId, productId));
     }
 }

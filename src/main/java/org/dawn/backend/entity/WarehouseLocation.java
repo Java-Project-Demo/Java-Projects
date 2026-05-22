@@ -25,6 +25,10 @@ public class WarehouseLocation {
 
     private String binNum;
 
+    private Long capacity;
+
+    private Long currentCount;
+
     private Warehouse warehouse;
 
     @Builder.Default
