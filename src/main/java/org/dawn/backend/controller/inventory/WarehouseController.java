@@ -11,8 +11,6 @@ import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.dto.inventory.WarehouseLocationResponse;
 import org.dawn.backend.dto.inventory.WarehouseRequest;
 import org.dawn.backend.dto.inventory.WarehouseResponse;
-import org.dawn.backend.entity.Warehouse;
-import org.dawn.backend.entity.WarehouseLocation;
 import org.dawn.backend.service.inventory.WarehouseService;
 
 import java.util.List;
