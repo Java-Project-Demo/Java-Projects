@@ -80,8 +80,13 @@
     "legendAvailable": "Available",
     "legendOccupied": "Occupied",
     "legendSelected": "Selected",
+    "legendFull": "Full",
+    "conflict": "Different product",
+    "full": "Full",
+    "legendConflict": "Different product",
     "binTooltipAvailable": "{{label}} — Available",
     "binTooltipOccupied": "{{label}} — {{count}} items",
-    "binPopoverTitle": "Bin {{label}}"
+    "binPopoverTitle": "Bin {{label}}",
+    "tooltipEmpty": "Empty"
   }
 }

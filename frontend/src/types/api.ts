@@ -268,6 +268,7 @@ export interface WarehouseLocationResponse {
   rowNum: string | null
   shelfNum: string | null
   binNum: string | null
+  capacity: number
   items: LocationItemMini[]
 }
 

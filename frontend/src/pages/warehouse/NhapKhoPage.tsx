@@ -17,12 +17,12 @@ import {
   Tag,
   Typography
 } from 'antd'
-import { PlusOutlined, ImportOutlined, DeleteOutlined, ShopOutlined, EnvironmentOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EnvironmentOutlined, ImportOutlined, PlusOutlined, ShopOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { useGetProductsQuery } from '@/features/product/productApi'
 import { useImportImeiMutation } from '@/features/stock/stockApi'
-import { useGetSuppliersQuery, useCreateSupplierMutation } from '@/features/supplier/supplierApi'
-import { useGetMapQuery, useGetAvailableBinsQuery } from '@/features/warehouse/warehouseApi'
+import { useCreateSupplierMutation, useGetSuppliersQuery } from '@/features/supplier/supplierApi'
+import { useGetMapQuery } from '@/features/warehouse/warehouseApi'
 import type { Product, SupplierRequest } from '@/types/api'
 import PageHeader from '@/components/shared/PageHeader'
 import BinPickerGrid from '@/components/shared/BinPickerGrid'
@@ -52,11 +52,9 @@ const NhapKhoPage = () => {
   const [quickAddOpen, setQuickAddOpen] = useState(false)
 
   const { data: products = [], isLoading: loadingProducts, refetch } = useGetProductsQuery()
+  const { refetch: refetchMap } = useGetMapQuery()
   const { data: suppliers = [], isLoading: loadingSuppliers } = useGetSuppliersQuery()
   const { data: warehouses = [], isLoading: loadingWarehouses } = useGetMapQuery()
-  const { data: availableBins = [], isLoading: loadingBins } = useGetAvailableBinsQuery(selectedWarehouseId ?? 0, {
-    skip: selectedWarehouseId == null
-  })
   const [importImei, { isLoading: importing }] = useImportImeiMutation()
   const [createSupplier, { isLoading: creatingSupplier }] = useCreateSupplierMutation()
 
@@ -78,7 +76,7 @@ const NhapKhoPage = () => {
     () => warehouses.find((w) => w.id === selectedWarehouseId) ?? null,
     [warehouses, selectedWarehouseId]
   )
-  const availableBinIds = useMemo(() => new Set(availableBins.map((b) => b.id)), [availableBins])
+  const warehouseLocations = useMemo(() => selectedWarehouse?.locations ?? [], [selectedWarehouse])
 
   const handleAddImei = () => {
     const trimmed = imeiInput.trim()
@@ -94,6 +92,7 @@ const NhapKhoPage = () => {
   const handleProductChange = (id: number) => {
     const p = allProducts.find((p) => p.id === id) ?? null
     setSelectedProduct(p)
+    form.setFieldValue('locationId', undefined)
     if (!p?.hasImei) setImeiList([])
   }
 
@@ -143,6 +142,7 @@ const NhapKhoPage = () => {
           costPrice: values.costPrice,
           imeiList: product?.hasImei ? imeiList : []
         }).unwrap()
+        refetchMap()
         setResult({
           name: product?.name ?? '',
           count: product?.hasImei ? imeiList.length : 1,
@@ -318,7 +318,7 @@ const NhapKhoPage = () => {
                   <Space>
                     <EnvironmentOutlined />
                     <span>{t('import.locationLabel')}</span>
-                    {loadingBins && (
+                    {loadingWarehouses && (
                       <Text type='secondary' style={{ fontSize: 11 }}>
                         {t('import.locationLoading')}
                       </Text>
@@ -328,7 +328,7 @@ const NhapKhoPage = () => {
                 name='locationId'
                 rules={[{ required: true, message: t('import.locationRequired') }]}
               >
-                <BinPickerGrid warehouse={selectedWarehouse} availableIds={availableBinIds} compact />
+                <BinPickerGrid bins={warehouseLocations} selectedProductId={selectedProduct?.id} compact />
               </Form.Item>
 
               {selectedProduct?.hasImei && (
