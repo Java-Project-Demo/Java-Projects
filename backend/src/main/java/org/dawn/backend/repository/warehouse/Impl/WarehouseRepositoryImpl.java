@@ -98,7 +98,7 @@ public class WarehouseRepositoryImpl extends AbstractRepository<Warehouse, Long>
         String sql = """
                 SELECT w.id AS w_id, w.name AS w_name, w.address AS w_address,
                 w.created_at, w.updated_at,
-                l.id AS loc_id, l.zone_name, l.row_num, l.shelf_num, l.bin_num, l.capacity,
+                l.id AS loc_id, l.zone_name, l.row_num, l.shelf_num, l.bin_num, l.capacity
                 FROM warehouses w
                 LEFT JOIN warehouse_locations l ON w.id = l.warehouse_id
                 WHERE w.id = ?

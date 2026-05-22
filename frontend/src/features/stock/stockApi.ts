@@ -5,34 +5,30 @@ import type { ImportImeiRequest, Product, ProductItem } from '@/types/api'
 export const stockApi = createApi({
   reducerPath: 'stockApi',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Stock'],
+  tagTypes: ['Stock', 'Warehouse', 'WarehouseLocation'],
   endpoints: (builder) => ({
     importImei: builder.mutation<Product, ImportImeiRequest>({
       query: (data) => ({ url: '/stock/import', method: 'POST', data }),
-      invalidatesTags: ['Stock'],
+      invalidatesTags: ['Stock', 'Warehouse', 'WarehouseLocation']
     }),
     exportImei: builder.mutation<ProductItem, { orderId: number; imei: string }>({
       query: ({ orderId, imei }) => ({
         url: '/stock/export',
         method: 'POST',
-        params: { orderId, imei },
+        params: { orderId, imei }
       }),
-      invalidatesTags: ['Stock'],
+      invalidatesTags: ['Stock', 'Warehouse', 'WarehouseLocation']
     }),
     markDamaged: builder.mutation<void, { imei: string; reason: string }>({
       query: (data) => ({ url: '/stock/mark-damaged', method: 'POST', data }),
-      invalidatesTags: ['Stock'],
+      invalidatesTags: ['Stock']
     }),
     returnProduct: builder.mutation<void, { imei: string }>({
       query: (data) => ({ url: '/stock/return-product', method: 'POST', data }),
-      invalidatesTags: ['Stock'],
-    }),
-  }),
+      invalidatesTags: ['Stock']
+    })
+  })
 })
 
-export const {
-  useImportImeiMutation,
-  useExportImeiMutation,
-  useMarkDamagedMutation,
-  useReturnProductMutation,
-} = stockApi
+export const { useImportImeiMutation, useExportImeiMutation, useMarkDamagedMutation, useReturnProductMutation } =
+  stockApi
