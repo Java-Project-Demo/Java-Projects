@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("agent")
+@RequestMapping("/agent")
 @RequiredArgsConstructor
 public class AiAgentController {
     private final AiAgentService agentService;

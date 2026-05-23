@@ -54,7 +54,14 @@ cloudinary:
   apiKey: ${CLOUDINARY_API_KEY}
   apiSecret: ${CLOUDINARY_API_SECRET}
 # Open Router
-openRouter:
-  url: ${OPEN_ROUTER_URL}
-  api: ${OPEN_ROUTER_API}
-  model: ${OPEN_ROUTER_MODEL}
+langchain4j:
+  open-ai:
+    chat-model:
+      base-url: ${OPEN_ROUTER_URL}
+      api-key: ${OPEN_ROUTER_API}
+      model-name: ${OPEN_ROUTER_MODEL}
+      log-requests: true
+      log-responses: true
+      timeout: 60s
+      max-retries: 0
+      temperature: 0.0
