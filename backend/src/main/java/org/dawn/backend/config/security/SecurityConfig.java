@@ -21,6 +21,17 @@ public class SecurityConfig implements Filter {
     private AuthTokenFilter authTokenFilter;
     private RefreshTokenService refreshTokenService;
 
+    private static final String[] SWAGGER_URL = {
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/webjars/**",
+            "/swagger-resources/**",
+            "/api/v1/v3/api-docs/**",
+            "/api/v1/v3/api-docs",
+            "/api/v1/api-docs/**",
+            "/api/v1/api-docs"
+    };
+
     private static final String[] PUBLIC_URL = {
             "/api/v1/auth/**",
             "/api/v1/user/**",
@@ -72,6 +83,12 @@ public class SecurityConfig implements Filter {
 
     private boolean isPublic(String path) {
         for (String url : PUBLIC_URL) {
+            String regex = "^" + url
+                    .replace("/**", "/.*")
+                    .replace("/*", "/[^/]*") + "$";
+            if (path.matches(regex)) return true;
+        }
+        for (String url : SWAGGER_URL) {
             String regex = "^" + url
                     .replace("/**", "/.*")
                     .replace("/*", "/[^/]*") + "$";
