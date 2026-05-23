@@ -24,6 +24,14 @@ spring:
       enabled: true
       max-file-size: 10MB
       max-request-size: 10MB
+  # Mail
+  mail:
+    enabled: ${MAIL_ENABLED}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    from: ${MAIL_FROM}
 # Database
 db:
   url: ${DB_URL}
@@ -50,11 +58,3 @@ openRouter:
   url: ${OPEN_ROUTER_URL}
   api: ${OPEN_ROUTER_API}
   model: ${OPEN_ROUTER_MODEL}
-# Mail
-mail:
-  enabled: ${MAIL_ENABLED}
-  host: ${MAIL_HOST}
-  port: ${MAIL_PORT}
-  username: ${MAIL_USERNAME}
-  password: ${MAIL_PASSWORD}
-  from: ${MAIL_FROM}
