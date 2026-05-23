@@ -2,45 +2,69 @@ package org.dawn.backend.config.web.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class ResponseObject<T> {
 
-    @JsonIgnore
-    private int code;
-
-    private String message;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private T data;
+public class ResponseObject<T> extends ResponseEntity<ResponseObject.Payload<T>> {
 
 
-    @Builder.Default
-    private String timeStamp = ZonedDateTime.now().toString();
+    public ResponseObject(HttpStatusCode code, String message, T data) {
+        super(new Payload<>(code.value(), message, data), code);
+    }
 
+    public ResponseObject(HttpStatusCode code, String message, T data, HttpHeaders headers) {
+        super(new Payload<>(code.value(), message, data), headers, code);
+    }
+
+    private ResponseObject(HttpStatusCode code) {
+        super(code);
+    }
 
     public static <T> ResponseObject<T> success(T data) {
-        return ResponseObject.<T>builder().code(200).message("Success").data(data).build();
+        return new ResponseObject<>(HttpStatus.OK, "Success", data);
     }
 
     public static <T> ResponseObject<T> success(T data, String message) {
-        return ResponseObject.<T>builder().code(200).message(message).data(data).build();
+        return new ResponseObject<>(HttpStatus.OK, message, data);
     }
 
     public static <T> ResponseObject<T> created(T data) {
-        return ResponseObject.<T>builder().code(201).message("Created Successfully").data(data).build();
+        return new ResponseObject<>(HttpStatus.CREATED, "Created Successfully", data);
     }
 
-    public static <T> ResponseObject<T> error(int code, String message) {
-        return ResponseObject.<T>builder().code(code).message(message).build();
+    public static <T> ResponseObject<T> deleted() {
+        return new ResponseObject<>(HttpStatus.NO_CONTENT);
+    }
+
+    public static <T> ResponseObject<T> error(HttpStatus code, String message) {
+        return new ResponseObject<>(code, message, null);
+    }
+
+    @Value
+    public static class Payload<T> {
+
+        @JsonIgnore
+        int code;
+
+        String message;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        T data;
+
+        String timeStamp;
+
+        public Payload(int code, String message, T data) {
+            this.code = code;
+            this.message = message;
+            this.data = data;
+            this.timeStamp = ZonedDateTime.now(ZoneOffset.UTC).toString();
+        }
     }
 }

@@ -1,32 +1,33 @@
 package org.dawn.backend.controller.system;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.config.web.annotation.Post;
 import org.dawn.backend.config.web.response.ResponseObject;
-import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.dto.system.ChatRequest;
 import org.dawn.backend.dto.system.ChatResponse;
 import org.dawn.backend.service.system.AiAgentService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
+@RequestMapping("agent")
 @RequiredArgsConstructor
-public class AiAgentController extends AbstractController {
+public class AiAgentController {
     private final AiAgentService agentService;
 
-    @Post("/chat")
-    public ResponseObject<ChatResponse> chat(HttpServletRequest req, HttpServletResponse res) {
+    @PostMapping("/chat")
+    public ResponseObject<ChatResponse> chat(@RequestBody ChatRequest dto, HttpSession session) {
         String role = SecurityContext.get().role();
-        String sessionId = req.getSession().getId();
-        ChatRequest dto = body(req, ChatRequest.class);
+        String sessionId = session.getId();
         ChatResponse answer = agentService.chat(sessionId, role, dto.getMessage());
         return ResponseObject.success(answer);
     }
 
-    @Post("/suggest")
-    public ResponseObject<String> suggest(HttpServletRequest req, HttpServletResponse res) {
-        ChatRequest dto = body(req, ChatRequest.class);
+    @PostMapping("/suggest")
+    public ResponseObject<String> suggest(@RequestBody ChatRequest dto) {
         String answer = agentService.suggest(dto.getMessage());
         return ResponseObject.success(answer);
     }

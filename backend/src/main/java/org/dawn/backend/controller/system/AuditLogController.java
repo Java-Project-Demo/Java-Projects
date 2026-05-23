@@ -1,33 +1,30 @@
 package org.dawn.backend.controller.system;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.config.web.annotation.Get;
 import org.dawn.backend.config.web.response.ResponseObject;
-import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.dto.system.AuditLogResponse;
 import org.dawn.backend.service.system.AuditLogService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@RestController
+@RequestMapping("/logs")
 @RequiredArgsConstructor
-public class AuditLogController extends AbstractController {
+public class AuditLogController {
 
     private final AuditLogService auditLogService;
 
-    @Get("/")
+    @GetMapping("")
     public ResponseObject<List<AuditLogResponse>> getLogs(
-            HttpServletRequest req, HttpServletResponse res) {
-        checkRole("ADMIN", "STOCK");
-
-        String userId = query(req, "userId");
-        String action = query(req, "action");
-        String status = query(req, "status");
-
-        int page = queryInt(req, "page", 0);
-        int size = queryInt(req, "size", 20);
-
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String action,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         List<AuditLogResponse> logs = auditLogService.searchLogs(userId, action, status, null, null, page, size);
         return ResponseObject.success(logs);
     }

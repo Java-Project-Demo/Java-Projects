@@ -1,72 +1,53 @@
 package org.dawn.backend.controller.auth;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.config.web.annotation.Get;
-import org.dawn.backend.config.web.annotation.Post;
-import org.dawn.backend.config.web.annotation.Put;
 import org.dawn.backend.config.web.response.ResponseObject;
-import org.dawn.backend.config.security.UserRoleSecurity;
 import org.dawn.backend.config.web.response.ResponsePage;
 import org.dawn.backend.constant.auth.URole;
-import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.dto.auth.CreateUserResponse;
 import org.dawn.backend.dto.auth.RegisterRequest;
 import org.dawn.backend.dto.auth.UpdateInfoRequest;
 import org.dawn.backend.dto.auth.UserResponse;
 import org.dawn.backend.service.auth.UserService;
+import org.springframework.web.bind.annotation.*;
 
 
+@RequestMapping("/user")
+@RestController
 @RequiredArgsConstructor
-public class UserController extends AbstractController {
+public class UserController {
 
     private final UserService userService;
 
-    @Get("/")
-    public ResponseObject<ResponsePage<UserResponse>> getAll(HttpServletRequest req, HttpServletResponse res) {
-        checkRole(URole.ADMIN.name());
-        int page = Integer.parseInt(req.getParameter("page") != null ? req.getParameter("page") : "0");
-        int size = Integer.parseInt(req.getParameter("size") != null ? req.getParameter("size") : "10");
-
-
+    @GetMapping("")
+    public ResponseObject<ResponsePage<UserResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         return ResponseObject.success(userService.findAll(page, size));
     }
 
-    @Get("/{id}")
-    public ResponseObject<UserResponse> getOne(HttpServletRequest req, HttpServletResponse res) {
-        checkRole(URole.ADMIN.name());
-        return ResponseObject.success(userService.findOne(getPathId(req)));
+    @GetMapping("/{id}")
+    public ResponseObject<UserResponse> getOne(@PathVariable Long id) {
+        return ResponseObject.success(userService.findOne(id));
     }
 
-    @Post("/")
-    public ResponseObject<CreateUserResponse> create(HttpServletRequest req, HttpServletResponse res) {
-        checkRole(URole.ADMIN.name());
-        RegisterRequest dto = body(req, RegisterRequest.class);
+    @PostMapping("")
+    public ResponseObject<CreateUserResponse> create(@RequestBody RegisterRequest dto) {
         return ResponseObject.created(userService.createUser(dto));
     }
 
-    @Put("/{id}/info")
-    public ResponseObject<UserResponse> updateInfo(HttpServletRequest req, HttpServletResponse res) throws Exception {
-        Long id = getPathId(req);
-        UserRoleSecurity.authorize(id);
-        UpdateInfoRequest info = body(req, UpdateInfoRequest.class);
+    @PutMapping("/{id}/info")
+    public ResponseObject<UserResponse> updateInfo(@PathVariable Long id, @RequestBody UpdateInfoRequest info) {
         return ResponseObject.success(userService.updateInfo(id, info));
     }
 
-    @Put("/{id}/status")
-    public ResponseObject<UserResponse> updateStatus(HttpServletRequest req, HttpServletResponse res) throws Exception {
-        checkRole(URole.ADMIN.name());
-        Long id = getPathId(req);
-        Boolean status = body(req, Boolean.class);
+    @PutMapping("/{id}/status")
+    public ResponseObject<UserResponse> updateStatus(@PathVariable Long id, @RequestBody Boolean status) {
         return ResponseObject.success(userService.updateStatus(id, status));
     }
 
-    @Put("/{id}/role")
-    public ResponseObject<UserResponse> updateRole(HttpServletRequest req, HttpServletResponse res) throws Exception {
-        checkRole(URole.ADMIN.name());
-        Long id = getPathId(req);
-        URole role = body(req, URole.class);
+    @PutMapping("/{id}/role")
+    public ResponseObject<UserResponse> updateRole(@PathVariable Long id, @RequestBody URole role) {
         return ResponseObject.success(userService.updateRole(id, role));
     }
 }

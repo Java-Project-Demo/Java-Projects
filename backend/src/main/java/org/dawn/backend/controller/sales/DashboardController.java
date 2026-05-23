@@ -1,43 +1,41 @@
 package org.dawn.backend.controller.sales;
 
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.config.web.annotation.Get;
 import org.dawn.backend.config.web.response.ResponseObject;
-import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.service.sales.DashboardService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@RestController
+@RequestMapping("/dashboard")
 @RequiredArgsConstructor
-public class DashboardController extends AbstractController {
-
+public class DashboardController {
 
     private final DashboardService dashboardService;
 
-    @Get("/low-stock")
-    public ResponseObject<?> lowStock(HttpServletRequest req, HttpServletResponse res) {
+    @GetMapping("/low-stock")
+    public ResponseObject<?> lowStock() {
         return ResponseObject.success(dashboardService.getLowStockAlerts());
     }
 
-
-    @Get("/trace")
-    public ResponseObject<?> trace(HttpServletRequest req, HttpServletResponse res) {
-        String imei = req.getParameter("imei");
+    @GetMapping("/trace")
+    public ResponseObject<?> trace(@RequestParam String imei) {
         return ResponseObject.success(dashboardService.traceImei(imei));
     }
 
-    @Get("/aging-report")
-    public ResponseObject<List<ProductItem>> getAgingReport(HttpServletRequest req, HttpServletResponse res) {
-        int days = Integer.parseInt(req.getParameter("days"));
+    @GetMapping("/aging-report")
+    public ResponseObject<List<ProductItem>> getAgingReport(@RequestParam Integer days) {
         return ResponseObject.success(dashboardService.getAgingStockReport(days));
     }
 
-    @Get("/summary")
-    public ResponseObject<?> getSummary(HttpServletRequest req, HttpServletResponse res) {
+    @GetMapping("/summary")
+    public ResponseObject<?> getSummary() {
         return ResponseObject.success(dashboardService.getAdminDashboard());
     }
 }

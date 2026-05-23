@@ -1,23 +1,43 @@
 package org.dawn.backend.controller.sales;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.config.web.annotation.Get;
 import org.dawn.backend.config.web.response.ResponseObject;
-import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.dto.sales.CustomerResponse;
 import org.dawn.backend.service.sales.CustomerService;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+@RestController
+@RequestMapping("/customer")
 @RequiredArgsConstructor
-public class CustomerController extends AbstractController {
-
+public class CustomerController {
     private final CustomerService customerService;
 
-    @Get("/lookup")
-    public ResponseObject<CustomerResponse> lookup(HttpServletRequest req, HttpServletResponse res) {
-        String phone = req.getParameter("phone");
-        String email = req.getParameter("email");
+    @GetMapping("")
+    public ResponseObject<List<CustomerResponse>> getAll() {
+        return ResponseObject.success(customerService.getAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseObject<CustomerResponse> getById(@PathVariable Long id) {
+        return ResponseObject.success(customerService.getById(id));
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseObject<CustomerResponse> getByEmail(@PathVariable String email) {
+        return ResponseObject.success(customerService.getByEmail(email));
+    }
+
+    @GetMapping("/phone/{phoneNumber}")
+    public ResponseObject<CustomerResponse> getByPhoneNumber(@PathVariable String phoneNumber) {
+        return ResponseObject.success(customerService.getByPhoneNumber(phoneNumber));
+    }
+
+    @GetMapping("/lookup")
+    public ResponseObject<CustomerResponse> lookup(
+            @RequestParam String phone,
+            @RequestParam String email) {
         return ResponseObject.success(customerService.lookup(phone, email));
     }
 }

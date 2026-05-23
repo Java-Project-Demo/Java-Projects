@@ -1,48 +1,38 @@
 package org.dawn.backend.controller.catalog;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.config.web.annotation.Get;
-import org.dawn.backend.config.web.annotation.Post;
-import org.dawn.backend.config.web.annotation.Put;
 import org.dawn.backend.config.web.response.ResponseObject;
-import org.dawn.backend.constant.auth.URole;
-import org.dawn.backend.controller.base.AbstractController;
 import org.dawn.backend.dto.catalog.SupplierRequest;
 import org.dawn.backend.dto.catalog.SupplierResponse;
 import org.dawn.backend.dto.catalog.SupplierUpdateRequest;
 import org.dawn.backend.service.catalog.SupplierService;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController
+@RequestMapping("/supplier")
 @RequiredArgsConstructor
-public class SupplierController extends AbstractController {
+public class SupplierController {
     private final SupplierService supplierService;
 
-    @Get("/")
-    public ResponseObject<List<SupplierResponse>> getAll(HttpServletRequest req, HttpServletResponse res) {
+    @GetMapping("")
+    public ResponseObject<List<SupplierResponse>> getAll() {
         return ResponseObject.success(supplierService.getAll());
     }
 
-    @Get("/{id}")
-    public ResponseObject<SupplierResponse> getOne(HttpServletRequest req, HttpServletResponse res) {
-        Long id = getPathId(req);
+    @GetMapping("/{id}")
+    public ResponseObject<SupplierResponse> getOne(@PathVariable Long id) {
         return ResponseObject.success(supplierService.getOne(id));
     }
 
-    @Post("/")
-    public ResponseObject<SupplierResponse> create(HttpServletRequest req, HttpServletResponse res) {
-        checkRole(URole.ADMIN.name());
-        SupplierRequest dto = body(req, SupplierRequest.class);
+    @PostMapping("")
+    public ResponseObject<SupplierResponse> create(@RequestBody SupplierRequest dto) {
         return ResponseObject.created(supplierService.create(dto));
     }
 
-    @Put("/{id}")
-    public ResponseObject<SupplierResponse> update(HttpServletRequest req, HttpServletResponse res) {
-        checkRole(URole.ADMIN.name());
-        Long id = getPathId(req);
-        SupplierUpdateRequest dto = body(req, SupplierUpdateRequest.class);
+    @PutMapping("/{id}")
+    public ResponseObject<SupplierResponse> update(@PathVariable Long id, @RequestBody SupplierUpdateRequest dto) {
         return ResponseObject.created(supplierService.update(id, dto));
     }
 }
