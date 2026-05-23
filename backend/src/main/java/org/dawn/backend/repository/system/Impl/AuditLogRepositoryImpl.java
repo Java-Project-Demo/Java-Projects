@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.entity.AuditLog;
 import org.dawn.backend.repository.system.AuditLogRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -20,6 +21,7 @@ import java.util.Set;
 
 
 @Slf4j
+@Repository
 public class AuditLogRepositoryImpl extends AbstractRepository<AuditLog, Long> implements AuditLogRepository {
 
     public AuditLogRepositoryImpl(DataSource dataSource) {

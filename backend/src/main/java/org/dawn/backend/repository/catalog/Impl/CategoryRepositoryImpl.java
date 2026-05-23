@@ -5,6 +5,7 @@ import org.dawn.backend.entity.Category;
 import org.dawn.backend.entity.Product;
 import org.dawn.backend.repository.catalog.CategoryRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
-
+@Repository
 public class CategoryRepositoryImpl extends AbstractRepository<Category, Long> implements CategoryRepository {
 
     public CategoryRepositoryImpl(DataSource dataSource) {

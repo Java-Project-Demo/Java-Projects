@@ -7,6 +7,7 @@ import org.dawn.backend.entity.Role;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.repository.auth.UserRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Repository
 public class UserRepositoryImpl extends AbstractRepository<User, Long> implements UserRepository {
 
 
@@ -166,7 +168,6 @@ public class UserRepositoryImpl extends AbstractRepository<User, Long> implement
                 """;
         return checkExists(sql, username);
     }
-
 
 
     @Override

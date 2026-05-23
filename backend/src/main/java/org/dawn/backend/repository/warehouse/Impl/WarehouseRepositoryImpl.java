@@ -8,6 +8,7 @@ import org.dawn.backend.entity.Warehouse;
 import org.dawn.backend.entity.WarehouseLocation;
 import org.dawn.backend.repository.base.AbstractRepository;
 import org.dawn.backend.repository.warehouse.WarehouseRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.*;
 
 @Slf4j
+@Repository
 public class WarehouseRepositoryImpl extends AbstractRepository<Warehouse, Long> implements WarehouseRepository {
     public WarehouseRepositoryImpl(DataSource dataSource) {
         super(dataSource);

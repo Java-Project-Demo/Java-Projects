@@ -4,6 +4,7 @@ import org.dawn.backend.constant.system.ActiveStatus;
 import org.dawn.backend.entity.Supplier;
 import org.dawn.backend.repository.base.AbstractRepository;
 import org.dawn.backend.repository.catalog.SupplierRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -13,6 +14,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class SupplierRepositoryImpl extends AbstractRepository<Supplier, Long> implements SupplierRepository {
     public SupplierRepositoryImpl(DataSource dataSource) {
         super(dataSource);

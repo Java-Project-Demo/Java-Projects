@@ -8,6 +8,7 @@ import org.dawn.backend.entity.Order;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Repository
 public class OrderRepositoryImpl extends AbstractRepository<Order, Long> implements OrderRepository {
 
     public OrderRepositoryImpl(DataSource dataSource) {

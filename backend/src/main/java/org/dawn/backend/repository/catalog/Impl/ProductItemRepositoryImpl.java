@@ -5,6 +5,7 @@ import org.dawn.backend.constant.catalog.ItemStatus;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.repository.base.AbstractRepository;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 
 @Slf4j
+@Repository
 public class ProductItemRepositoryImpl extends AbstractRepository<ProductItem, Long> implements ProductItemRepository {
 
 

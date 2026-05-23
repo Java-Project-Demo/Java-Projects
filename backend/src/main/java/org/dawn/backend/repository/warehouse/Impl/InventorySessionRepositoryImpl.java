@@ -5,6 +5,7 @@ import org.dawn.backend.constant.inventory.SessionStatus;
 import org.dawn.backend.entity.InventorySession;
 import org.dawn.backend.repository.base.AbstractRepository;
 import org.dawn.backend.repository.warehouse.InventorySessionRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Repository
 public class InventorySessionRepositoryImpl extends AbstractRepository<InventorySession, Long> implements InventorySessionRepository {
     public InventorySessionRepositoryImpl(DataSource dataSource) {
         super(dataSource);

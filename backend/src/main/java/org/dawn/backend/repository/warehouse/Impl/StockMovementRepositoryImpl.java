@@ -5,6 +5,7 @@ import org.dawn.backend.constant.inventory.MovementType;
 import org.dawn.backend.entity.StockMovement;
 import org.dawn.backend.repository.warehouse.StockMovementRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Repository
 public class StockMovementRepositoryImpl extends AbstractRepository<StockMovement, Long> implements StockMovementRepository {
 
     public StockMovementRepositoryImpl(DataSource dataSource) {

@@ -5,6 +5,7 @@ import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.repository.auth.RefreshTokenRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -14,6 +15,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 @Slf4j
+@Repository
 public class RefreshTokenRepositoryImpl extends AbstractRepository<RefreshToken, Long> implements RefreshTokenRepository {
 
     public RefreshTokenRepositoryImpl(DataSource dataSource) {

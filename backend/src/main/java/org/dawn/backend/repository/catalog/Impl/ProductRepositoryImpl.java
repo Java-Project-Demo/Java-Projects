@@ -8,6 +8,7 @@ import org.dawn.backend.entity.Product;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.repository.catalog.ProductRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import java.time.Instant;
 import java.util.*;
 
 @Slf4j
+@Repository
 public class ProductRepositoryImpl extends AbstractRepository<Product, Long> implements ProductRepository {
     public ProductRepositoryImpl(DataSource dataSource) {
         super(dataSource);

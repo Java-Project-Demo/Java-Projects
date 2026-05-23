@@ -5,6 +5,7 @@ import org.dawn.backend.entity.OrderItem;
 import org.dawn.backend.entity.Product;
 import org.dawn.backend.repository.sales.OrderItemRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Repository
 public class OrderItemRepositoryImpl extends AbstractRepository<OrderItem, Long> implements OrderItemRepository {
     public OrderItemRepositoryImpl(DataSource dataSource) {
         super(dataSource);

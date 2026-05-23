@@ -5,6 +5,7 @@ import org.dawn.backend.constant.inventory.DetailStatus;
 import org.dawn.backend.entity.InventoryDetail;
 import org.dawn.backend.repository.base.AbstractRepository;
 import org.dawn.backend.repository.warehouse.InventoryDetailRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -12,6 +13,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Slf4j
+@Repository
 public class InventoryDetailRepositoryImpl extends AbstractRepository<InventoryDetail, Long> implements InventoryDetailRepository {
     public InventoryDetailRepositoryImpl(DataSource dataSource) {
         super(dataSource);

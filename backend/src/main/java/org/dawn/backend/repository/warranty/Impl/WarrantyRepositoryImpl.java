@@ -4,6 +4,7 @@ import org.dawn.backend.constant.warranty.WarrantyStatus;
 import org.dawn.backend.entity.*;
 import org.dawn.backend.repository.warranty.WarrantyRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -13,6 +14,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class WarrantyRepositoryImpl extends AbstractRepository<Warranty, Long> implements WarrantyRepository {
     public WarrantyRepositoryImpl(DataSource dataSource) {
         super(dataSource);

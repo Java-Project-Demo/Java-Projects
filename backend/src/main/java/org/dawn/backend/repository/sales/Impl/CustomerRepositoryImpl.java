@@ -3,6 +3,7 @@ package org.dawn.backend.repository.sales.Impl;
 import org.dawn.backend.entity.Customer;
 import org.dawn.backend.repository.sales.CustomerRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public class CustomerRepositoryImpl extends AbstractRepository<Customer, Long> implements CustomerRepository {
     public CustomerRepositoryImpl(DataSource dataSource) {
         super(dataSource);

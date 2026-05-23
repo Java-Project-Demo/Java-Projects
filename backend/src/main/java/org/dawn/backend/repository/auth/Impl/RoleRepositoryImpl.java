@@ -4,6 +4,7 @@ import org.dawn.backend.constant.auth.URole;
 import org.dawn.backend.entity.Role;
 import org.dawn.backend.repository.auth.RoleRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -12,7 +13,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-
+@Repository
 public class RoleRepositoryImpl extends AbstractRepository<Role, Long> implements RoleRepository {
 
     public RoleRepositoryImpl(DataSource dataSource) {

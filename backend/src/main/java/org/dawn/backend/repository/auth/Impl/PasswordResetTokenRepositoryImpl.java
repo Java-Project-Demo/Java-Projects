@@ -1,17 +1,20 @@
 package org.dawn.backend.repository.auth.Impl;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.entity.PasswordResetToken;
 import org.dawn.backend.repository.auth.PasswordResetTokenRepository;
 import org.dawn.backend.repository.base.AbstractRepository;
+import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
 
 @Slf4j
+@Repository
 public class PasswordResetTokenRepositoryImpl extends AbstractRepository<PasswordResetToken, Long>
         implements PasswordResetTokenRepository {
 
