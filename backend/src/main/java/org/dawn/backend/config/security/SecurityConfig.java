@@ -7,13 +7,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.web.CorsConfig;
 import org.dawn.backend.service.auth.RefreshTokenService;
+import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import java.io.IOException;
 
 @WebFilter("/*")
 @Slf4j
 public class SecurityConfig implements Filter {
-
 
     private CorsConfig corsConfig;
     private SecurityHandler securityHandler;
@@ -28,11 +29,11 @@ public class SecurityConfig implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        ServletContext ctx = filterConfig.getServletContext();
-        this.corsConfig = (CorsConfig) ctx.getAttribute("corsConfig");
-        this.securityHandler = (SecurityHandler) ctx.getAttribute("securityHandler");
-        this.authTokenFilter = (AuthTokenFilter) ctx.getAttribute("authTokenFilter");
-        this.refreshTokenService = (RefreshTokenService) ctx.getAttribute("refreshTokenService");
+        ApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(filterConfig.getServletContext());
+        this.corsConfig = ctx.getBean(CorsConfig.class);
+        this.securityHandler = ctx.getBean(SecurityHandler.class);
+        this.authTokenFilter = ctx.getBean(AuthTokenFilter.class);
+        this.refreshTokenService = ctx.getBean(RefreshTokenService.class);
     }
 
     @Override

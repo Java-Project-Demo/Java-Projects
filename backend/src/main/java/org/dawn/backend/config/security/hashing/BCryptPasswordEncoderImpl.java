@@ -1,7 +1,9 @@
 package org.dawn.backend.config.security.hashing;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.stereotype.Component;
 
+@Component
 public class BCryptPasswordEncoderImpl implements PasswordEncoder {
     @Override
     public String encode(CharSequence rawPassword) {

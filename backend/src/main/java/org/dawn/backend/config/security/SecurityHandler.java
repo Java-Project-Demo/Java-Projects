@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.service.auth.RefreshTokenService;
 import org.dawn.backend.utils.JWTUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
+@Component
 public class SecurityHandler {
 
     private final ObjectMapper objectMapper;

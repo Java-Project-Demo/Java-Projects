@@ -2,11 +2,13 @@ package org.dawn.backend.config.database;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.function.Supplier;
 
+@Component
 @RequiredArgsConstructor
 @Slf4j
 public class TransactionManager {
