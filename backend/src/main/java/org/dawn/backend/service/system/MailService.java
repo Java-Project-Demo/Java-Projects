@@ -39,6 +39,7 @@ public class MailService {
         MimeMessagePreparator preparator = mimeMessage -> {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setTo(to);
+            helper.setFrom(mailFrom);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
         };
