@@ -2,6 +2,7 @@ package org.dawn.backend.service.catalog;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.dto.catalog.CategoryMappingHelper;
@@ -11,7 +12,6 @@ import org.dawn.backend.entity.Category;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.catalog.CategoryRepository;
-import org.dawn.backend.service.system.AuditLogService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +20,6 @@ import java.util.List;
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
-    private final AuditLogService auditLogService;
 
     public List<CategoryResponse> getAll(int page, int size) {
         return categoryRepository
@@ -45,21 +44,27 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.CATEGORY_NOT_FOUND));
     }
 
+    @Loggable(
+            action = LogConstant.Action.CREATE_CATEGORY,
+            entity = LogConstant.Entity.CATEGORY,
+            entityId = "#result?.id",
+            message = "'Admin create category'"
+    )
     @Transactional
     public CategoryResponse create(CategoryRequest req) {
         categoryRepository.findByName(req.getName()).ifPresent(p -> {
             throw new ResourceAlreadyExistedException(Message.Exception.CATEGORY_EXISTED);
         });
         Category category = categoryRepository.save(CategoryMappingHelper.map(req));
-        auditLogService.saveLog(
-                LogConstant.Action.CREATE_CATEGORY,
-                LogConstant.Entity.CATEGORY,
-                category.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Admin create category");
         return CategoryMappingHelper.map(category);
     }
 
+    @Loggable(
+            action = LogConstant.Action.UPDATE_CATEGORY,
+            entity = LogConstant.Entity.CATEGORY,
+            entityId = "#result?.id",
+            message = "'Admin update category'"
+    )
     @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest req) {
         Category existing = categoryRepository
@@ -67,16 +72,16 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.CATEGORY_NOT_FOUND));
         existing.setName(req.getName());
         existing.setDescription(req.getDescription());
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_CATEGORY,
-                LogConstant.Entity.CATEGORY,
-                existing.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Admin update category");
         categoryRepository.save(existing);
         return CategoryMappingHelper.map(existing);
     }
 
+    @Loggable(
+            action = LogConstant.Action.UPDATE_CATEGORY,
+            entity = LogConstant.Entity.CATEGORY,
+            entityId = "#result?.id",
+            message = "'Update category status'"
+    )
     @Transactional
     public CategoryResponse updateStatus(Long id, Boolean status) {
         Category category = categoryRepository
@@ -84,12 +89,6 @@ public class CategoryService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.CATEGORY_NOT_FOUND));
         category.setIsDeleted(status);
         Category savedCategory = categoryRepository.save(category);
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_CATEGORY,
-                LogConstant.Entity.CATEGORY,
-                savedCategory.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Update category status");
         return CategoryMappingHelper.map(savedCategory);
     }
 }

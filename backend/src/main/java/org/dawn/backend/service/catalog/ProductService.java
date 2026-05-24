@@ -3,6 +3,7 @@ package org.dawn.backend.service.catalog;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.dto.catalog.ProductMappingHelper;
@@ -13,7 +14,6 @@ import org.dawn.backend.entity.Product;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.catalog.ProductRepository;
-import org.dawn.backend.service.system.AuditLogService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +23,6 @@ import java.util.List;
 @Service
 public class ProductService {
 
-    private final AuditLogService auditLogService;
     private final ProductRepository productRepository;
 
     public List<ProductResponse> getAll(int page, int size) {
@@ -49,6 +48,12 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
     }
 
+    @Loggable(
+            action = LogConstant.Action.CREATE_PRODUCT,
+            entity = LogConstant.Entity.PRODUCT,
+            message = "'Admin create product'",
+            entityId = "#result?.id"
+    )
     @Transactional
     public ProductResponse create(ProductRequest req) {
         productRepository.findBySku(req.getSku()).ifPresent(p -> {
@@ -57,15 +62,15 @@ public class ProductService {
         long period = (req.getWarrantyPeriod() != null && req.getWarrantyPeriod() > 0) ? req.getWarrantyPeriod() : 12L;
         req.setWarrantyPeriod(period);
         Product product = productRepository.save(ProductMappingHelper.map(req));
-        auditLogService.saveLog(
-                LogConstant.Action.CREATE_PRODUCT,
-                LogConstant.Entity.PRODUCT,
-                product.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Admin create product");
         return ProductMappingHelper.map(product);
     }
 
+    @Loggable(
+            action = LogConstant.Action.UPDATE_PRODUCT,
+            entity = LogConstant.Entity.PRODUCT,
+            entityId = "#id",
+            message = "'Admin update product'"
+    )
     @Transactional
     public ProductResponse updateProduct(Long id, ProductUpdateRequest req) {
         Product existing = productRepository
@@ -82,12 +87,6 @@ public class ProductService {
         if (req.getImageUrl() != null) existing.setImageUrl(req.getImageUrl());
         if (req.getHasImei() != null) existing.setHasImei(req.getHasImei());
         if (req.getWarrantyPeriod() != null) existing.setWarrantyPeriod(req.getWarrantyPeriod());
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_PRODUCT,
-                LogConstant.Entity.PRODUCT,
-                existing.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Admin update product");
         productRepository.save(existing);
         return ProductMappingHelper.map(existing);
     }

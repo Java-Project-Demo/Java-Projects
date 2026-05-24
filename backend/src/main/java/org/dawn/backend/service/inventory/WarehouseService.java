@@ -4,9 +4,10 @@ package org.dawn.backend.service.inventory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.security.SecurityContext;
+import org.dawn.backend.config.web.Loggable;
+import org.dawn.backend.constant.inventory.MovementType;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
-import org.dawn.backend.constant.inventory.MovementType;
 import org.dawn.backend.dto.inventory.WarehouseLocationResponse;
 import org.dawn.backend.dto.inventory.WarehouseMappingHelper;
 import org.dawn.backend.dto.inventory.WarehouseRequest;
@@ -18,7 +19,6 @@ import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
 import org.dawn.backend.repository.warehouse.WarehouseRepository;
-import org.dawn.backend.service.system.AuditLogService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,21 +33,19 @@ public class WarehouseService {
     private final WarehouseRepository warehouseRepository;
     private final WarehouseLocationRepository locationRepository;
     private final StockService stockService;
-    private final AuditLogService auditLogService;
     private final ProductItemRepository itemRepository;
 
+    @Loggable(
+            action = LogConstant.Action.RETURN_ORDER,
+            entity = LogConstant.Entity.PRODUCT_ITEM,
+            entityId = "#result?.id",
+            message = "'Create new warehouse:' + #saved.name"
+    )
     @Transactional
     public WarehouseResponse createWarehouse(WarehouseRequest warehouse) {
 
         Warehouse saved = warehouseRepository.save(WarehouseMappingHelper.map(warehouse));
 
-        auditLogService.saveLog(
-                LogConstant.Action.CREATE_WAREHOUSE,
-                LogConstant.Entity.WAREHOUSE,
-                saved.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Create new warehouse: " + saved.getName()
-        );
         return WarehouseMappingHelper.map(saved);
 
     }

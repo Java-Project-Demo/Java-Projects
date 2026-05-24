@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.security.UserPrincipal;
+import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.config.web.response.ResponsePage;
 import org.dawn.backend.constant.catalog.ItemStatus;
 import org.dawn.backend.constant.inventory.MovementType;
@@ -21,7 +22,6 @@ import org.dawn.backend.repository.sales.OrderItemRepository;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.sales.OrderSpecification;
 import org.dawn.backend.service.inventory.StockService;
-import org.dawn.backend.service.system.AuditLogService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -43,7 +43,6 @@ public class OrderService {
     private final ProductItemRepository itemRepository;
     private final CustomerRepository customerRepository;
     private final StockService stockService;
-    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public ResponsePage<OrderResponse> getAll(
@@ -74,6 +73,12 @@ public class OrderService {
         return OrderMappingHelper.mapDetail(order, items);
     }
 
+    @Loggable(
+            action = LogConstant.Action.CREATE_ORDER,
+            entity = LogConstant.Entity.ORDER,
+            entityId = "#result?.id",
+            message = "'Sale created order'"
+    )
     @Transactional
     public OrderResponse create(OrderRequest req) {
 
@@ -179,16 +184,16 @@ public class OrderService {
         // If order include IMEI -> Status change to COMPLETED
         stockService.checkAndCompleteOrder(saveOrder);
         saveOrder.setCustomer(customer);
-        auditLogService.saveLog(
-                LogConstant.Action.CREATE_ORDER,
-                LogConstant.Entity.ORDER,
-                saveOrder.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Sale created order");
         return OrderMappingHelper.map(orderRepository.save(saveOrder));
     }
 
 
+    @Loggable(
+            action = LogConstant.Action.CANCEL_ORDER,
+            entity = LogConstant.Entity.ORDER,
+            entityId = "#orderId",
+            message = "'User cancel order'"
+    )
     @Transactional
     public OrderResponse cancelOrder(Long orderId) {
         Order order = orderRepository
@@ -221,18 +226,17 @@ public class OrderService {
                 .findById(order.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.CUSTOMER_NOT_FOUND));
         order.setStatus(OrderStatus.CANCELED);
-        auditLogService.saveLog(
-                LogConstant.Action.CANCEL_ORDER,
-                LogConstant.Entity.ORDER,
-                order.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "User cancel order");
         Order savedOrder = orderRepository.save(order);
         savedOrder.setCustomer(customer);
         return OrderMappingHelper.map(savedOrder);
     }
 
-
+    @Loggable(
+            action = LogConstant.Action.RETURN_ORDER,
+            entity = LogConstant.Entity.ORDER,
+            entityId = "#orderId",
+            message = "'User return order with IMEI: ' + #req.imeis.toString() + ' . Reason: ' + #req.reason"
+    )
     @Transactional
     public void returnOrder(Long orderId, RefundRequest req) {
         if (orderId == null) {
@@ -253,12 +257,5 @@ public class OrderService {
             }
             stockService.returnProduct(imei, req.getReason());
         }
-
-        auditLogService.saveLog(
-                LogConstant.Action.RETURN_ORDER,
-                LogConstant.Entity.ORDER,
-                orderId.toString(),
-                LogConstant.Status.SUCCESS,
-                "User return order with IMEI: " + String.join(", ", req.getImeis()) + " . Reason: " + req.getReason());
     }
 }

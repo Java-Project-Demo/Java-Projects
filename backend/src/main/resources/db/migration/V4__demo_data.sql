@@ -194,8 +194,8 @@ WHERE NOT EXISTS (
 -- FIX: tách thành 2 INSERT riêng theo offset unit (DAY vs HOUR)
 -- vì NUMTODSINTERVAL không nhận string variable làm unit
 
-INSERT INTO audit_logs (user_id, action, entity_name, entity_id, status, details, created_at, updated_at)
-SELECT 1, v.action, v.entity, v.eid, 'SUCCESS', v.log_detail,
+INSERT INTO audit_logs (user_id, username, action, entity_name, entity_id, status, details, created_at, updated_at)
+SELECT 1, 'SYSTEM', v.action, v.entity, v.eid, 'SUCCESS', v.log_detail,
        CURRENT_TIMESTAMP - NUMTODSINTERVAL(v.days_ago, 'DAY'),
        CURRENT_TIMESTAMP - NUMTODSINTERVAL(v.days_ago, 'DAY')
 FROM (
@@ -208,14 +208,15 @@ FROM (
 WHERE NOT EXISTS (
     SELECT 1 FROM audit_logs al
     WHERE al.user_id   = 1
+      AND al.username = 'SYSTEM'
       AND al.action    = v.action
       AND al.entity_id = v.eid
       AND TRUNC(al.created_at) = TRUNC(CURRENT_TIMESTAMP - NUMTODSINTERVAL(v.days_ago, 'DAY'))
 );
 
 -- ── Audit logs — HOUR offset ─────────────────────────────────
-INSERT INTO audit_logs (user_id, action, entity_name, entity_id, status, details, created_at, updated_at)
-SELECT 1, v.action, v.entity, v.eid, 'SUCCESS', v.log_detail,
+INSERT INTO audit_logs (user_id, username, action, entity_name, entity_id, status, details, created_at, updated_at)
+SELECT 1, 'SYSTEM', v.action, v.entity, v.eid, 'SUCCESS', v.log_detail,
        CURRENT_TIMESTAMP - NUMTODSINTERVAL(v.hours_ago, 'HOUR'),
        CURRENT_TIMESTAMP - NUMTODSINTERVAL(v.hours_ago, 'HOUR')
 FROM (
@@ -226,6 +227,7 @@ FROM (
 WHERE NOT EXISTS (
     SELECT 1 FROM audit_logs al
     WHERE al.user_id   = 1
+      AND al.username = 'SYSTEM'
       AND al.action    = v.action
       AND al.entity_id = v.eid
       AND al.created_at >= CURRENT_TIMESTAMP - NUMTODSINTERVAL(v.hours_ago + 1, 'HOUR')

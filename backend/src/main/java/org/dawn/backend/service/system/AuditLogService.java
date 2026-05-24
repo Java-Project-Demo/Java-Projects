@@ -3,8 +3,7 @@ package org.dawn.backend.service.system;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.config.security.UserPrincipal;
+import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.config.web.response.ResponsePage;
 import org.dawn.backend.dto.system.AuditLogMappingHelper;
 import org.dawn.backend.dto.system.AuditLogResponse;
@@ -14,12 +13,12 @@ import org.dawn.backend.repository.system.AuditLogSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -50,34 +49,30 @@ public class AuditLogService {
                 result.getTotalElements());
     }
 
-    @Transactional
-    public void saveLog(String action, String entityName, String entityId, String status, String details) {
-        UserPrincipal currentUser = SecurityContext.get();
-        log.info("Get current user: {}", currentUser);
-        Long userId = (currentUser != null) ? currentUser.id() : 0L;
+    @Async
+    public void saveLogAsync(
+            Loggable loggable,
+            String entityId,
+            Long userId,
+            String username,
+            String status,
+            String details) {
+        try {
 
-        AuditLog log = AuditLog.builder()
-                .userId(userId)
-                .action(action)
-                .entityName(entityName)
-                .entityId(entityId)
-                .status(status)
-                .details(details)
-                .build();
-        auditLogRepository.save(log);
-    }
 
-    @Transactional
-    public void saveLog(Long userId, String action, String entityName, String entityId, String status, String details) {
-        AuditLog log = AuditLog.builder()
-                .userId(userId)
-                .action(action)
-                .entityName(entityName)
-                .entityId(entityId)
-                .status(status)
-                .details(details)
-                .build();
-        auditLogRepository.save(log);
+            AuditLog auditLog = AuditLog.builder()
+                    .userId(userId)
+                    .username(username)
+                    .action(loggable.action())
+                    .entityName(loggable.entity())
+                    .entityId(entityId)
+                    .status(status)
+                    .details(details)
+                    .build();
+            auditLogRepository.save(auditLog);
+        } catch (Exception e) {
+            log.error("Failed to save audit log", e);
+        }
     }
 
     @Transactional

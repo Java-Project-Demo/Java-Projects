@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
+import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.config.web.response.ResponsePage;
 import org.dawn.backend.constant.auth.URole;
 import org.dawn.backend.constant.system.ActiveStatus;
@@ -19,7 +20,6 @@ import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.auth.RoleRepository;
 import org.dawn.backend.repository.auth.UserRepository;
-import org.dawn.backend.service.system.AuditLogService;
 import org.dawn.backend.utils.UserUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -35,7 +35,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuditLogService auditLogService;
 
     public ResponsePage<UserResponse> findAll(Pageable pageable) {
         return ResponsePage.of(userRepository
@@ -57,6 +56,11 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
     }
 
+    @Loggable(
+            action = LogConstant.Action.CREATE_USER,
+            entity = LogConstant.Entity.USER,
+            message = "'Create new user'"
+    )
     @Transactional
     public CreateUserResponse createUser(RegisterRequest request) {
         if (URole.ADMIN.name().equalsIgnoreCase(request.getRoleName())) {
@@ -107,13 +111,6 @@ public class UserService {
                 .build();
         User savedUser = userRepository.save(user);
 
-        auditLogService.saveLog(
-                LogConstant.Action.CREATE_USER,
-                LogConstant.Entity.USER,
-                savedUser.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Create new user");
-
         UserResponse base = UserMappingHelper.map(savedUser);
         return CreateUserResponse.builder()
                 .id(base.getId())
@@ -133,6 +130,12 @@ public class UserService {
                 .build();
     }
 
+    @Loggable(
+            action = LogConstant.Action.UPDATE_STATUS,
+            entity = LogConstant.Entity.USER,
+            entityId = "#result?.id",
+            message = "'Update user status'"
+    )
     @Transactional
     public UserResponse updateStatus(Long id, Boolean status) {
         if (Objects.equals(id, SecurityContext.get().id())) {
@@ -145,15 +148,15 @@ public class UserService {
         user.setIsDeleted(!status);
         user.setStatus(status ? ActiveStatus.ACTIVE.name() : ActiveStatus.INACTIVE.name());
         User savedUser = userRepository.save(user);
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_STATUS,
-                LogConstant.Entity.USER,
-                savedUser.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Update user status");
         return UserMappingHelper.map(savedUser);
     }
 
+    @Loggable(
+            action = LogConstant.Action.UPDATE_INFO,
+            entity = LogConstant.Entity.USER,
+            entityId = "#result?.id",
+            message = "'Update user info'"
+    )
     @Transactional
     public UserResponse updateInfo(Long id, UpdateInfoRequest request) {
         User user = userRepository
@@ -173,17 +176,16 @@ public class UserService {
             String phone = request.getPhoneNumber().trim();
             user.setPhoneNumber(phone.isEmpty() ? null : phone);
         }
-
         User savedUser = userRepository.save(user);
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_INFO,
-                LogConstant.Entity.USER,
-                savedUser.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Update user info");
         return UserMappingHelper.map(savedUser);
     }
 
+    @Loggable(
+            action = LogConstant.Action.UPDATE_ROLE,
+            entity = LogConstant.Entity.USER,
+            entityId = "#result?.id",
+            message = "'Update user role'"
+    )
     @Transactional
     public UserResponse updateRole(Long id, URole roleName) {
         if (Objects.equals(id, SecurityContext.get().id())) {
@@ -202,12 +204,6 @@ public class UserService {
         user.setRole(role);
 
         User savedUser = userRepository.save(user);
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_ROLE,
-                LogConstant.Entity.USER,
-                savedUser.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Update user role");
         return UserMappingHelper.map(savedUser);
     }
 

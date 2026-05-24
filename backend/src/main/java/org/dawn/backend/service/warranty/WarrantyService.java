@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.security.SecurityContext;
+import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.constant.warranty.WarrantyStatus;
@@ -19,7 +20,6 @@ import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.warranty.WarrantyRepository;
 import org.dawn.backend.service.inventory.StockService;
-import org.dawn.backend.service.system.AuditLogService;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -34,7 +34,6 @@ public class WarrantyService {
     private final WarrantyRepository warrantyRepository;
     private final ProductItemRepository itemRepository;
     private final OrderRepository orderRepository;
-    private final AuditLogService auditLogService;
     private final StockService stockService;
 
     public List<WarrantyResponse> getAll() {
@@ -52,6 +51,11 @@ public class WarrantyService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.WARRANTY_NOT_FOUND));
     }
 
+    @Loggable(
+            action = LogConstant.Action.RECEIVE_WARRANTY,
+            entity = LogConstant.Entity.WARRANTY_CLAIM,
+            message = "'Take warranty for ' + #req.imeis.size() + ' items'"
+    )
     @Transactional
     public List<Warranty> createClaim(CreateWarrantyRequest req) {
         if (req.getImeis() == null || req.getImeis().isEmpty()) {
@@ -86,13 +90,6 @@ public class WarrantyService {
 
             Warranty saved = warrantyRepository.save(claim);
             savedClaims.add(saved);
-            auditLogService.saveLog(
-                    LogConstant.Action.RECEIVE_WARRANTY,
-                    LogConstant.Entity.WARRANTY_CLAIM,
-                    saved.getId().toString(),
-                    LogConstant.Status.SUCCESS,
-                    "Take warranty " + imei
-            );
         }
         return savedClaims;
     }

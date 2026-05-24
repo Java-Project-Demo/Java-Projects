@@ -24,6 +24,9 @@ public class AuditLog extends AbstractMappedEntity {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "username")
+    private String username;
+
     @Column(name = "action")
     private String action;
 

@@ -255,8 +255,8 @@ FROM users u WHERE u.username = 'admin'
 COMMIT;
 
 -- ─── 11. Audit log entries for major actions ──────────────────────────────
-INSERT INTO audit_logs (user_id, action, entity_name, entity_id, status, details, created_at, updated_at)
-SELECT 1, v.action, v.entity, v.eid, 'SUCCESS', v.log_detail,
+INSERT INTO audit_logs (user_id, username, action, entity_name, entity_id, status, details, created_at, updated_at)
+SELECT 1, 'SYSTEM', v.action, v.entity, v.eid, 'SUCCESS', v.log_detail,
        CURRENT_TIMESTAMP - NUMTODSINTERVAL(v.days_ago, 'DAY'),
        CURRENT_TIMESTAMP - NUMTODSINTERVAL(v.days_ago, 'DAY')
 FROM (

@@ -2,6 +2,7 @@ package org.dawn.backend.service.catalog;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.dto.catalog.SupplierMappingHelper;
@@ -12,7 +13,6 @@ import org.dawn.backend.entity.Supplier;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.catalog.SupplierRepository;
-import org.dawn.backend.service.system.AuditLogService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +20,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class SupplierService {
-    private final AuditLogService auditLogService;
     private final SupplierRepository supplierRepository;
 
     public List<SupplierResponse> getAll() {
@@ -38,6 +37,12 @@ public class SupplierService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.SUPPLIER_NOT_FOUND));
     }
 
+    @Loggable(
+            action = LogConstant.Action.UPDATE_SUPPLIER,
+            entity = LogConstant.Entity.SUPPLIER,
+            entityId = "#result?.id",
+            message = "'Admin create supplier'"
+    )
     @Transactional
     public SupplierResponse create(SupplierRequest req) {
         supplierRepository
@@ -47,15 +52,15 @@ public class SupplierService {
                 });
 
         Supplier supplier = supplierRepository.save(SupplierMappingHelper.map(req));
-        auditLogService.saveLog(
-                LogConstant.Action.CREATE_SUPPLIER,
-                LogConstant.Entity.SUPPLIER,
-                supplier.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Admin create supplier");
         return SupplierMappingHelper.map(supplier);
     }
 
+    @Loggable(
+            action = LogConstant.Action.UPDATE_SUPPLIER,
+            entity = LogConstant.Entity.SUPPLIER,
+            entityId = "#result?.id",
+            message = "'Admin update supplier'"
+    )
     @Transactional
     public SupplierResponse update(Long id, SupplierUpdateRequest req) {
         Supplier existing = supplierRepository
@@ -69,15 +74,6 @@ public class SupplierService {
         if (req.getTaxCode() != null) existing.setTaxCode(req.getTaxCode());
         if (req.getStatus() != null) existing.setStatus(req.getStatus());
         if (req.getIsDeleted() != null) existing.setIsDeleted(req.getIsDeleted());
-
-        auditLogService.saveLog(
-                LogConstant.Action.UPDATE_SUPPLIER,
-                LogConstant.Entity.SUPPLIER,
-                existing.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Admin update supplier"
-        );
-
         supplierRepository.save(existing);
         return SupplierMappingHelper.map(existing);
     }

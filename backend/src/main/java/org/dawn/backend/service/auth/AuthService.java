@@ -4,6 +4,7 @@ package org.dawn.backend.service.auth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
+import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.dto.auth.*;
@@ -14,7 +15,6 @@ import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.auth.PasswordResetTokenRepository;
 import org.dawn.backend.repository.auth.UserRepository;
-import org.dawn.backend.service.system.AuditLogService;
 import org.dawn.backend.service.system.MailService;
 import org.dawn.backend.utils.JWTUtils;
 import org.dawn.backend.utils.UserUtils;
@@ -36,10 +36,15 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JWTUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
-    private final AuditLogService auditLogService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final MailService mailService;
 
+    @Loggable(
+            action = LogConstant.Action.LOGIN,
+            entity = LogConstant.Entity.AUTH,
+            entityId = "#result.userId",
+            message = "'User login to system'"
+    )
     public JwtResponse login(LoginRequest req) {
 
         String identifier = req.getUsername();
@@ -64,15 +69,6 @@ public class AuthService {
                 user.getRole().getName().name());
 
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
-
-        auditLogService.saveLog(
-                user.getId(),
-                LogConstant.Action.LOGIN,
-                LogConstant.Entity.AUTH,
-                user.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "User login to system");
-
         return JwtResponse
                 .builder()
                 .userId(user.getId())
@@ -83,7 +79,11 @@ public class AuthService {
                 .build();
     }
 
-
+    @Loggable(
+            action = LogConstant.Action.RESET_PASSWORD,
+            entity = LogConstant.Entity.AUTH,
+            message = "'User reset password'"
+    )
     public String resetPassword(Long id, String username) {
         User user = userRepository
                 .findById(id)
@@ -95,15 +95,14 @@ public class AuthService {
         userRepository.save(user);
 
         refreshTokenService.deleteByUserId(id);
-        auditLogService.saveLog(
-                LogConstant.Action.RESET_PASSWORD,
-                LogConstant.Entity.AUTH,
-                user.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "User reset password");
         return tempPwd;
     }
 
+    @Loggable(
+            action = LogConstant.Action.CHANGE_PASSWORD,
+            entity = LogConstant.Entity.AUTH,
+            message = "'User change password'"
+    )
     public String changePassword(String username, ChangePasswordRequest request) {
         log.info("Get username from change password: {}", username);
         User user = userRepository
@@ -121,16 +120,14 @@ public class AuthService {
 
         user.setIsPasswordReset(false);
         userRepository.save(user);
-        auditLogService.saveLog(
-                LogConstant.Action.CHANGE_PASSWORD,
-                LogConstant.Entity.AUTH,
-                user.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "User change password");
         return "Change password success";
     }
 
-
+    @Loggable(
+            action = LogConstant.Action.RESET_PASSWORD,
+            entity = LogConstant.Entity.AUTH,
+            message = "'Forgot password email sent'"
+    )
     public String forgotPassword(ForgotPasswordRequest req) {
         String email = req.getEmail();
         if (email == null || email.isBlank()) {
@@ -156,18 +153,14 @@ public class AuthService {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 
         mailService.sendPasswordResetMail(email.trim(), user.getFullName(), resetLink);
-
-        auditLogService.saveLog(
-                user.getId(),
-                LogConstant.Action.RESET_PASSWORD,
-                LogConstant.Entity.AUTH,
-                user.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Forgot password email sent");
-
         return "Email đặt lại mật khẩu đã được gửi";
     }
 
+    @Loggable(
+            action = LogConstant.Action.CHANGE_PASSWORD,
+            entity = LogConstant.Entity.AUTH,
+            message = "'Password reset via token'"
+    )
     public String resetPasswordByToken(ResetPasswordTokenRequest req) {
         if (req.getToken() == null || req.getToken().isBlank()) {
             throw new RuntimeException(Message.Exception.INVALID_TOKEN);
@@ -200,15 +193,6 @@ public class AuthService {
 
         passwordResetTokenRepository.markUsed(resetToken.getId());
         refreshTokenService.deleteByUserId(user.getId());
-
-        auditLogService.saveLog(
-                user.getId(),
-                LogConstant.Action.CHANGE_PASSWORD,
-                LogConstant.Entity.AUTH,
-                user.getId().toString(),
-                LogConstant.Status.SUCCESS,
-                "Password reset via token");
-
         return "Đặt lại mật khẩu thành công";
     }
 
