@@ -3,8 +3,6 @@ package org.dawn.backend.service.sales;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.config.web.response.ResponsePage;
 import org.dawn.backend.constant.catalog.ItemStatus;
@@ -23,6 +21,7 @@ import org.dawn.backend.repository.sales.OrderItemRepository;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.sales.OrderSpecification;
 import org.dawn.backend.service.inventory.StockService;
+import org.dawn.backend.utils.SecurityContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -83,8 +82,8 @@ public class OrderService {
     @Transactional
     public OrderResponse create(OrderRequest req) {
 
-        UserPrincipal currentUser = SecurityContext.get();
-        Long currentUserId = (currentUser != null) ? currentUser.id() : null;
+        UserDetailsImpl currentUser = SecurityContext.getCurrentUser();
+        Long currentUserId = (currentUser != null) ? currentUser.getId() : null;
 
         // Get customer (upsert email/address if user provided new info)
         Customer customer = customerRepository

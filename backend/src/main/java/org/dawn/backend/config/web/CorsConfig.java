@@ -1,9 +1,9 @@
 package org.dawn.backend.config.web;
 
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,29 +16,26 @@ public class CorsConfig {
             "http://localhost:5173");
 
 
-    private final String ALLOWED_HEADERS =
-            "Authorization, Cache-Control, Content-Type, X-Requested-With, Accept, Origin";
+    private final List<String> ALLOWED_HEADERS = Arrays.asList(
+            "Authorization", "Cache-Control", "Content-Type", "X-Requested-With", "Accept", "Origin"
+    );
 
 
-    private final String ALLOWED_METHODS = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
+    private final List<String> ALLOWED_METHODS = Arrays.asList(
+            "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+    );
 
-    public boolean process(HttpServletRequest req, HttpServletResponse res) {
+    @Bean
+    public UrlBasedCorsConfigurationSource configuration() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(ALLOWED_DOMAINS);
+        config.setAllowedHeaders(ALLOWED_HEADERS);
+        config.setAllowedMethods(ALLOWED_METHODS);
+        config.setMaxAge(3600L);
 
-        String origin = req.getHeader("Origin");
-
-        if (origin != null) {
-            res.setHeader("Access-Control-Allow-Origin", origin);
-        }
-
-        res.setHeader("Access-Control-Allow-Methods", ALLOWED_METHODS);
-        res.setHeader("Access-Control-Allow-Headers", ALLOWED_HEADERS);
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-        res.setHeader("Access-Control-Max-Age", "3600");
-
-        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
-            res.setStatus(HttpServletResponse.SC_OK);
-            return true;
-        }
-        return false;
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

@@ -4,14 +4,15 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.config.security.UserRoleSecurity;
 import org.dawn.backend.config.web.response.ResponseObject;
 import org.dawn.backend.dto.auth.*;
+import org.dawn.backend.entity.UserDetailsImpl;
 import org.dawn.backend.service.auth.AuthService;
 import org.dawn.backend.utils.JWTUtils;
+import org.dawn.backend.utils.SecurityContext;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -40,10 +41,10 @@ public class AuthController {
 
     }
 
+    @PreAuthorize("@roleSecurity.canUpdate(#id, authentication)")
     @PutMapping("/{id}/reset-password")
     public ResponseObject<String> resetPassword(@PathVariable Long id) {
-        UserRoleSecurity.authorize(id);
-        String username = SecurityContext.get().username();
+        String username = SecurityContext.getCurrentUsername();
         return ResponseObject.success(authService.resetPassword(id, username));
     }
 
@@ -59,13 +60,13 @@ public class AuthController {
 
     @PutMapping("/change-password")
     public ResponseObject<String> changePassword(@RequestBody ChangePasswordRequest changeReq) {
-        UserPrincipal currentUser = SecurityContext.get();
+        UserDetailsImpl currentUser = SecurityContext.getCurrentUser();
 
         log.info("Current user: {}", currentUser);
         if (currentUser == null) {
             return ResponseObject.error(HttpStatus.UNAUTHORIZED, "You need to login");
         }
-        String message = authService.changePassword(currentUser.username(), changeReq);
+        String message = authService.changePassword(currentUser.getUsername(), changeReq);
 
         return ResponseObject.success(message);
     }

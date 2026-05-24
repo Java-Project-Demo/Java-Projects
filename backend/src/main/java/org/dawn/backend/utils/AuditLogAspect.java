@@ -6,10 +6,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.system.LogConstant;
+import org.dawn.backend.entity.UserDetailsImpl;
 import org.dawn.backend.service.system.AuditLogService;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
@@ -28,10 +27,10 @@ public class AuditLogAspect {
 
     @Around("@annotation(loggable)")
     public Object logExecution(ProceedingJoinPoint joinPoint, Loggable loggable) throws Throwable {
-        UserPrincipal auth = SecurityContext.get();
+        UserDetailsImpl auth = SecurityContext.getCurrentUser();
 
-        Long currentUserId = (auth != null) ? auth.id() : null;
-        String currentUsername = (auth != null) ? auth.username() : "SYSTEM";
+        Long currentUserId = (auth != null) ? auth.getId() : null;
+        String currentUsername = (auth != null) ? auth.getUsername() : "SYSTEM";
         Object result;
         String entityId = null;
         try {

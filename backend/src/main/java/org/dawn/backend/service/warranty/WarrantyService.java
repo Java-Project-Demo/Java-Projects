@@ -3,7 +3,6 @@ package org.dawn.backend.service.warranty;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
@@ -21,6 +20,8 @@ import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.warranty.WarrantyRepository;
 import org.dawn.backend.service.inventory.StockService;
+import org.dawn.backend.utils.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -63,7 +64,7 @@ public class WarrantyService {
             throw new ApiException(Message.Exception.RETURN_IMEI_LIST_EMPTY);
         }
         List<Warranty> savedClaims = new ArrayList<>();
-        Long currentUserId = SecurityContext.get().id();
+        Long currentUserId = SecurityContext.getCurrentUserId();
         for (String imei : req.getImeis()) {
             ProductItem item = itemRepository
                     .findByImei(imei)

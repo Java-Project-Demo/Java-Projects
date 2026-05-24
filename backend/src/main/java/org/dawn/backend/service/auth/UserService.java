@@ -3,7 +3,6 @@ package org.dawn.backend.service.auth;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.security.hashing.PasswordEncoder;
 import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.config.web.response.ResponsePage;
@@ -20,6 +19,7 @@ import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.auth.RoleRepository;
 import org.dawn.backend.repository.auth.UserRepository;
+import org.dawn.backend.utils.SecurityContext;
 import org.dawn.backend.utils.UserUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -138,7 +138,7 @@ public class UserService {
     )
     @Transactional
     public UserResponse updateStatus(Long id, Boolean status) {
-        if (Objects.equals(id, SecurityContext.get().id())) {
+        if (Objects.equals(id, SecurityContext.getCurrentUserId())) {
             throw new PermissionDeniedException(Message.Exception.CAN_NOT_UPDATE_YOURSELF);
         }
 
@@ -188,7 +188,7 @@ public class UserService {
     )
     @Transactional
     public UserResponse updateRole(Long id, URole roleName) {
-        if (Objects.equals(id, SecurityContext.get().id())) {
+        if (Objects.equals(id, SecurityContext.getCurrentUserId())) {
             throw new PermissionDeniedException(Message.Exception.CAN_NOT_CHANGE_OWN_ROLE);
         }
 

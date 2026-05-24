@@ -3,7 +3,6 @@ package org.dawn.backend.service.inventory;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.inventory.MovementType;
 import org.dawn.backend.constant.system.LogConstant;
@@ -20,6 +19,7 @@ import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
 import org.dawn.backend.repository.warehouse.WarehouseRepository;
+import org.dawn.backend.utils.SecurityContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,7 +98,7 @@ public class WarehouseService {
                 "LOCATION_TRANSFER",
                 1,
                 null,
-                SecurityContext.get().id(),
+                SecurityContext.getCurrentUserId(),
                 "Transform location from " + oldLocId + " to " + targetLocId);
     }
 

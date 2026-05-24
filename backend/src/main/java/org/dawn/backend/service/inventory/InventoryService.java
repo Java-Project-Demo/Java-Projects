@@ -3,19 +3,13 @@ package org.dawn.backend.service.inventory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.constant.inventory.DetailStatus;
 import org.dawn.backend.constant.inventory.SessionStatus;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.dto.inventory.InventorySessionResponse;
 import org.dawn.backend.dto.inventory.ScanResultResponse;
 import org.dawn.backend.dto.inventory.SessionSummaryResponse;
-import org.dawn.backend.entity.InventoryDetail;
-import org.dawn.backend.entity.InventorySession;
-import org.dawn.backend.entity.ProductItem;
-import org.dawn.backend.entity.Warehouse;
-import org.dawn.backend.entity.WarehouseLocation;
+import org.dawn.backend.entity.*;
 import org.dawn.backend.exception.wrapper.InvalidRequestException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.auth.UserRepository;
@@ -24,6 +18,7 @@ import org.dawn.backend.repository.warehouse.InventoryDetailRepository;
 import org.dawn.backend.repository.warehouse.InventorySessionRepository;
 import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
 import org.dawn.backend.repository.warehouse.WarehouseRepository;
+import org.dawn.backend.utils.SecurityContext;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -55,16 +50,16 @@ public class InventoryService {
                 .findById(warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy kho id=" + warehouseId));
 
-        UserPrincipal principal = SecurityContext.get();
+        UserDetailsImpl principal = SecurityContext.getCurrentUser();
         InventorySession session = InventorySession.builder()
                 .warehouseId(warehouseId)
-                .createdBy(principal.id())
+                .createdBy(principal.getId())
                 .status(SessionStatus.IN_PROGRESS)
                 .startDate(Instant.now())
                 .build();
         InventorySession saved = sessionRepository.save(session);
 
-        return toSessionResponse(saved, warehouse, principal.username());
+        return toSessionResponse(saved, warehouse, principal.getUsername());
 
     }
 

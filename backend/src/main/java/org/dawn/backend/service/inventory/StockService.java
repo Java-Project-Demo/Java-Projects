@@ -3,8 +3,6 @@ package org.dawn.backend.service.inventory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.SecurityContext;
-import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.catalog.ItemStatus;
 import org.dawn.backend.constant.inventory.MovementType;
@@ -28,6 +26,7 @@ import org.dawn.backend.repository.sales.OrderItemRepository;
 import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.warehouse.StockMovementRepository;
 import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
+import org.dawn.backend.utils.SecurityContext;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -120,7 +119,7 @@ public class StockService {
         }
 
         Product savedProduct = productRepository.save(product);
-        Long currentId = Optional.ofNullable(SecurityContext.get()).map(UserPrincipal::id).orElse(null);
+        Long currentId = Optional.ofNullable(SecurityContext.getCurrentUserId()).orElse(null);
 
         saveMovement(
                 req.getProductId(),
@@ -200,8 +199,8 @@ public class StockService {
 
 
         // Save movement history
-        UserPrincipal currentUser = SecurityContext.get();
-        Long currentId = (currentUser != null) ? currentUser.id() : null;
+        UserDetailsImpl currentUser = SecurityContext.getCurrentUser();
+        Long currentId = (currentUser != null) ? currentUser.getId() : null;
         saveMovement(
                 item.getProductId(),
                 MovementType.EXPORT,
@@ -225,8 +224,8 @@ public class StockService {
     @Transactional
     public ProductItem markAsDamaged(String imei, String reason) {
 
-        UserPrincipal currentUser = SecurityContext.get();
-        Long currentId = (currentUser != null) ? currentUser.id() : null;
+        UserDetailsImpl currentUser = SecurityContext.getCurrentUser();
+        Long currentId = (currentUser != null) ? currentUser.getId() : null;
 
         ProductItem item = itemRepository
                 .findByImei(imei)
@@ -275,8 +274,8 @@ public class StockService {
 
         productRepository.addStock(item.getProductId(), 1);
 
-        UserPrincipal currentUser = SecurityContext.get();
-        Long currentId = (currentUser != null) ? currentUser.id() : null;
+        UserDetailsImpl currentUser = SecurityContext.getCurrentUser();
+        Long currentId = (currentUser != null) ? currentUser.getId() : null;
         saveMovement(
                 item.getProductId(),
                 MovementType.IMPORT,

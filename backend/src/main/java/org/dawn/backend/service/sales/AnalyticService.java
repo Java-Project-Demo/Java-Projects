@@ -5,12 +5,12 @@ import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.constant.auth.URole;
 import org.dawn.backend.dto.catalog.ProductItemResponse;
 import org.dawn.backend.dto.catalog.ProductResponse;
 import org.dawn.backend.dto.sales.ImeiTraceResponse;
 import org.dawn.backend.dto.sales.SummaryResponse;
+import org.dawn.backend.utils.SecurityContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -78,6 +78,6 @@ public class AnalyticService {
     }
 
     private String getCurrentRole() {
-        return SecurityContext.get().role();
+        return SecurityContext.getCurrentRole();
     }
 }
