@@ -17,6 +17,7 @@ import org.dawn.backend.dto.catalog.ProductMappingHelper;
 import org.dawn.backend.dto.catalog.ProductResponse;
 import org.dawn.backend.dto.inventory.ImportImeiRequest;
 import org.dawn.backend.entity.*;
+import org.dawn.backend.exception.ApiException;
 import org.dawn.backend.exception.wrapper.InvalidRequestException;
 import org.dawn.backend.exception.wrapper.ResourceAlreadyExistedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
@@ -65,13 +66,13 @@ public class StockService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
 
         if (!product.getHasImei()) {
-            throw new RuntimeException(Message.Exception.PRODUCT_NOT_MANAGED_BY_IMEI);
+            throw new ApiException(Message.Exception.PRODUCT_NOT_MANAGED_BY_IMEI);
         }
         if (req.getImeiList() == null || req.getImeiList().isEmpty()) {
-            throw new RuntimeException(Message.Exception.IMEI_LIST_EMPTY);
+            throw new ApiException(Message.Exception.IMEI_LIST_EMPTY);
         }
         if (req.getCostPrice() == null || req.getCostPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException(Message.Exception.COST_PRICE_INVALID);
+            throw new ApiException(Message.Exception.COST_PRICE_INVALID);
         }
         WarehouseLocation location = locationRepository
                 .findById(req.getLocationId())
@@ -148,7 +149,7 @@ public class StockService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
         // Only export IMEI if order have PENDING or COMPLETE
         if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.COMPLETED) {
-            throw new RuntimeException(Message.Exception.ORDER_STATUS_NOT_ALLOWED_EXPORT);
+            throw new ApiException(Message.Exception.ORDER_STATUS_NOT_ALLOWED_EXPORT);
         }
 
         ProductItem item = itemRepository
@@ -168,19 +169,19 @@ public class StockService {
                 .sum();
 
         if (totalRequireQty == 0) {
-            throw new RuntimeException(MessageFormat.format(Message.Exception.ITEM_NOT_IN_ORDER, item.getImei()));
+            throw new ApiException(MessageFormat.format(Message.Exception.ITEM_NOT_IN_ORDER, item.getImei()));
         }
 
         // Check export quantity
         long alreadyShipped = itemRepository.countByProductIdAndOrderId(item.getProductId(), orderId);
 
         if (alreadyShipped >= totalRequireQty) {
-            throw new RuntimeException(Message.Exception.PRODUCT_EXPORT_ENOUGH);
+            throw new ApiException(Message.Exception.PRODUCT_EXPORT_ENOUGH);
         }
 
 
         if (item.getStatus() != ItemStatus.AVAILABLE) {
-            throw new RuntimeException(Message.Exception.ITEM_STATUS_CONFLICT);
+            throw new ApiException(Message.Exception.ITEM_STATUS_CONFLICT);
         }
 
         // Update IMEI to SOLD
@@ -264,7 +265,7 @@ public class StockService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_ITEM_NOT_FOUND));
 
         if (item.getStatus() != ItemStatus.SOLD) {
-            throw new RuntimeException();
+            throw new ApiException("Status not match");
         }
         Long oldOrderId = item.getOrderId();
         item.setStatus(ItemStatus.AVAILABLE);

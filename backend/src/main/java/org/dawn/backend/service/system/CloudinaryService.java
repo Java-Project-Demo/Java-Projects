@@ -5,6 +5,7 @@ import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.constant.system.Message;
+import org.dawn.backend.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +34,7 @@ public class CloudinaryService {
             return this.cloudinary.uploader().upload(file.getBytes(), params);
         } catch (IOException e) {
             log.error("Cloudinary update failed ", e);
-            throw new RuntimeException(Message.Exception.IMAGE_UPLOAD_FAILED);
+            throw new ApiException(Message.Exception.IMAGE_UPLOAD_FAILED);
         }
     }
 

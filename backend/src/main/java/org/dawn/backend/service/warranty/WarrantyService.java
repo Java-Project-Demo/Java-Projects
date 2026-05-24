@@ -15,6 +15,7 @@ import org.dawn.backend.dto.warranty.WarrantyResponse;
 import org.dawn.backend.entity.Order;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.entity.Warranty;
+import org.dawn.backend.exception.ApiException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.sales.OrderRepository;
@@ -59,7 +60,7 @@ public class WarrantyService {
     @Transactional
     public List<Warranty> createClaim(CreateWarrantyRequest req) {
         if (req.getImeis() == null || req.getImeis().isEmpty()) {
-            throw new RuntimeException(Message.Exception.RETURN_IMEI_LIST_EMPTY);
+            throw new ApiException(Message.Exception.RETURN_IMEI_LIST_EMPTY);
         }
         List<Warranty> savedClaims = new ArrayList<>();
         Long currentUserId = SecurityContext.get().id();
@@ -69,11 +70,11 @@ public class WarrantyService {
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_ITEM_NOT_FOUND));
 
             if (item.getOrderId() == null || item.getWarrantyExpiryDate() == null) {
-                throw new RuntimeException(Message.Exception.PRODUCT_NOT_SOLD);
+                throw new ApiException(Message.Exception.PRODUCT_NOT_SOLD);
             }
 
             if (item.getWarrantyExpiryDate().isBefore(Instant.now())) {
-                throw new RuntimeException(MessageFormat.format(Message.Exception.WARRANTY_EXPIRED, item.getWarrantyExpiryDate()));
+                throw new ApiException(MessageFormat.format(Message.Exception.WARRANTY_EXPIRED, item.getWarrantyExpiryDate()));
             }
 
             Order order = orderRepository

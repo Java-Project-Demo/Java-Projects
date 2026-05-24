@@ -11,6 +11,7 @@ import org.dawn.backend.dto.auth.*;
 import org.dawn.backend.entity.PasswordResetToken;
 import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
+import org.dawn.backend.exception.ApiException;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.auth.PasswordResetTokenRepository;
@@ -113,7 +114,7 @@ public class AuthService {
         }
 
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException(Message.Exception.PASSWORD_NOT_MATCH);
+            throw new ApiException(Message.Exception.PASSWORD_NOT_MATCH);
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
@@ -131,7 +132,7 @@ public class AuthService {
     public String forgotPassword(ForgotPasswordRequest req) {
         String email = req.getEmail();
         if (email == null || email.isBlank()) {
-            throw new RuntimeException(Message.Exception.EMAIL_NOT_EMPTY);
+            throw new ApiException(Message.Exception.EMAIL_NOT_EMPTY);
         }
 
         User user = userRepository
@@ -163,13 +164,13 @@ public class AuthService {
     )
     public String resetPasswordByToken(ResetPasswordTokenRequest req) {
         if (req.getToken() == null || req.getToken().isBlank()) {
-            throw new RuntimeException(Message.Exception.INVALID_TOKEN);
+            throw new ApiException(Message.Exception.INVALID_TOKEN);
         }
         if (!req.getNewPassword().equals(req.getConfirmPassword())) {
-            throw new RuntimeException(Message.Exception.PASSWORD_NOT_MATCH);
+            throw new ApiException(Message.Exception.PASSWORD_NOT_MATCH);
         }
         if (req.getNewPassword().length() < 6) {
-            throw new RuntimeException(Message.Exception.PASSWORD_TOO_SHORT);
+            throw new ApiException(Message.Exception.PASSWORD_TOO_SHORT);
         }
 
         PasswordResetToken resetToken = passwordResetTokenRepository
@@ -177,10 +178,10 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.TOKEN_INVALID_OR_EXPIRED));
 
         if (Boolean.TRUE.equals(resetToken.getUsed())) {
-            throw new RuntimeException(Message.Exception.TOKEN_USED);
+            throw new ApiException(Message.Exception.TOKEN_USED);
         }
         if (resetToken.getExpiryDate().isBefore(Instant.now())) {
-            throw new RuntimeException(Message.Exception.TOKEN_EXPIRED);
+            throw new ApiException(Message.Exception.TOKEN_EXPIRED);
         }
 
         User user = userRepository

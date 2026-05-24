@@ -14,6 +14,7 @@ import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.dto.sales.*;
 import org.dawn.backend.entity.*;
+import org.dawn.backend.exception.ApiException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.catalog.ProductRepository;
@@ -123,7 +124,7 @@ public class OrderService {
 
         for (CartItemRequest item : req.getItems()) {
             if (item.getQuantity() == null || item.getQuantity() <= 0) {
-                throw new RuntimeException(Message.Exception.QUANTITY_INVALID);
+                throw new ApiException(Message.Exception.QUANTITY_INVALID);
             }
 
             Product product = productRepository
@@ -132,7 +133,7 @@ public class OrderService {
             // Check available stock
             Integer available = orderRepository.getAvailableStock(item.getProductId());
             if (available < item.getQuantity()) {
-                throw new RuntimeException(MessageFormat.format(Message.Exception.INSUFFICIENT_STOCK, product.getName()));
+                throw new ApiException(MessageFormat.format(Message.Exception.INSUFFICIENT_STOCK, product.getName()));
             }
 
             // Subtrack to keep order
@@ -156,11 +157,11 @@ public class OrderService {
                             .limit(item.getQuantity())
                             .toList();
                     if (picked.size() < item.getQuantity()) {
-                        throw new RuntimeException(MessageFormat.format(Message.Exception.INSUFFICIENT_STOCK, product.getName()));
+                        throw new ApiException(MessageFormat.format(Message.Exception.INSUFFICIENT_STOCK, product.getName()));
                     }
                     imeis = picked.stream().map(ProductItem::getImei).toList();
                 } else if (imeis.size() != item.getQuantity()) {
-                    throw new RuntimeException(MessageFormat.format(Message.Exception.IMEI_COUNT_MISMATCH, product.getName()));
+                    throw new ApiException(MessageFormat.format(Message.Exception.IMEI_COUNT_MISMATCH, product.getName()));
                 }
                 for (String imei : imeis) {
                     stockService.exportByImei(saveOrder.getId(), imei);
@@ -201,7 +202,7 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
 
         if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.COMPLETED) {
-            throw new RuntimeException(Message.Exception.CANCEL_ORDER_STATUS_INVALID);
+            throw new ApiException(Message.Exception.CANCEL_ORDER_STATUS_INVALID);
         }
 
         List<ProductItem> items = itemRepository.findByOrderId(orderId);
@@ -244,7 +245,7 @@ public class OrderService {
         }
 
         if (req.getImeis() == null || req.getImeis().isEmpty()) {
-            throw new RuntimeException(Message.Exception.RETURN_IMEI_LIST_EMPTY);
+            throw new ApiException(Message.Exception.RETURN_IMEI_LIST_EMPTY);
         }
 
         for (String imei : req.getImeis()) {
@@ -253,7 +254,7 @@ public class OrderService {
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_ITEM_NOT_FOUND));
             log.info("Order id: {}", item.getOrderId());
             if (item.getOrderId() == null || !item.getOrderId().equals(orderId)) {
-                throw new RuntimeException(MessageFormat.format(Message.Exception.IMEI_NOT_BELONG_TO_ORDER, imei, orderId));
+                throw new ApiException(MessageFormat.format(Message.Exception.IMEI_NOT_BELONG_TO_ORDER, imei, orderId));
             }
             stockService.returnProduct(imei, req.getReason());
         }

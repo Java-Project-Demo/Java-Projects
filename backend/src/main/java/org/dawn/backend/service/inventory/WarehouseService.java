@@ -15,6 +15,7 @@ import org.dawn.backend.dto.inventory.WarehouseResponse;
 import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.entity.Warehouse;
 import org.dawn.backend.entity.WarehouseLocation;
+import org.dawn.backend.exception.ApiException;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.warehouse.WarehouseLocationRepository;
@@ -86,7 +87,7 @@ public class WarehouseService {
 
         Long oldLocId = item.getLocationId();
         if (targetLocId.equals(oldLocId)) {
-            throw new RuntimeException(MessageFormat.format(Message.Exception.ITEM_ALREADY_AT_LOCATION, targetLocId));
+            throw new ApiException(MessageFormat.format(Message.Exception.ITEM_ALREADY_AT_LOCATION, targetLocId));
         }
         item.setLocationId(targetLocId);
         itemRepository.save(item);
