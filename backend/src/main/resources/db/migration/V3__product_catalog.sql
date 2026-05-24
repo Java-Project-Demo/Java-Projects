@@ -40,8 +40,8 @@ USING (
              SELECT 'Phu kien dien thoai',   'CAB-USBC-2M',     'Cap USB-C 2m 100W',                 '2m | 100W | USB 3.2',                       'https://picsum.photos/500/600' ,     6,0,   85000,  180000,45,20 FROM dual UNION ALL
              SELECT 'Phu kien dien thoai',   'CHG-GAN65W',      'Sac GaN 65W 3 cong',                '65W | 2xUSB-C + 1xUSB-A | PD3.0 QC4+',      'https://picsum.photos/500/600' ,     12,0,  280000,  520000,28,15 FROM dual UNION ALL
              SELECT 'Phu kien dien thoai',   'CAS-IPH15-CLR',   'Op lung iPhone 15 Pro Max MagSafe', 'TPU | MagSafe | iPhone 15 Pro Max',         'https://picsum.photos/500/600' ,     3,0,  120000,  290000,32,20 FROM dual UNION ALL
-             SELECT 'Thiet bi am thanh',     'APD-PRO2-WHT',    'AirPods Pro Gen 2 USB-C',           'H2 | ANC | Spatial Audio | IPX4 | 6h+30h',  'https://picsum.photos/500/600' ,     12,1, 4200000, 5800000, 9,5 FROM dual UNION ALL
-             SELECT 'Thiet bi am thanh',     'MOU-LGT-MX3',     'Chuot Logitech MX Master 3S',       'DPI 200-8000 | BT+USB | 70 ngay | MagSpeed','https://picsum.photos/500/600' ,     12,0, 1550000, 2200000, 2,5 FROM dual
+             SELECT 'Thiet bi am thanh',     'APD-PRO2-WHT',    'AirPods Pro Gen 2 USB-C',           'H2 | ANC | Spatial Audio | IPX4 | 6h+30h',  'https://picsum.photos/500/600' ,     12,1, 4200000, 5800000, 6,5 FROM dual UNION ALL
+             SELECT 'Thiet bi am thanh',     'MOU-LGT-MX3',     'Chuot Logitech MX Master 3S',       'DPI 200-8000 | BT+USB | 70 ngay | MagSpeed','https://picsum.photos/500/600' ,     12,0, 1550000, 2200000, 12,5 FROM dual
          ) v JOIN cat c ON c.name = v.cat
 ) s ON (t.sku = s.sku)
 WHEN MATCHED THEN UPDATE SET

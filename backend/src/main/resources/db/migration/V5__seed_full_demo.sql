@@ -192,10 +192,11 @@ BEGIN
     SELECT id INTO v_admin_id FROM users WHERE username = 'admin' FETCH FIRST 1 ROWS ONLY;
     SELECT id INTO v_wh_id    FROM warehouses WHERE name = 'Kho Trung Tam Ha Noi' FETCH FIRST 1 ROWS ONLY;
 
-    INSERT INTO inventory_sessions (created_by, status, start_date, end_date)
+    INSERT INTO inventory_sessions (created_by, status, start_date, end_date, warehouse_id)
     VALUES (v_admin_id, 'COMPLETED',
             CURRENT_TIMESTAMP - NUMTODSINTERVAL(2, 'DAY'),
-            CURRENT_TIMESTAMP - NUMTODSINTERVAL(2, 'DAY') + NUMTODSINTERVAL(45, 'MINUTE'))
+            CURRENT_TIMESTAMP - NUMTODSINTERVAL(2, 'DAY') + NUMTODSINTERVAL(45, 'MINUTE'),
+            v_wh_id)
     RETURNING id INTO v_session_id;
 
     -- 5 MATCH rows (5 items scanned at their expected location)
@@ -242,8 +243,9 @@ END;
 COMMIT;
 
 -- ─── 10. One IN_PROGRESS inventory session for live UI ─────────────────────
-INSERT INTO inventory_sessions (created_by, status, start_date)
-SELECT u.id, 'IN_PROGRESS', CURRENT_TIMESTAMP - NUMTODSINTERVAL(20, 'MINUTE')
+INSERT INTO inventory_sessions (created_by, status, start_date, warehouse_id)
+SELECT u.id, 'IN_PROGRESS', CURRENT_TIMESTAMP - NUMTODSINTERVAL(20, 'MINUTE'),
+       (SELECT MIN(id) FROM warehouses)
 FROM users u WHERE u.username = 'admin'
   AND NOT EXISTS (
       SELECT 1 FROM inventory_sessions s
