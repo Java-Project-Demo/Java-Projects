@@ -2,11 +2,13 @@ package org.dawn.backend.repository.auth;
 
 import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
-import org.dawn.backend.repository.base.BaseRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-public interface RefreshTokenRepository extends BaseRepository<RefreshToken, Long> {
+@Repository
+public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
     void deleteByToken(String token);
 
     Optional<RefreshToken> findByToken(String token);

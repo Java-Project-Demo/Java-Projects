@@ -1,7 +1,7 @@
 package org.dawn.backend.repository.warehouse;
 
 import org.dawn.backend.entity.Warehouse;
-import org.dawn.backend.repository.base.BaseRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface WarehouseRepository extends BaseRepository<Warehouse, Long> {
+public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
 }

@@ -1,21 +1,24 @@
 package org.dawn.backend.repository.auth;
 
-import org.dawn.backend.config.web.response.PageResponse;
 import org.dawn.backend.entity.User;
-import org.dawn.backend.repository.base.BaseRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-public interface UserRepository extends BaseRepository<User, Long> {
-    PageResponse<User> findAll(int page, int size);
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+    Page<User> findAll(Pageable pageable);
 
     Optional<User> findByUsername(String username);
 
     Optional<User> findByEmail(String email);
 
+    boolean existsByRole_Name(@Param("name") String roleName);
 
-    boolean existsByRoleName(String roleName);
-
-    boolean existsByUserName(String username);
+    boolean existsByUsername(String username);
 }
 

@@ -1,25 +1,39 @@
 package org.dawn.backend.repository.catalog;
 
+import jakarta.transaction.Transactional;
 import org.dawn.backend.entity.Product;
-import org.dawn.backend.repository.base.BaseRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 
-public interface ProductRepository extends BaseRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    Long countByIsDeleted(Boolean isDeleted);
+
     Optional<Product> findBySku(String sku);
 
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.currentStock <= p.minThreshold")
     Long countLowStock();
 
+    @Query("SELECT SUM(p.priceImport * p.currentStock) FROM Product p")
     BigDecimal getTotalInventoryValue();
 
+    @Query("SELECT p FROM Product p WHERE p.currentStock <= p.minThreshold")
     List<Product> findLowStockProducts();
 
-    void addStock(Long id, Integer qty);
+    @Modifying
+    @Transactional
+    @Query("UPDATE Product p SET p.currentStock = p.currentStock + :qty WHERE p.id = :id ")
+    void addStock(@Param("id") Long id, @Param("qty") Integer qty);
 
-    int subtractStock(Long id, Integer qty);
+    @Modifying
+    @Transactional
+    @Query("UPDATE Product p SET p.currentStock = p.currentStock - :qty WHERE p.id = :id")
+    int subtractStock(@Param("id") Long id, @Param("qty") Integer qty);
 
-    Long count();
 }

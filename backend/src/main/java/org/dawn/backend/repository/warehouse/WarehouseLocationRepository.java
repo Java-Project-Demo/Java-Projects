@@ -1,20 +1,42 @@
 package org.dawn.backend.repository.warehouse;
 
 import org.dawn.backend.entity.WarehouseLocation;
-import org.dawn.backend.repository.base.BaseRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface WarehouseLocationRepository extends BaseRepository<WarehouseLocation, Long> {
-    void saveAll(List<WarehouseLocation> entities);
+public interface WarehouseLocationRepository extends JpaRepository<WarehouseLocation, Long> {
 
     List<WarehouseLocation> findByWarehouseId(Long warehouseId);
 
+    @Query(value = """
+            SELECT * FROM warehouse_locations
+            WHERE id NOT IN (
+              SELECT localtion_id FROM product_items
+              WHERE status = 'AVAILABLE' AND localtion_id IS NOT NULL
+            )
+            ORDER BY id ASC
+            """, nativeQuery = true)
     List<WarehouseLocation> findEmptyLocations();
 
-    List<WarehouseLocation> findAvailableLocationsByWarehouseId(Long warehouseId, Long productId);
+    @Query(value = """
+            SELECT wl.* FROM warehouse_locations wl
+            WHERE wl.warehouse_id = :warehouse_id
+            AND wl.id NOT IN(
+                SELECT DISTINCT location_id FROM product_items
+                WHERE status = 'AVAILABLE'
+                AND localtion_id IS NOT NULL
+                AND product_id != :productId
+            )
+            ORDER BY wl.id ASC
+            """, nativeQuery = true)
+    List<WarehouseLocation> findAvailableLocationsByWarehouseId(@Param("warehouseId") Long warehouseId, @Param("productId") Long productId);
 
-    long countAvailableItemsByLocationId(Long locationId);
+    @Query("SELECT COUNT(pi) FROM ProductItem pi WHERE pi.locationId = :locationId AND pi.status ='AVAIABLE'")
+    long countAvailableItemsByLocationId(@Param("locationId") Long locationId);
 
-    boolean hasOtherProductInLocation(Long locationId, Long productId);
+    @Query("SELECT COUNT(pi) > 0 FROM ProductItem  pi WHERE pi.locationId =:locationId AND pi.status = 'AVAIABLE' AND pi.productId != :productId")
+    boolean hasOtherProductInLocation(@Param("locationId") Long locationId, @Param("productId") Long productId);
 }

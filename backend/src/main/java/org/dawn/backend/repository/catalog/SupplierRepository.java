@@ -1,10 +1,12 @@
 package org.dawn.backend.repository.catalog;
 
 import org.dawn.backend.entity.Supplier;
-import org.dawn.backend.repository.base.BaseRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-public interface SupplierRepository extends BaseRepository<Supplier, Long> {
+@Repository
+public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     Optional<Supplier> findByName(String name);
 }

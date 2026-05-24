@@ -1,10 +1,10 @@
 package org.dawn.backend.repository.warehouse;
 
 import org.dawn.backend.entity.StockMovement;
-import org.dawn.backend.repository.base.BaseRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface StockMovementRepository extends BaseRepository<StockMovement, Long> {
+public interface StockMovementRepository extends JpaRepository<StockMovement, Long> {
     List<StockMovement> findByProductId(Long productId);
 }

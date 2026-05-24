@@ -1,15 +1,30 @@
 package org.dawn.backend.repository.system;
 
+import jakarta.transaction.Transactional;
 import org.dawn.backend.entity.AuditLog;
-import org.dawn.backend.repository.base.BaseRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
-public interface AuditLogRepository extends BaseRepository<AuditLog, Long> {
-    List<AuditLog> search(String userId, String action, String status, LocalDateTime startDate, LocalDateTime endDate, int page, int size);
+public interface AuditLogRepository extends JpaRepository<AuditLog, Long>, JpaSpecificationExecutor<AuditLog> {
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM AuditLog a WHERE a.createdAt < :threshold")
+    void deleteOlderThan(@Param("threshold") Instant threshold);
 
-    int deleteOlderThan(LocalDateTime threshold);
 
+    @Query(value = """
+            SELECT au.*, u.full_name AS staff_name, u.username AS staff_username
+            FROM audit_logs au
+            LEFT JOIN users u ON au.user_id = u.id
+            ORDER BY au.created_at DESC
+            FETCH FIRST 5 ROWS ONLY
+            """, nativeQuery = true)
     List<AuditLog> findTop5OrderByCreatedAtDesc();
+
 }

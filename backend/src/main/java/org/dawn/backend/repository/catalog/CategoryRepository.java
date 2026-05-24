@@ -1,10 +1,10 @@
 package org.dawn.backend.repository.catalog;
 
 import org.dawn.backend.entity.Category;
-import org.dawn.backend.repository.base.BaseRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface CategoryRepository extends BaseRepository<Category, Long> {
+public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findByName(String name);
 }
