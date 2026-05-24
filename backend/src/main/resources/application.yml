@@ -13,17 +13,32 @@ spring:
     import: "optional:file:.env[.properties]"
   application:
     name: backend
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  # Database
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: ${DB_DRIVER}
+  # JPA
+  jpa:
+    hibernate:
+      ddl-auto: none
+  sql:
+    init:
+      mode: never
+      schema-locations: classpath:db/migration
+      data-locations: classpath:db/migration
   # Flyway
   flyway:
     enabled: true
     locations: classpath:db/migration
     validate-on-migrate: false
     baseline-on-migrate: true
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 10MB
-      max-request-size: 10MB
   # Mail
   mail:
     enabled: ${MAIL_ENABLED}
@@ -32,12 +47,7 @@ spring:
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
     from: ${MAIL_FROM}
-# Database
-db:
-  url: ${DB_URL}
-  user: ${DB_USER}
-  pass: ${DB_PASS}
-  driver: ${DB_DRIVER}
+
 # JWT config
 app:
   jwtCookieName: ${JWT_COOKIE_NAME}
