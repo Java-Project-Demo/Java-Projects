@@ -36,8 +36,8 @@ public class CustomerController {
 
     @GetMapping("/lookup")
     public ResponseObject<CustomerResponse> lookup(
-            @RequestParam String phone,
-            @RequestParam String email) {
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String email) {
         return ResponseObject.success(customerService.lookup(phone, email));
     }
 }

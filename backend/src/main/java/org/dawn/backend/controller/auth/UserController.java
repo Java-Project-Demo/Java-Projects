@@ -9,6 +9,7 @@ import org.dawn.backend.dto.auth.RegisterRequest;
 import org.dawn.backend.dto.auth.UpdateInfoRequest;
 import org.dawn.backend.dto.auth.UserResponse;
 import org.dawn.backend.service.auth.UserService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -20,10 +21,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("")
-    public ResponseObject<ResponsePage<UserResponse>> getAll(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseObject.success(userService.findAll(page, size));
+    public ResponseObject<ResponsePage<UserResponse>> getAll(Pageable pageable) {
+        return ResponseObject.success(userService.findAll(pageable));
     }
 
     @GetMapping("/{id}")
