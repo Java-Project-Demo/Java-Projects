@@ -38,7 +38,7 @@ public class Product extends AbstractMappedEntity {
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
-    @Column(name = "specifications", columnDefinition = "CLOB")
+    @Column(name = "specifications", columnDefinition = "TEXT")
     private String specifications;
 
     @Column(name = "warranty_period")

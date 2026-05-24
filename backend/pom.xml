@@ -16,18 +16,10 @@
     <packaging>jar</packaging>
     <properties>
         <java.version>25</java.version>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jwt.version>0.12.6</jwt.version>
         <cloudinary.version>1.39.0</cloudinary.version>
-        <servlet.version>6.1.0</servlet.version>
-        <dotenv.version>3.2.0</dotenv.version>
         <lombok.version>1.18.40</lombok.version>
-        <ojdbc.version>23.26.1.0.0</ojdbc.version>
         <mail.version>2.0.3</mail.version>
-        <flyway.version>12.3.0</flyway.version>
-        <bcrypt.version>0.4</bcrypt.version>
         <langchain.version>1.13.0-beta23</langchain.version>
         <springdoc.version>2.8.9</springdoc.version>
     </properties>
@@ -79,32 +71,15 @@
             <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
             <version>${springdoc.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-        </dependency>
         <!--  SQL      -->
         <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc11</artifactId>
-            <version>${ojdbc.version}</version>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-            <version>${flyway.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-oracle</artifactId>
-            <version>${flyway.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mindrot</groupId>
-            <artifactId>jbcrypt</artifactId>
-            <version>${bcrypt.version}</version>
-            <scope>compile</scope>
         </dependency>
         <!--  Tools   -->
         <dependency>

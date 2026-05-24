@@ -55,7 +55,7 @@ public class User extends AbstractMappedEntity {
     @Column(name = "phone_number", unique = true, length = 20)
     private String phoneNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", insertable = false, updatable = false)
     private Role role;
 

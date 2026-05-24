@@ -32,7 +32,7 @@ public class Warranty {
     @Column(name = "created_by", nullable = false)
     private Long createdBy;
 
-    @Column(name = "issue_description", columnDefinition = "CLOB")
+    @Column(name = "issue_description", columnDefinition = "TEXT")
     private String issueDescription;
 
     @Column(name = "status", length = 50)

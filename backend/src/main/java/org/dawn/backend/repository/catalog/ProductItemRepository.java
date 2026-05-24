@@ -5,11 +5,13 @@ import org.dawn.backend.entity.ProductItem;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface ProductItemRepository extends JpaRepository<ProductItem, Long> {
     Optional<ProductItem> findByImei(String imei);
 
@@ -18,7 +20,7 @@ public interface ProductItemRepository extends JpaRepository<ProductItem, Long> 
     @Query(value = """
                 SELECT pi.imei FROM product_items pi
                 WHERE pi.status = 'AVAILABLE'
-                AND pi.imie NOT IN (
+                AND pi.imei NOT IN (
                     SELECT imei FROM inventory_details WHERE session_id = :sessionId
                 )
             """, nativeQuery = true)
@@ -28,7 +30,7 @@ public interface ProductItemRepository extends JpaRepository<ProductItem, Long> 
                 SELECT pi.imei FROM product_items pi
                 JOIN warehouse_locations wl ON pi.location_id = wl.id
                 WHERE pi.status = 'AVAILABLE'
-                AND wl.warehouse_id  = :warehouseID
+                AND wl.warehouse_id  = :warehouseId
                 AND pi.imie NOT IN (
                     SELECT imei FROM inventory_details WHERE session_id = :sessionId
                 )

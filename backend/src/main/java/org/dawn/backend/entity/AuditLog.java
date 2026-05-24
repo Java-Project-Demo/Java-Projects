@@ -39,8 +39,7 @@ public class AuditLog extends AbstractMappedEntity {
     @Column(name = "status")
     private String status;
 
-    @Lob
-    @Column(name = "details", columnDefinition = "CLOB")
+    @Column(name = "details", columnDefinition = "TEXT")
     private String details;
 
     @Transient

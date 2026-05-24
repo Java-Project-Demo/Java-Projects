@@ -7,11 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Repository
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
 
     List<Order> findByStatus(OrderStatus status);
@@ -34,7 +36,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
 
     @Query(value = """
             SELECT SUM(total_amount) FROM orders
-            WHERE status = 'COMPLETED' AND TRUNC(created_at) = TRUNC(SYSDATE)
+            WHERE status = 'COMPLETED' AND created_at::DATE = CURRENT_DATE
             """, nativeQuery = true)
     BigDecimal getTodayRevenue();
 
@@ -45,7 +47,7 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
             JOIN product_items pi ON oi.order_id = pi.order_id
                         AND oi.product_id = pi.product_id
             JOIN orders o ON o.id = oi.order_id
-            WHERE o.status = 'COMPLETED' AND TRUNC(o.created_at) = TRUNC(SYSDATE)
+            WHERE o.status = 'COMPLETED' AND o.created_at::DATE = CURRENT_DATE
             """, nativeQuery = true)
     BigDecimal getTodayGrossProfit();
 }
