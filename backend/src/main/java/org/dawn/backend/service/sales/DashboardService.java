@@ -1,10 +1,11 @@
 package org.dawn.backend.service.sales;
 
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.constant.sales.OrderStatus;
+import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.constant.warranty.WarrantyStatus;
 import org.dawn.backend.dto.catalog.ProductItemResponse;
+import org.dawn.backend.dto.catalog.ProductMappingHelper;
 import org.dawn.backend.dto.catalog.ProductResponse;
 import org.dawn.backend.dto.inventory.WarehouseLocationResponse;
 import org.dawn.backend.dto.inventory.WarehouseMappingHelper;
@@ -14,9 +15,11 @@ import org.dawn.backend.dto.system.AuditLogMappingHelper;
 import org.dawn.backend.dto.system.AuditLogResponse;
 import org.dawn.backend.dto.warranty.WarrantyMappingHelper;
 import org.dawn.backend.dto.warranty.WarrantyResponse;
-import org.dawn.backend.entity.*;
+import org.dawn.backend.entity.Customer;
+import org.dawn.backend.entity.Order;
+import org.dawn.backend.entity.Product;
+import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.exception.wrapper.ResourceNotFoundException;
-import org.dawn.backend.dto.catalog.ProductMappingHelper;
 import org.dawn.backend.repository.catalog.ProductItemRepository;
 import org.dawn.backend.repository.catalog.ProductRepository;
 import org.dawn.backend.repository.sales.CustomerRepository;
@@ -28,10 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Service

@@ -7,7 +7,6 @@ import org.dawn.backend.dto.catalog.ProductItemResponse;
 import org.dawn.backend.dto.catalog.ProductResponse;
 import org.dawn.backend.dto.sales.ImeiTraceResponse;
 import org.dawn.backend.dto.sales.SummaryResponse;
-import org.dawn.backend.entity.ProductItem;
 import org.dawn.backend.service.sales.DashboardService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,15 +1,12 @@
 package org.dawn.backend.config.web.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import dev.langchain4j.agent.tool.P;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor

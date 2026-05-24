@@ -11,11 +11,9 @@ import org.dawn.backend.dto.catalog.ProductItemResponse;
 import org.dawn.backend.dto.catalog.ProductResponse;
 import org.dawn.backend.dto.sales.ImeiTraceResponse;
 import org.dawn.backend.dto.sales.SummaryResponse;
-import org.dawn.backend.entity.ProductItem;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j

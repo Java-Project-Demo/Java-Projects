@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.dawn.backend.constant.catalog.ItemStatus;
 import org.dawn.backend.constant.sales.PaymentMethod;
-import org.dawn.backend.constant.warranty.WarrantyStatus;
 import org.dawn.backend.dto.inventory.WarehouseLocationResponse;
 import org.dawn.backend.dto.warranty.WarrantyResponse;
 
