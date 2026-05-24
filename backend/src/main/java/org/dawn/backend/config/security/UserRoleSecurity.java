@@ -3,7 +3,6 @@ package org.dawn.backend.config.security;
 
 import lombok.RequiredArgsConstructor;
 import org.dawn.backend.constant.system.Message;
-import org.dawn.backend.entity.Role;
 import org.dawn.backend.entity.User;
 import org.dawn.backend.entity.UserDetailsImpl;
 import org.dawn.backend.exception.wrapper.PermissionDeniedException;
@@ -35,7 +34,7 @@ public class UserRoleSecurity {
 
         if (currentUserRole >= targetUserRole) {
             throw new PermissionDeniedException(Message.Exception.PERMISSION_DENIED);
-        };
+        }
         return true;
     }
 

@@ -21,7 +21,6 @@ import org.dawn.backend.repository.sales.OrderRepository;
 import org.dawn.backend.repository.warranty.WarrantyRepository;
 import org.dawn.backend.service.inventory.StockService;
 import org.dawn.backend.utils.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;

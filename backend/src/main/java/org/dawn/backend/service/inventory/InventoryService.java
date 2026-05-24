@@ -49,17 +49,15 @@ public class InventoryService {
         Warehouse warehouse = warehouseRepository
                 .findById(warehouseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy kho id=" + warehouseId));
-
-        UserDetailsImpl principal = SecurityContext.getCurrentUser();
         InventorySession session = InventorySession.builder()
                 .warehouseId(warehouseId)
-                .createdBy(principal.getId())
+                .createdBy(SecurityContext.getCurrentUserId())
                 .status(SessionStatus.IN_PROGRESS)
                 .startDate(Instant.now())
                 .build();
         InventorySession saved = sessionRepository.save(session);
 
-        return toSessionResponse(saved, warehouse, principal.getUsername());
+        return toSessionResponse(saved, warehouse, SecurityContext.getCurrentUsername());
 
     }
 
@@ -201,7 +199,7 @@ public class InventoryService {
                 : warehouseRepository.findById(session.getWarehouseId()).orElse(null);
         String createdByUsername = userRepository
                 .findById(session.getCreatedBy())
-                .map(u -> u.getUsername())
+                .map(User::getUsername)
                 .orElse(null);
 
         return SessionSummaryResponse.builder()
@@ -234,13 +232,13 @@ public class InventoryService {
         appendPart(sb, loc.getRowNum());
         appendPart(sb, loc.getShelfNum());
         appendPart(sb, loc.getBinNum());
-        if (sb.length() == 0) return "#" + loc.getId();
+        if (sb.isEmpty()) return "#" + loc.getId();
         return sb.toString();
     }
 
     private void appendPart(StringBuilder sb, String part) {
         if (part == null || part.isBlank()) return;
-        if (sb.length() > 0) sb.append(" · ");
+        if (!sb.isEmpty()) sb.append(" · ");
         sb.append(part);
     }
 }

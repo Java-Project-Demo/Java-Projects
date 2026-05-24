@@ -34,7 +34,6 @@ import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -119,7 +118,7 @@ public class StockService {
         }
 
         Product savedProduct = productRepository.save(product);
-        Long currentId = Optional.ofNullable(SecurityContext.getCurrentUserId()).orElse(null);
+        Long currentId = SecurityContext.getCurrentUserId();
 
         saveMovement(
                 req.getProductId(),

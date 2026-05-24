@@ -4,7 +4,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.UserRoleSecurity;
 import org.dawn.backend.config.web.response.ResponseObject;
 import org.dawn.backend.dto.auth.*;
 import org.dawn.backend.entity.UserDetailsImpl;
