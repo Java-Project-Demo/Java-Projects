@@ -3,7 +3,6 @@ package org.dawn.backend.service.auth;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.hashing.PasswordEncoder;
 import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.constant.system.LogConstant;
 import org.dawn.backend.constant.system.Message;
@@ -20,6 +19,7 @@ import org.dawn.backend.service.system.MailService;
 import org.dawn.backend.utils.JWTUtils;
 import org.dawn.backend.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;

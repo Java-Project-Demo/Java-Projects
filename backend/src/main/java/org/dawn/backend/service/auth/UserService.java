@@ -3,7 +3,6 @@ package org.dawn.backend.service.auth;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.security.hashing.PasswordEncoder;
 import org.dawn.backend.config.web.Loggable;
 import org.dawn.backend.config.web.response.ResponsePage;
 import org.dawn.backend.constant.auth.URole;
@@ -22,6 +21,7 @@ import org.dawn.backend.repository.auth.UserRepository;
 import org.dawn.backend.utils.SecurityContext;
 import org.dawn.backend.utils.UserUtils;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
