@@ -3,15 +3,21 @@ package org.dawn.backend.service.system;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.database.JDBCTransactionManager;
 import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.security.UserPrincipal;
+import org.dawn.backend.config.web.response.ResponsePage;
+import org.dawn.backend.dto.system.AuditLogMappingHelper;
 import org.dawn.backend.dto.system.AuditLogResponse;
 import org.dawn.backend.entity.AuditLog;
-import org.dawn.backend.dto.system.AuditLogMappingHelper;
 import org.dawn.backend.repository.system.AuditLogRepository;
+import org.dawn.backend.repository.system.AuditLogSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,9 +27,9 @@ import java.util.List;
 public class AuditLogService {
 
     private final AuditLogRepository auditLogRepository;
-    private final JDBCTransactionManager manager;
 
-    public List<AuditLogResponse> searchLogs(
+    @Transactional(readOnly = true)
+    public ResponsePage<AuditLogResponse> searchLogs(
             String userId,
             String action,
             String status,
@@ -32,19 +38,19 @@ public class AuditLogService {
             int page,
             int size) {
 
-        return auditLogRepository.search(
-                        userId,
-                        action,
-                        status,
-                        startDate,
-                        endDate,
-                        page,
-                        size)
-                .stream()
-                .map(AuditLogMappingHelper::map)
-                .toList();
+        Page<AuditLog> result = auditLogRepository.findAll(
+                AuditLogSpecification.build(userId, action, status, startDate, endDate),
+                PageRequest.of(page, size, Sort.by("createdAt").descending())
+        );
+
+        return ResponsePage.of(
+                result.getContent().stream().map(AuditLogMappingHelper::map).toList(),
+                page,
+                size,
+                result.getTotalElements());
     }
 
+    @Transactional
     public void saveLog(String action, String entityName, String entityId, String status, String details) {
         UserPrincipal currentUser = SecurityContext.get();
         log.info("Get current user: {}", currentUser);
@@ -61,6 +67,7 @@ public class AuditLogService {
         auditLogRepository.save(log);
     }
 
+    @Transactional
     public void saveLog(Long userId, String action, String entityName, String entityId, String status, String details) {
         AuditLog log = AuditLog.builder()
                 .userId(userId)
@@ -73,12 +80,12 @@ public class AuditLogService {
         auditLogRepository.save(log);
     }
 
-
+    @Transactional
     public void autoCleanLogs() {
         LocalDateTime threshold = LocalDateTime.now().minusMonths(6);
         log.info("Starting clean audit log before: {}", threshold);
 
-        int deleteCount = auditLogRepository.deleteOlderThan(threshold);
+        auditLogRepository.deleteOlderThan(Instant.from(threshold));
         log.info("Auto start clean Audit Log before: {}", threshold);
     }
 }

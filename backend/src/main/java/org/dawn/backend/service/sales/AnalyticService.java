@@ -7,7 +7,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.constant.auth.URole;
+import org.dawn.backend.dto.catalog.ProductItemResponse;
 import org.dawn.backend.dto.catalog.ProductResponse;
+import org.dawn.backend.dto.sales.ImeiTraceResponse;
+import org.dawn.backend.dto.sales.SummaryResponse;
 import org.dawn.backend.entity.ProductItem;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +30,7 @@ public class AnalyticService {
             return "ACCESS_DENIED: Tính năng này chỉ dành cho ADMIN. Người dùng hiện tại không có quyền.";
         }
         try {
-            Map<String, Object> data = dashboardService.getAdminDashboard();
+            SummaryResponse data = dashboardService.getAdminDashboard();
             return "Dữ liệu Dashboard Admin: " + objectMapper.writeValueAsString(data);
         } catch (Exception e) {
             return "Lỗi khi lấy dữ liệu: " + e.getMessage();
@@ -55,7 +58,7 @@ public class AnalyticService {
             return "ACCESS_DENIED: Tính năng tra cứu IMEI chỉ dành cho ADMIN hoặc SALES.";
         }
         try {
-            Map<String, Object> history = dashboardService.traceImei(imei);
+            ImeiTraceResponse history = dashboardService.traceImei(imei);
             return "Lịch sử thiết bị IMEI " + imei + ": " + objectMapper.writeValueAsString(history);
         } catch (Exception e) {
             return "Lỗi khi lấy dữ liệu: " + e.getMessage();
@@ -68,7 +71,7 @@ public class AnalyticService {
             return "ACCESS_DENIED: Chỉ ADMIN hoặc STOCK mới được kiểm tra hàng tồn lâu ngày.";
         }
         try {
-            List<ProductItem> agingItems = dashboardService.getAgingStockReport(daysThreshold);
+            List<ProductItemResponse> agingItems = dashboardService.getAgingStockReport(daysThreshold);
             if (agingItems.isEmpty()) return "Không có hàng tồn lâu hơn " + daysThreshold + " ngày.";
             return "Danh sách hàng tồn lâu ngày (" + daysThreshold + " ngày+): " + objectMapper.writeValueAsString(agingItems);
         } catch (Exception e) {

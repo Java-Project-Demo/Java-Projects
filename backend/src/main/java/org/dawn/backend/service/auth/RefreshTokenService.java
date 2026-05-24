@@ -1,7 +1,7 @@
 package org.dawn.backend.service.auth;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.dawn.backend.config.database.JDBCTransactionManager;
 import org.dawn.backend.constant.system.Message;
 import org.dawn.backend.entity.RefreshToken;
 import org.dawn.backend.entity.User;
@@ -25,26 +25,24 @@ public class RefreshTokenService {
     private Long refreshTokenDurations;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
-    private final JDBCTransactionManager manager;
 
 
+    @Transactional
     public RefreshToken createRefreshToken(Long userId) {
-        return manager.execute(() -> {
-            User user = userRepository
-                    .findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.USER_NOT_FOUND));
 
-            refreshTokenRepository.deleteByUser(user);
+        refreshTokenRepository.deleteByUser(user);
 
-            RefreshToken refreshToken = RefreshToken
-                    .builder()
-                    .user(user)
-                    .expiryDate(Instant.now().plusMillis(refreshTokenDurations))
-                    .token(UUID.randomUUID().toString())
-                    .build();
+        RefreshToken refreshToken = RefreshToken
+                .builder()
+                .userId(userId)
+                .expiryDate(Instant.now().plusMillis(refreshTokenDurations))
+                .token(UUID.randomUUID().toString())
+                .build();
 
-            return refreshTokenRepository.save(refreshToken);
-        });
+        return refreshTokenRepository.save(refreshToken);
     }
 
     public Optional<RefreshToken> findByToken(String token) {
@@ -62,14 +60,12 @@ public class RefreshTokenService {
         return token;
     }
 
-
+    @Transactional
     public void deleteByUserId(Long userId) {
-        manager.execute(() -> {
-            userRepository
-                    .findById(userId)
-                    .ifPresent(refreshTokenRepository::deleteByUser);
-            return null;
-        });
+        userRepository
+                .findById(userId)
+                .ifPresent(refreshTokenRepository::deleteByUser);
+
     }
 
 }

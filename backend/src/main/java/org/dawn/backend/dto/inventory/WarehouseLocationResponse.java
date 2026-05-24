@@ -1,6 +1,9 @@
 package org.dawn.backend.dto.inventory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -27,6 +30,7 @@ public class WarehouseLocationResponse {
 
     private Long capacity;
 
-    @lombok.Builder.Default
+    @Builder.Default
+    @JsonIgnoreProperties(ignoreUnknown = true)
     private List<LocationItemMini> items = new ArrayList<>();
 }

@@ -1,8 +1,8 @@
 package org.dawn.backend.service.inventory;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dawn.backend.config.database.JDBCTransactionManager;
 import org.dawn.backend.config.security.SecurityContext;
 import org.dawn.backend.config.security.UserPrincipal;
 import org.dawn.backend.constant.catalog.ItemStatus;
@@ -48,12 +48,12 @@ public class StockService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final AuditLogService auditLogService;
-    private final JDBCTransactionManager manager;
     private final WarehouseLocationRepository locationRepository;
     private final SupplierRepository supplierRepository;
 
+    @Transactional
     public ProductResponse importImei(ImportImeiRequest req) {
-        return manager.execute(() -> {
+
             Product product = productRepository
                     .findById(req.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_NOT_FOUND));
@@ -133,11 +133,11 @@ public class StockService {
                     LogConstant.Status.SUCCESS,
                     "Stock import IMEI");
             return ProductMappingHelper.map(savedProduct);
-        });
     }
 
+    @Transactional
     public ProductItemResponse exportByImei(Long orderId, String imei) {
-        return manager.execute(() -> {
+
             Order order = orderRepository
                     .findById(orderId)
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.ORDER_NOT_FOUND));
@@ -215,12 +215,12 @@ public class StockService {
             // Auto complete order
             checkAndCompleteOrder(order);
             return ProductMappingHelper.mapItem(savedItem);
-        });
     }
 
 
+    @Transactional
     public ProductItem markAsDamaged(String imei, String reason) {
-        return manager.execute(() -> {
+
             UserPrincipal currentUser = SecurityContext.get();
             Long currentId = (currentUser != null) ? currentUser.id() : null;
 
@@ -250,11 +250,11 @@ public class StockService {
                     LogConstant.Status.SUCCESS,
                     "Error reason: " + reason);
             return itemRepository.save(item);
-        });
     }
 
+    @Transactional
     public ProductItem returnProduct(String imei, String reason) {
-        return manager.execute(() -> {
+
             ProductItem item = itemRepository
                     .findByImei(imei)
                     .orElseThrow(() -> new ResourceNotFoundException(Message.Exception.PRODUCT_ITEM_NOT_FOUND));
@@ -291,7 +291,6 @@ public class StockService {
                     "Return from client");
 
             return itemRepository.save(item);
-        });
     }
 
     public void saveMovement(Long pId, MovementType type, String action, Integer qty, Long ref, Long uId, String note) {

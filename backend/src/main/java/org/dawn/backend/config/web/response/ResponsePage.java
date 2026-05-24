@@ -1,9 +1,11 @@
 package org.dawn.backend.config.web.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import dev.langchain4j.agent.tool.P;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 import java.util.function.Function;
@@ -17,32 +19,29 @@ public class ResponsePage<T> {
 
     Pagination pagination;
 
-    public static <T> ResponsePage<T> of(PageResponse<T> page) {
+    public static <T> ResponsePage<T> of(Page<T> page) {
         return new ResponsePage<>(page);
     }
 
-    public static <S, T> ResponsePage<T> of(PageResponse<S> page, Function<S, T> mapper) {
-        List<T> content = page
-                .getContent()
-                .stream()
-                .map(mapper)
-                .collect(Collectors.toList());
-        ResponsePage<T> res = new ResponsePage<>();
-        res.setContent(content);
-        res.setPagination(new Pagination(
-                page.getNumber(),
-                page.getSize(),
-                page.getTotalElements(),
-                page.getTotalPages()
-        ));
-        return res;
+    public ResponsePage(List<T> content, int page, int size, long totalElements) {
+        this.content = content;
+        this.pagination = new Pagination(
+                page,
+                size,
+                totalElements,
+                size > 0 ? (int) ((totalElements + size - 1) / size) : 0
+        );
     }
 
-    public ResponsePage(PageResponse<T> page) {
+    public static <T> ResponsePage<T> of(List<T> content, int page, int size, long totalElements) {
+        return new ResponsePage<>(content, page, size, totalElements);
+    }
+
+    public ResponsePage(Page<T> page) {
         this.content = page.getContent();
         this.pagination = new Pagination(
-                page.getNumber(),
-                page.getSize(),
+                page.getPageable().getPageNumber(),
+                page.getPageable().getPageSize(),
                 page.getTotalElements(),
                 page.getTotalPages()
         );
