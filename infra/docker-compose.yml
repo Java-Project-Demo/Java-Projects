@@ -5,102 +5,98 @@ networks:
 services:
   # Server
   db:
-    container_name: oracle-db
-    image: gvenzl/oracle-xe:21-slim
+    container_name: postgres-db
+    image: postgres:16-alpine
     environment:
-      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
-      APP_USER: ${DB_USER}
-      APP_USER_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     ports:
-      - '1522:1521'
+      - '5432:5432'
     networks:
       - base-net
     volumes:
-      - oracle-data:/opt/oracle/oradata
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'healthcheck.sh']
-      interval: 15s
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d ${DB_NAME}']
+      interval: 10s
       timeout: 5s
-      retries: 15
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-  server:
-    container_name: backend
-    image: backend:latest
-    environment:
-      ###   Spring DB Config
-      DB_URL: ${DB_URL}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      DB_DRIVER: ${DB_DRIVER}
-      ###   Default account
-      # Admin
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-      ###   Mail Config
-      MAIL_ENABLED: ${MAIL_ENABLED}
-      MAIL_HOST: ${MAIL_HOST}
-      MAIL_PORT: ${MAIL_PORT}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      MAIL_FROM: ${MAIL_FROM}
-      FRONTEND_URL: ${FRONTEND_URL}
-      ###   Cloudinary Config
-      CLOUDINARY_FOLDER_NAME: ${FOLDER_NAME}
-      CLOUDINARY_CLOUD_NAME: ${CLOUD_NAME}
-      CLOUDINARY_API_KEY: ${API_KEY}
-      CLOUDINARY_API_SECRET: ${API_SECRET}
-      ###   Refresh Token Config
-      JWT_COOKIE_NAME: ${JWT_COOKIE_NAME}
-      JWT_COOKIE_REFRESH_NAME: ${JWT_COOKIE_REFRESH_NAME}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION}
-      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
-      ###   Open Router Config
-      OPEN_ROUTER_URL: ${OPEN_ROUTER_URL}
-      OPEN_ROUTER_API: ${OPEN_ROUTER_API}
-      OPEN_ROUTER_MODEL: ${OPEN_ROUTER_MODEL}
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-    working_dir: /app
-    ports:
-      - '${SPRING_PORT}:8888'
-    networks:
-      - base-net
-    depends_on:
-      db:
-        condition: service_healthy
-    restart:
-      always
-      # Client
-  client:
-    container_name: frontend
-    image: frontend:latest
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-      args:
-        - VITE_BASE_API_URL=${VITE_BASE_API_URL}
-    working_dir: /app
-    networks:
-      - base-net
-  nginx:
-    container_name: nginx-proxy
-    image: nginx-proxy:latest
-    ports:
-      - '5173:80'
-    build:
-      context: .
-      dockerfile: Dockerfile.nginx
-    depends_on:
-      - server
-      - client
-    networks:
-      - base-net
+      retries: 10
+      start_period: 30s
+  # server:
+  #   container_name: backend
+  #   image: backend:latest
+  #   environment:
+  #     ###   Spring DB Config
+  #     DB_URL: ${DB_URL}
+  #     DB_USER: ${DB_USER}
+  #     DB_PASS: ${DB_PASS}
+  #     DB_DRIVER: ${DB_DRIVER}
+  #     ###   Default account
+  #     # Admin
+  #     ADMIN_USERNAME: ${ADMIN_USERNAME}
+  #     ADMIN_EMAIL: ${ADMIN_EMAIL}
+  #     ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+  #     ###   Mail Config
+  #     MAIL_ENABLED: ${MAIL_ENABLED}
+  #     MAIL_HOST: ${MAIL_HOST}
+  #     MAIL_PORT: ${MAIL_PORT}
+  #     MAIL_USERNAME: ${MAIL_USERNAME}
+  #     MAIL_PASSWORD: ${MAIL_PASSWORD}
+  #     MAIL_FROM: ${MAIL_FROM}
+  #     FRONTEND_URL: ${FRONTEND_URL}
+  #     ###   Cloudinary Config
+  #     CLOUDINARY_FOLDER_NAME: ${FOLDER_NAME}
+  #     CLOUDINARY_CLOUD_NAME: ${CLOUD_NAME}
+  #     CLOUDINARY_API_KEY: ${API_KEY}
+  #     CLOUDINARY_API_SECRET: ${API_SECRET}
+  #     ###   Refresh Token Config
+  #     JWT_COOKIE_NAME: ${JWT_COOKIE_NAME}
+  #     JWT_COOKIE_REFRESH_NAME: ${JWT_COOKIE_REFRESH_NAME}
+  #     JWT_SECRET: ${JWT_SECRET}
+  #     JWT_EXPIRATION: ${JWT_EXPIRATION}
+  #     JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+  #     ###   Open Router Config
+  #     OPEN_ROUTER_URL: ${OPEN_ROUTER_URL}
+  #     OPEN_ROUTER_API: ${OPEN_ROUTER_API}
+  #     OPEN_ROUTER_MODEL: ${OPEN_ROUTER_MODEL}
+  #   build:
+  #     context: ../backend
+  #     dockerfile: Dockerfile
+  #   working_dir: /app
+  #   ports:
+  #     - '${SPRING_PORT}:8888'
+  #   networks:
+  #     - base-net
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   restart:
+  #     always
+  #     # Client
+  # client:
+  #   container_name: frontend
+  #   image: frontend:latest
+  #   build:
+  #     context: ../frontend
+  #     dockerfile: Dockerfile
+  #     args:
+  #       - VITE_BASE_API_URL=${VITE_BASE_API_URL}
+  #   working_dir: /app
+  #   networks:
+  #     - base-net
+  # nginx:
+  #   container_name: nginx-proxy
+  #   image: nginx-proxy:latest
+  #   ports:
+  #     - '5173:80'
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.nginx
+  #   depends_on:
+  #     - server
+  #     - client
+  #   networks:
+  #     - base-net
 volumes:
-  oracle-data:
+  postgres-data:
