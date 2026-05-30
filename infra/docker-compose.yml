@@ -11,8 +11,8 @@ services:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
       APP_USER: ${DB_USER}
       APP_USER_PASSWORD: ${DB_PASS}
-      ORACLE_SGA: 600
-      ORACLE_PGA: 300
+      ORACLE_SGA: 300
+      ORACLE_PGA: 150
     ports:
       - '1521:1521'
     networks:
@@ -28,7 +28,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1.2G
+          memory: 1.5G
   server:
     container_name: backend
     image: backend:latest
